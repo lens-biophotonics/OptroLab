@@ -21,6 +21,8 @@ set(SOURCE_FILES
 
     main.cpp
     mainwindow.cpp
+    centralwidget.cpp
+
     version.cpp
 )
 
@@ -29,6 +31,7 @@ add_executable(OptroLab ${SOURCE_FILES})
 target_link_libraries(OptroLab
     Qt5::Widgets
     QtLab::Core
+    QtLab::Widgets
     QtLab::NI
     QtLab::Hamamatsu
 )

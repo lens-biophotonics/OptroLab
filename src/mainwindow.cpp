@@ -4,6 +4,7 @@
 #include <QTextStream>
 
 #include "mainwindow.h"
+#include "centralwidget.h"
 
 #include "version.h"
 
@@ -33,6 +34,8 @@ void MainWindow::setupUi()
 
     QMenu *helpMenu = menuBar->addMenu("?");
     helpMenu->addAction(aboutAction);
+
+    setCentralWidget(new CentralWidget(this));
 
     QMetaObject::connectSlotsByName(this);
 }
