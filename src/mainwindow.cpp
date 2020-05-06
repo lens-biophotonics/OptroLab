@@ -2,9 +2,12 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QtDebug>
 
 #include "mainwindow.h"
 #include "centralwidget.h"
+
+#include "optrod.h"
 
 #include "version.h"
 

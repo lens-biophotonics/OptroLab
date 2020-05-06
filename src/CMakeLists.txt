@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Qt5 5.8 REQUIRED COMPONENTS
     Widgets
 )
-find_package(QtLab REQUIRED Core Widgets NI Hamamatsu)
+find_package(QtLab REQUIRED Core Widgets Aravis Hamamatsu NI)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
 
@@ -22,6 +22,10 @@ set(SOURCE_FILES
     main.cpp
     mainwindow.cpp
     centralwidget.cpp
+    controlswidget.cpp
+    mainpage.cpp
+
+    optrod.cpp
 
     version.cpp
 )
@@ -32,6 +36,7 @@ target_link_libraries(OptroLab
     Qt5::Widgets
     QtLab::Core
     QtLab::Widgets
+    QtLab::Aravis
     QtLab::NI
     QtLab::Hamamatsu
 )
