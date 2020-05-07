@@ -15,9 +15,12 @@ public slots:
 
 private slots:
     void on_aboutAction_triggered() const;
+    void saveSettings() const;
 
 private:
     void setupUi();
+    void loadSettings();
+    void closeEvent(QCloseEvent *e = nullptr);
 };
 
 #endif // MAINWINDOW_H

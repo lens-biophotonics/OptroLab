@@ -21,14 +21,15 @@ set(SOURCE_FILES
 
     main.cpp
     mainwindow.cpp
+    settings.cpp
+    version.cpp
+
     centralwidget.cpp
     controlswidget.cpp
     behavdispworker.cpp
     mainpage.cpp
 
     optrod.cpp
-
-    version.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES})
