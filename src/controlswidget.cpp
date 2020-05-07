@@ -13,16 +13,62 @@ ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
 void ControlsWidget::setupUi()
 {
     QPushButton *initButton = new QPushButton("Initialize");
-    connect(initButton, &QPushButton::clicked, &optrod(), &Optrod::initialize);
-
-    QState *state = optrod().getState(Optrod::STATE_UNINITIALIZED);
-    state->assignProperty(initButton, "enabled", true);
-
-    state = optrod().getState(Optrod::STATE_READY);
-    state->assignProperty(initButton, "enabled", false);
+    QPushButton *startFreeRunButton = new QPushButton("Start free run");
+    QPushButton *stopButton = new QPushButton("Stop");
 
     QVBoxLayout *myLayout = new QVBoxLayout();
     myLayout->addWidget(initButton);
-
+    myLayout->addWidget(startFreeRunButton);
+    myLayout->addWidget(stopButton);
+    myLayout->addStretch();
     setLayout(myLayout);
+
+    QState *us = optrod().getState(Optrod::STATE_UNINITIALIZED);
+    QState *is = optrod().getState(Optrod::STATE_INITIALIZING);
+    QState *rs = optrod().getState(Optrod::STATE_READY);
+    QState *cs = optrod().getState(Optrod::STATE_CAPTURING);
+
+    QList<QWidget *> wList;
+
+    wList = {
+        initButton,
+    };
+
+    for (QWidget * w : wList) {
+        us->assignProperty(w, "enabled", true);
+        is->assignProperty(w, "enabled", false);
+    }
+
+    wList = {
+        startFreeRunButton,
+        stopButton,
+    };
+
+    for (QWidget * w : wList) {
+        us->assignProperty(w, "enabled", false);
+        is->assignProperty(w, "enabled", false);
+    }
+
+    wList = {
+        startFreeRunButton,
+    };
+
+    for (QWidget * w : wList) {
+        rs->assignProperty(w, "enabled", true);
+        cs->assignProperty(w, "enabled", false);
+    }
+
+    wList = {
+        stopButton,
+    };
+
+    for (QWidget * w : wList) {
+        rs->assignProperty(w, "enabled", false);
+        cs->assignProperty(w, "enabled", true);
+    }
+
+    auto clicked = &QPushButton::clicked;
+    connect(initButton, clicked, &optrod(), &Optrod::initialize);
+    connect(startFreeRunButton, clicked, &optrod(), &Optrod::startFreeRun);
+    connect(stopButton, clicked, &optrod(), &Optrod::stop);
 }

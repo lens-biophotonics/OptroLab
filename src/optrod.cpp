@@ -2,10 +2,14 @@
 
 #include <QHistoryState>
 
+#include <qtlab/core/logger.h>
+
 #include <qtlab/hw/aravis/aravis.h>
 #include <qtlab/hw/aravis/camera.h>
 
 #include "optrod.h"
+
+static Logger *logger = getLogger("Optrod");
 
 Optrod::Optrod(QObject *parent) : QObject(parent)
 {
@@ -25,21 +29,36 @@ QState *Optrod::getState(const Optrod::MACHINE_STATE stateEnum)
 
 void Optrod::initialize()
 {
+    emit initializing();
     bool ok = behaviorCamera->open(0);
-    behaviorCamera->setPixelFormat("Mono8");
     if (!ok) {
+        onError("Cannot open behavior camera");
         return;
     }
 
-    behaviorCamera->startAcquisition();
+    behaviorCamera->setPixelFormat("Mono8");
 
     emit initialized();
 }
 
 void Optrod::uninitialize()
 {
+    stop();
     behaviorCamera->close();
     Aravis::shutdown();
+}
+
+void Optrod::startFreeRun()
+{
+    freeRun = false;
+    logger->info("Start acquisition");
+    _startAcquisition();
+}
+
+void Optrod::stop()
+{
+    behaviorCamera->stopAcquisition();
+    emit stopped();
 }
 
 Aravis::Camera *Optrod::getBehaviorCamera() const
@@ -61,10 +80,13 @@ void Optrod::setupStateMachine()
     QState *uninitState = newState(STATE_UNINITIALIZED, sm);
     sm->setInitialState(uninitState);
 
+    QState *initializingState = newState(STATE_INITIALIZING, sm);
     QState *readyState = newState(STATE_READY, sm);
     QState *capturingState = newState(STATE_CAPTURING, sm);
 
-    uninitState->addTransition(this, &Optrod::initialized, readyState);
+    uninitState->addTransition(this, &Optrod::initializing, initializingState);
+    initializingState->addTransition(this, &Optrod::initialized, readyState);
+    initializingState->addTransition(this, &Optrod::error, uninitState);
     readyState->addTransition(this, &Optrod::captureStarted, capturingState);
     capturingState->addTransition(this, &Optrod::stopped, readyState);
 
@@ -78,6 +100,12 @@ void Optrod::setupStateMachine()
     sm->start();
 }
 
+void Optrod::_startAcquisition()
+{
+    behaviorCamera->startAcquisition();
+    emit captureStarted();
+}
+
 Optrod &optrod()
 {
     static auto instance = std::make_unique<Optrod>(nullptr);
@@ -86,5 +114,7 @@ Optrod &optrod()
 
 void Optrod::onError(const QString &errMsg)
 {
+    stop();
     emit error(errMsg);
+    logger->error(errMsg);
 }

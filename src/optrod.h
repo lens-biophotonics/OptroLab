@@ -15,6 +15,7 @@ class Optrod : public QObject
 public:
     enum MACHINE_STATE {
         STATE_UNINITIALIZED,
+        STATE_INITIALIZING,
         STATE_READY,
         STATE_CAPTURING,
         STATE_ERROR,
@@ -28,6 +29,7 @@ public:
     Aravis::Camera *getBehaviorCamera() const;
 
 signals:
+    void initializing() const;
     void initialized() const;
     void captureStarted() const;
     void stopped() const;
@@ -36,14 +38,18 @@ signals:
 public slots:
     void initialize();
     void uninitialize();
+    void startFreeRun();
+    void stop();
 
 private:
     Aravis::Camera *behaviorCamera;
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
+    bool freeRun;
 
     void setupStateMachine();
     void onError(const QString &errMsg);
+    void _startAcquisition();
 };
 
 Optrod& optrod();

@@ -28,6 +28,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 void MainWindow::setupUi()
 {
+    connect(&optrod(), &Optrod::error, this, [ = ](QString s) {
+        QMessageBox::critical(nullptr, "Error", s);
+    });
+
     QAction *quitAction = new QAction(this);
     quitAction->setText("&Quit");
     quitAction->setObjectName("quitAction");
