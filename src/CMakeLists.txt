@@ -23,6 +23,7 @@ set(SOURCE_FILES
     mainwindow.cpp
     centralwidget.cpp
     controlswidget.cpp
+    behavdispworker.cpp
     mainpage.cpp
 
     optrod.cpp

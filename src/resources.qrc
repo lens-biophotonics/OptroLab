@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>res/logos.png</file>
+        <file>res/lemmling-Simple-cartoon-mouse.svg</file>
     </qresource>
 </RCC>

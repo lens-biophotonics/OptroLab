@@ -1,9 +1,14 @@
 #include <QHBoxLayout>
+#include <QLabel>
 
-#include <qtlab/widgets/cameraplot.h>
+#include <qtlab/hw/aravis/camera.h>
 #include <qtlab/widgets/aspectratiowidget.h>
+#include <qtlab/widgets/pixmapwidget.h>
 
 #include "controlswidget.h"
+#include "behavdispworker.h"
+
+#include "optrod.h"
 
 #include "mainpage.h"
 
@@ -16,16 +21,16 @@ void MainPage::setupUi()
 {
     ControlsWidget *cw = new ControlsWidget();
 
-    CameraPlot *cp = new CameraPlot(1280, 1024);
-    cp->enableAxis(QwtPlot::xBottom, false);
-    cp->enableAxis(QwtPlot::yLeft, false);
-    cp->enableAxis(QwtPlot::yRight, false);
+    PixmapWidget *pmw = new PixmapWidget();
+    pmw->setPixmap(QPixmap(":/res/lemmling-Simple-cartoon-mouse.svg"));
 
-    AspectRatioWidget *arw = new AspectRatioWidget(cp, 1280, 1024);
-
-    QHBoxLayout *myLayout = new QHBoxLayout();
-    myLayout->addWidget(arw);
+    QHBoxLayout *myLayout = new QHBoxLayout(this);
+    myLayout->addWidget(pmw);
     myLayout->addWidget(cw);
 
     setLayout(myLayout);
+
+    BehavDispWorker *worker = new BehavDispWorker(optrod().getBehaviorCamera());
+    connect(worker, &BehavDispWorker::newImage,
+            pmw, &PixmapWidget::setPixmap);
 }
