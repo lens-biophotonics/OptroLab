@@ -10,11 +10,16 @@ find_package(Qt5 5.8 REQUIRED COMPONENTS
 find_package(QtLab REQUIRED Core Widgets Aravis Hamamatsu NI)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
+option(DEMO_MODE "Demo mode" OFF)
 
 if (FORCE_FUSION_STYLE)
     add_definitions(-DFORCE_FUSION_STYLE)
     message(AUTHOR_WARNING "Forcing fusion style")
 endif ()
+
+if (NOT DEMO_MODE)
+    add_definitions(-DWITH_HARDWARE)
+endif()
 
 set(SOURCE_FILES
     resources.qrc
@@ -30,6 +35,7 @@ set(SOURCE_FILES
     mainpage.cpp
 
     optrode.cpp
+    tasks.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES})
