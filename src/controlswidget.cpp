@@ -1,7 +1,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include "optrod.h"
+#include "optrode.h"
 
 #include "controlswidget.h"
 
@@ -23,10 +23,10 @@ void ControlsWidget::setupUi()
     myLayout->addStretch();
     setLayout(myLayout);
 
-    QState *us = optrod().getState(Optrod::STATE_UNINITIALIZED);
-    QState *is = optrod().getState(Optrod::STATE_INITIALIZING);
-    QState *rs = optrod().getState(Optrod::STATE_READY);
-    QState *cs = optrod().getState(Optrod::STATE_CAPTURING);
+    QState *us = optrode().getState(Optrode::STATE_UNINITIALIZED);
+    QState *is = optrode().getState(Optrode::STATE_INITIALIZING);
+    QState *rs = optrode().getState(Optrode::STATE_READY);
+    QState *cs = optrode().getState(Optrode::STATE_CAPTURING);
 
     QList<QWidget *> wList;
 
@@ -68,7 +68,7 @@ void ControlsWidget::setupUi()
     }
 
     auto clicked = &QPushButton::clicked;
-    connect(initButton, clicked, &optrod(), &Optrod::initialize);
-    connect(startFreeRunButton, clicked, &optrod(), &Optrod::startFreeRun);
-    connect(stopButton, clicked, &optrod(), &Optrod::stop);
+    connect(initButton, clicked, &optrode(), &Optrode::initialize);
+    connect(startFreeRunButton, clicked, &optrode(), &Optrode::startFreeRun);
+    connect(stopButton, clicked, &optrode(), &Optrode::stop);
 }

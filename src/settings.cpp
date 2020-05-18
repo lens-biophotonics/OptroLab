@@ -3,7 +3,7 @@
 #include <QSettings>
 #include <QDir>
 
-#include "optrod.h"
+#include "optrode.h"
 
 #include "settings.h"
 

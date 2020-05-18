@@ -1,5 +1,5 @@
-#ifndef OPTROD_H
-#define OPTROD_H
+#ifndef OPTRODE_H
+#define OPTRODE_H
 
 #include <QObject>
 #include <QStateMachine>
@@ -9,7 +9,7 @@ class Camera;
 }
 
 
-class Optrod : public QObject
+class Optrode : public QObject
 {
     Q_OBJECT
 public:
@@ -23,8 +23,8 @@ public:
         STATE_FREERUN,
     };
 
-    explicit Optrod(QObject *parent = nullptr);
-    virtual ~Optrod();
+    explicit Optrode(QObject *parent = nullptr);
+    virtual ~Optrode();
     QState *getState(const MACHINE_STATE stateEnum);
     Aravis::Camera *getBehaviorCamera() const;
 
@@ -52,6 +52,6 @@ private:
     void _startAcquisition();
 };
 
-Optrod& optrod();
+Optrode& optrode();
 
-#endif // OPTROD_H
+#endif // OPTRODE_H

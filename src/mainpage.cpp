@@ -9,7 +9,7 @@
 #include "controlswidget.h"
 #include "behavdispworker.h"
 
-#include "optrod.h"
+#include "optrode.h"
 
 #include "mainpage.h"
 
@@ -48,7 +48,7 @@ void MainPage::setupUi()
 
     setLayout(myLayout);
 
-    BehavDispWorker *worker = new BehavDispWorker(optrod().getBehaviorCamera());
+    BehavDispWorker *worker = new BehavDispWorker(optrode().getBehaviorCamera());
     connect(worker, &BehavDispWorker::newImage,
             pmw, &PixmapWidget::setPixmap);
 }

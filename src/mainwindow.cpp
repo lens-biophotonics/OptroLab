@@ -9,7 +9,7 @@
 #include "mainwindow.h"
 #include "centralwidget.h"
 
-#include "optrod.h"
+#include "optrode.h"
 #include "settings.h"
 
 #include "version.h"
@@ -22,13 +22,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
     QThread *thread = new QThread();
     thread->setObjectName("Optrod_thread");
-    optrod().moveToThread(thread);
+    optrode().moveToThread(thread);
     thread->start();
 }
 
 void MainWindow::setupUi()
 {
-    connect(&optrod(), &Optrod::error, this, [ = ](QString s) {
+    connect(&optrode(), &Optrode::error, this, [ = ](QString s) {
         QMessageBox::critical(nullptr, "Error", s);
     });
 
@@ -133,7 +133,7 @@ void MainWindow::closeEvent(QCloseEvent *e)
      * destroyed before uninitialize() is called.
      */
 
-    QMetaObject::invokeMethod(&optrod(), "uninitialize",
+    QMetaObject::invokeMethod(&optrode(), "uninitialize",
                               Qt::BlockingQueuedConnection);
     QMainWindow::closeEvent(e);
 }

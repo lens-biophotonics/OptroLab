@@ -29,7 +29,7 @@ set(SOURCE_FILES
     behavdispworker.cpp
     mainpage.cpp
 
-    optrod.cpp
+    optrode.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES})

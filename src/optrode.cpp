@@ -7,27 +7,27 @@
 #include <qtlab/hw/aravis/aravis.h>
 #include <qtlab/hw/aravis/camera.h>
 
-#include "optrod.h"
+#include "optrode.h"
 
 static Logger *logger = getLogger("Optrod");
 
-Optrod::Optrod(QObject *parent) : QObject(parent)
+Optrode::Optrode(QObject *parent) : QObject(parent)
 {
     behaviorCamera = new Aravis::Camera(this);
     setupStateMachine();
 }
 
-Optrod::~Optrod()
+Optrode::~Optrode()
 {
     uninitialize();
 }
 
-QState *Optrod::getState(const Optrod::MACHINE_STATE stateEnum)
+QState *Optrode::getState(const Optrode::MACHINE_STATE stateEnum)
 {
     return stateMap[stateEnum];
 }
 
-void Optrod::initialize()
+void Optrode::initialize()
 {
     emit initializing();
     bool ok = behaviorCamera->open(0);
@@ -41,32 +41,32 @@ void Optrod::initialize()
     emit initialized();
 }
 
-void Optrod::uninitialize()
+void Optrode::uninitialize()
 {
     stop();
     behaviorCamera->close();
     Aravis::shutdown();
 }
 
-void Optrod::startFreeRun()
+void Optrode::startFreeRun()
 {
     freeRun = false;
     logger->info("Start acquisition");
     _startAcquisition();
 }
 
-void Optrod::stop()
+void Optrode::stop()
 {
     behaviorCamera->stopAcquisition();
     emit stopped();
 }
 
-Aravis::Camera *Optrod::getBehaviorCamera() const
+Aravis::Camera *Optrode::getBehaviorCamera() const
 {
     return behaviorCamera;
 }
 
-void Optrod::setupStateMachine()
+void Optrode::setupStateMachine()
 {
     std::function<QState*(const MACHINE_STATE, QState *parent)> newState
         = [this](const MACHINE_STATE type, QState *parent = nullptr) {
@@ -84,35 +84,35 @@ void Optrod::setupStateMachine()
     QState *readyState = newState(STATE_READY, sm);
     QState *capturingState = newState(STATE_CAPTURING, sm);
 
-    uninitState->addTransition(this, &Optrod::initializing, initializingState);
-    initializingState->addTransition(this, &Optrod::initialized, readyState);
-    initializingState->addTransition(this, &Optrod::error, uninitState);
-    readyState->addTransition(this, &Optrod::captureStarted, capturingState);
-    capturingState->addTransition(this, &Optrod::stopped, readyState);
+    uninitState->addTransition(this, &Optrode::initializing, initializingState);
+    initializingState->addTransition(this, &Optrode::initialized, readyState);
+    initializingState->addTransition(this, &Optrode::error, uninitState);
+    readyState->addTransition(this, &Optrode::captureStarted, capturingState);
+    capturingState->addTransition(this, &Optrode::stopped, readyState);
 
     QHistoryState *historyState = new QHistoryState(sm);
 
     QState *errorState = newState(STATE_ERROR, sm);
     errorState->addTransition(historyState);
 
-    sm->addTransition(this, &Optrod::error, errorState);
+    sm->addTransition(this, &Optrode::error, errorState);
 
     sm->start();
 }
 
-void Optrod::_startAcquisition()
+void Optrode::_startAcquisition()
 {
     behaviorCamera->startAcquisition();
     emit captureStarted();
 }
 
-Optrod &optrod()
+Optrode &optrode()
 {
-    static auto instance = std::make_unique<Optrod>(nullptr);
+    static auto instance = std::make_unique<Optrode>(nullptr);
     return *instance;
 }
 
-void Optrod::onError(const QString &errMsg)
+void Optrode::onError(const QString &errMsg)
 {
     stop();
     emit error(errMsg);
