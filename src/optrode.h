@@ -8,6 +8,8 @@ namespace Aravis {
 class Camera;
 }
 
+class Tasks;
+
 
 class Optrode : public QObject
 {
@@ -27,6 +29,7 @@ public:
     virtual ~Optrode();
     QState *getState(const MACHINE_STATE stateEnum);
     Aravis::Camera *getBehaviorCamera() const;
+    Tasks *NITasks() const;
 
 signals:
     void initializing() const;
@@ -34,6 +37,7 @@ signals:
     void captureStarted() const;
     void stopped() const;
     void error(const QString) const;
+    void temp(double prova) const;
 
 public slots:
     void initialize();
@@ -43,9 +47,12 @@ public slots:
 
 private:
     Aravis::Camera *behaviorCamera;
+    Tasks *tasks;
+
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
     bool freeRun;
+    bool running = false;
 
     void setupStateMachine();
     void onError(const QString &errMsg);

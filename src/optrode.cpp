@@ -6,14 +6,18 @@
 
 #include <qtlab/hw/aravis/aravis.h>
 #include <qtlab/hw/aravis/camera.h>
+#include <qtlab/hw/ni/nitask.h>
 
 #include "optrode.h"
+#include "tasks.h"
 
 static Logger *logger = getLogger("Optrod");
 
 Optrode::Optrode(QObject *parent) : QObject(parent)
 {
     behaviorCamera = new Aravis::Camera(this);
+    tasks = new Tasks(this);
+
     setupStateMachine();
 }
 
@@ -48,22 +52,14 @@ void Optrode::uninitialize()
     Aravis::shutdown();
 }
 
-void Optrode::startFreeRun()
-{
-    freeRun = false;
-    logger->info("Start acquisition");
-    _startAcquisition();
-}
-
-void Optrode::stop()
-{
-    behaviorCamera->stopAcquisition();
-    emit stopped();
-}
-
 Aravis::Camera *Optrode::getBehaviorCamera() const
 {
     return behaviorCamera;
+}
+
+Tasks *Optrode::NITasks() const
+{
+    return tasks;
 }
 
 void Optrode::setupStateMachine()
@@ -100,9 +96,37 @@ void Optrode::setupStateMachine()
     sm->start();
 }
 
+void Optrode::startFreeRun()
+{
+    freeRun = false;
+    logger->info("Start acquisition");
+    _startAcquisition();
+}
+
+void Optrode::stop()
+{
+    if (!running)
+        return;
+    running = false;
+    emit stopped();
+    try {
+        behaviorCamera->stopAcquisition();
+        tasks->stop();
+    } catch (std::runtime_error e) {
+        onError(e.what());
+    }
+}
+
 void Optrode::_startAcquisition()
 {
-    behaviorCamera->startAcquisition();
+    running = true;
+    try {
+        behaviorCamera->startAcquisition();
+        tasks->start();
+    } catch (std::runtime_error e) {
+        onError(e.what());
+        return;
+    }
     emit captureStarted();
 }
 

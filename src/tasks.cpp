@@ -45,8 +45,10 @@ void Tasks::init()
                                 NITask::DataLayout_GroupByChannel,
                                 data,
                                 &sampsPerChanWritten);
+#ifdef WITH_HARDWARE
     if (sampsPerChanWritten != 2)
         throw std::runtime_error("invalid number of samples written");
+#endif
 
     QString startTriggerSOurce = mainTrigPhysChan + "/StartTrigger";
 
