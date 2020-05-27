@@ -100,7 +100,8 @@ void Tasks::start()
 {
     if (needsInit)
         init();
-    shutterPulse->startTask();
+    if (!isFreeRunEnabled())
+        shutterPulse->startTask();
     elReadout->startTask();
 
     // started for last because it will trigger the other two tasks
@@ -112,6 +113,26 @@ void Tasks::stop()
     mainTrigger->stopTask();
     shutterPulse->stopTask();
     elReadout->stopTask();
+}
+
+double Tasks::getShutterInitialDelay() const
+{
+    return shutterInitialDelay;
+}
+
+void Tasks::setShutterInitialDelay(double value)
+{
+    shutterInitialDelay = value;
+}
+
+bool Tasks::isFreeRunEnabled() const
+{
+    return freeRunEnabled;
+}
+
+void Tasks::setFreeRunEnabled(bool value)
+{
+    freeRunEnabled = value;
 }
 
 QString Tasks::getMainTrigPhysChan() const

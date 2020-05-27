@@ -30,11 +30,12 @@ public:
     QState *getState(const MACHINE_STATE stateEnum);
     Aravis::Camera *getBehaviorCamera() const;
     Tasks *NITasks() const;
+    void isFreeRunEnabled();
 
 signals:
     void initializing() const;
     void initialized() const;
-    void captureStarted() const;
+    void captureStarted(bool) const;
     void stopped() const;
     void error(const QString) const;
     void temp(double prova) const;
@@ -51,7 +52,6 @@ private:
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
-    bool freeRun;
     bool running = false;
 
     void setupStateMachine();

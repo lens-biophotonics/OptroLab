@@ -26,6 +26,9 @@ public:
     QString getShutterPulseTerm() const;
     void setShutterPulseTerm(const QString &value);
 
+    double getShutterInitialDelay() const;
+    void setShutterInitialDelay(double value);
+
     double getShutterPulseFrequency() const;
     void setShutterPulseFrequency(double value);
 
@@ -40,6 +43,9 @@ public:
 
     double getElectrodeReadoutRate() const;
     void setElectrodeReadoutRate(double value);
+
+    bool isFreeRunEnabled() const;
+    void setFreeRunEnabled(bool value);
 
 signals:
     void started();
@@ -68,6 +74,7 @@ private:
     double electrodeReadoutRate = 10000;
 
     bool needsInit;
+    bool freeRunEnabled;
 };
 
 #endif // ELECTRODEREADOUT_H

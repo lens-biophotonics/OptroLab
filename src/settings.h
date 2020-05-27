@@ -19,6 +19,8 @@
 
 #define SETTING_OUTPUTPATH "outputPath"
 
+#define SETTING_SAMPRATE "samplingRate"
+
 typedef QMap<QString, QVariant> SettingsMap;
 
 class Settings

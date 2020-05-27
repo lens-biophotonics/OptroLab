@@ -98,8 +98,8 @@ void Optrode::setupStateMachine()
 
 void Optrode::startFreeRun()
 {
-    freeRun = false;
     logger->info("Start acquisition");
+    tasks->setFreeRunEnabled(false);
     _startAcquisition();
 }
 
@@ -127,7 +127,7 @@ void Optrode::_startAcquisition()
         onError(e.what());
         return;
     }
-    emit captureStarted();
+    emit captureStarted(tasks->isFreeRunEnabled());
 }
 
 Optrode &optrode()

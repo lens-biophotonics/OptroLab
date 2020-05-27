@@ -53,6 +53,7 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_ACQUISITION;
     settings.beginGroup(groupName);
 
+    SET_VALUE(groupName, SETTING_SAMPRATE, 10000);
     SET_VALUE(groupName, SETTING_EXPTIME, 0.15);
     SET_VALUE(groupName, SETTING_OUTPUTPATH,
               QDir::toNativeSeparators(QDir::homePath()));
