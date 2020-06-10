@@ -6,6 +6,7 @@
 #include <QCloseEvent>
 #include <QThread>
 
+#include <Spinnaker.h>
 #include "mainwindow.h"
 #include "centralwidget.h"
 
@@ -13,6 +14,8 @@
 #include "settings.h"
 
 #include "version.h"
+
+using namespace Spinnaker;
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
@@ -76,7 +79,15 @@ void MainWindow::on_aboutAction_triggered() const
     ts << "<i>Author</i>:<br>";
     ts << "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Giacomo Mazzamuto<br>";
     ts << "<i>Date</i>:&nbsp; April 2020<br>";
-    ts << "Qt version: " << qVersion();
+    ts << "Qt version: " << qVersion() << "<br>";
+
+    SystemPtr system = Spinnaker::System::GetInstance();
+    const LibraryVersion spinnakerLibraryVersion = system->GetLibraryVersion();
+
+    ts << "Spinnaker version: " << spinnakerLibraryVersion.major
+       << "." << spinnakerLibraryVersion.minor
+       << "." << spinnakerLibraryVersion.type
+       << "." << spinnakerLibraryVersion.build;
 
     msgBox.setText(text);
     msgBox.setWindowTitle(QString("About %1").arg(PROGRAM_NAME));
@@ -136,4 +147,5 @@ void MainWindow::closeEvent(QCloseEvent *e)
     QMetaObject::invokeMethod(&optrode(), "uninitialize",
                               Qt::BlockingQueuedConnection);
     QMainWindow::closeEvent(e);
+    Spinnaker::System::GetInstance()->ReleaseInstance();
 }

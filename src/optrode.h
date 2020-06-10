@@ -4,12 +4,8 @@
 #include <QObject>
 #include <QStateMachine>
 
-namespace Aravis {
-class Camera;
-}
-
+class ChameleonCamera;
 class Tasks;
-
 
 class Optrode : public QObject
 {
@@ -28,7 +24,7 @@ public:
     explicit Optrode(QObject *parent = nullptr);
     virtual ~Optrode();
     QState *getState(const MACHINE_STATE stateEnum);
-    Aravis::Camera *getBehaviorCamera() const;
+    ChameleonCamera *getBehaviorCamera() const;
     Tasks *NITasks() const;
     void isFreeRunEnabled();
 
@@ -47,7 +43,7 @@ public slots:
     void stop();
 
 private:
-    Aravis::Camera *behaviorCamera;
+    ChameleonCamera *behaviorCamera;
     Tasks *tasks;
 
     QMap<MACHINE_STATE, QState *> stateMap;

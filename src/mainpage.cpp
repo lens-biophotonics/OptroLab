@@ -5,7 +5,6 @@
 
 #include <qwt_plot_marker.h>
 
-#include <qtlab/hw/aravis/camera.h>
 #include <qtlab/widgets/aspectratiowidget.h>
 #include <qtlab/widgets/pixmapwidget.h>
 #include <qtlab/widgets/timeplot.h>
@@ -15,6 +14,7 @@
 #include "behavdispworker.h"
 
 #include "optrode.h"
+#include "chameleoncamera.h"
 #include "settings.h"
 
 #include "mainpage.h"
@@ -48,10 +48,8 @@ void MainPage::setupUi()
     pmw->setMaximumWidth(400);
     pmw->setMaximumHeight(400);
 
-    BehavDispWorker *worker =
-        new BehavDispWorker(optrode().getBehaviorCamera());
-    connect(worker, &BehavDispWorker::newImage,
-            pmw, &PixmapWidget::setPixmap);
+    BehavDispWorker *worker = new BehavDispWorker(optrode().getBehaviorCamera());
+    connect(worker, &BehavDispWorker::newImage, pmw, &PixmapWidget::setPixmap);
 
     TimePlot *timePlot = new TimePlot();
     QTimer *timer = new QTimer();

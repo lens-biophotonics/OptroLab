@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Qt5 5.8 REQUIRED COMPONENTS
     Widgets
 )
-find_package(QtLab REQUIRED Core Widgets Aravis Hamamatsu NI)
+find_package(QtLab REQUIRED Core Widgets Hamamatsu NI)
+find_package(Spinnaker REQUIRED)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
 option(DEMO_MODE "Demo mode" OFF)
@@ -36,15 +37,18 @@ set(SOURCE_FILES
 
     optrode.cpp
     tasks.cpp
+    chameleoncamera.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES})
+target_include_directories(OptroLab PUBLIC ${Spinnaker_INCLUDE_DIR})
 
 target_link_libraries(OptroLab
     Qt5::Widgets
     QtLab::Core
     QtLab::Widgets
-    QtLab::Aravis
     QtLab::NI
     QtLab::Hamamatsu
+    ${Spinnaker_LIBRARY}
+    ${SpinVideo_LIBRARY}
 )

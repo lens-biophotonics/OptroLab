@@ -4,16 +4,14 @@
 #include <QThread>
 #include <QPixmap>
 
-namespace Aravis {
-class Camera;
-}
+class ChameleonCamera;
 
 
 class BehavDispWorker : public QThread
 {
     Q_OBJECT
 public:
-    explicit BehavDispWorker(Aravis::Camera *camera, QObject *parent = nullptr);
+    explicit BehavDispWorker(ChameleonCamera *camera, QObject *parent = nullptr);
 
 protected:
     virtual void run();
@@ -22,7 +20,7 @@ signals:
     void newImage(const QPixmap &pm);
 
 private:
-    Aravis::Camera *camera;
+    ChameleonCamera *camera;
     bool stop;
 };
 

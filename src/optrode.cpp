@@ -3,19 +3,20 @@
 #include <QHistoryState>
 
 #include <qtlab/core/logger.h>
-
-#include <qtlab/hw/aravis/aravis.h>
-#include <qtlab/hw/aravis/camera.h>
 #include <qtlab/hw/ni/nitask.h>
+
+#include <Spinnaker.h>
 
 #include "optrode.h"
 #include "tasks.h"
+#include "chameleoncamera.h"
+
 
 static Logger *logger = getLogger("Optrod");
 
 Optrode::Optrode(QObject *parent) : QObject(parent)
 {
-    behaviorCamera = new Aravis::Camera(this);
+    behaviorCamera = new ChameleonCamera(this);
     tasks = new Tasks(this);
 
     setupStateMachine();
@@ -34,13 +35,9 @@ QState *Optrode::getState(const Optrode::MACHINE_STATE stateEnum)
 void Optrode::initialize()
 {
     emit initializing();
-    bool ok = behaviorCamera->open(0);
-    if (!ok) {
-        onError("Cannot open behavior camera");
-        return;
-    }
 
-    behaviorCamera->setPixelFormat("Mono8");
+    behaviorCamera->open(0);
+    behaviorCamera->logDeviceInfo();
 
     emit initialized();
 }
@@ -48,11 +45,12 @@ void Optrode::initialize()
 void Optrode::uninitialize()
 {
     stop();
-    behaviorCamera->close();
-    Aravis::shutdown();
+    if (behaviorCamera)
+        delete behaviorCamera;
+    behaviorCamera = nullptr;
 }
 
-Aravis::Camera *Optrode::getBehaviorCamera() const
+ChameleonCamera *Optrode::getBehaviorCamera() const
 {
     return behaviorCamera;
 }

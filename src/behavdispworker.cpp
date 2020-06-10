@@ -1,37 +1,44 @@
 #include <QImage>
 
-#include <qtlab/hw/aravis/camera.h>
+#include <Spinnaker.h>
 
 #include "behavdispworker.h"
+#include "chameleoncamera.h"
 
-BehavDispWorker::BehavDispWorker(Aravis::Camera *camera,
+using namespace Spinnaker;
+
+BehavDispWorker::BehavDispWorker(ChameleonCamera *camera,
                                  QObject *parent) : QThread(parent)
 {
     this->camera = camera;
 
-    connect(camera, &Aravis::Camera::captureStarted, this, [ = ](){
+    connect(camera, &ChameleonCamera::acquisitionStarted, this, [ = ](){
+        stop = false;
         start();
     });
-    connect(camera, &Aravis::Camera::stopped, this, [ = ](){
+    connect(camera, &ChameleonCamera::acquisitionStopped, this, [ = ](){
         stop = true;
     }, Qt::DirectConnection);
 }
 
 void BehavDispWorker::run()
 {
-    stop = false;
-    const Aravis::Camera::Buffer *lb = camera->getLastBuffer();
-    QImage img(camera->pictureSize(), QImage::Format_Indexed8);
-    for (int i = 0; i < 256; ++i)  // populate index
-        img.setColor(i, qRgb(i, i, i));
     while (true) {
-        msleep(40);
         if (stop) {
             return;
         }
-        if (!lb->data)
+        ImagePtr imgMono;
+        ImagePtr img = camera->getNextImage(5000);
+        if (!img)
             continue;
-        memcpy(img.bits(), lb->data, lb->size);
-        emit newImage(QPixmap::fromImage(img));
+        imgMono = img->Convert(PixelFormat_Mono8, HQ_LINEAR);
+        img->Release();
+
+        QImage qimg(imgMono->GetWidth(), imgMono->GetHeight(), QImage::Format_Indexed8);
+
+        for (int i = 0; i < 256; ++i)  // populate index
+            qimg.setColor(i, qRgb(i, i, i));
+        memcpy(qimg.bits(), imgMono->GetData(), imgMono->GetBufferSize());
+        emit newImage(QPixmap::fromImage(qimg));
     }
 }
