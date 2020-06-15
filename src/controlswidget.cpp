@@ -1,3 +1,5 @@
+#include <functional>
+
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QGroupBox>
@@ -21,22 +23,10 @@ ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
 
 void ControlsWidget::setupUi()
 {
-    QPushButton *initButton = new QPushButton("Initialize");
-    QPushButton *startFreeRunButton = new QPushButton("Start free run");
-    QPushButton *stopButton = new QPushButton("Stop");
-
-    QHBoxLayout *hLayout = new QHBoxLayout();
-    hLayout->addWidget(initButton);
-    hLayout->addWidget(startFreeRunButton);
-    hLayout->addWidget(stopButton);
-    hLayout->addStretch();
-
-    QGroupBox *controlsGb = new QGroupBox("Controls");
-    controlsGb->setLayout(hLayout);
-
     Tasks *t = optrode().NITasks();
 
     // main Trigger
+
     QComboBox *mainTrigPhysChanComboBox = new QComboBox();
     mainTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
     mainTrigPhysChanComboBox->setCurrentText(t->getMainTrigPhysChan());
@@ -55,12 +45,15 @@ void ControlsWidget::setupUi()
     QGroupBox *mainTrigGb = new QGroupBox("Main Trigger");
     mainTrigGb->setLayout(grid);
 
+
     // electrode readout
+
     QComboBox *electrodePhysChanComboBox = new QComboBox();
     electrodePhysChanComboBox->addItems(NI::getAIPhysicalChans());
     electrodePhysChanComboBox->setCurrentText(t->getElectrodeReadoutPhysChan());
     QDoubleSpinBox *electrodeSampRateSpinBox = new QDoubleSpinBox();
     electrodeSampRateSpinBox->setSuffix("Hz");
+    electrodeSampRateSpinBox->setRange(0, 50000);
     electrodeSampRateSpinBox->setValue(t->getElectrodeReadoutRate());
 
     row = 0;
@@ -72,14 +65,12 @@ void ControlsWidget::setupUi()
     QGroupBox *electrodeGb = new QGroupBox("Electrode readout");
     electrodeGb->setLayout(grid);
 
+
     // shutter pulse
+
     QComboBox *shutterPhysChanComboBox = new QComboBox();
     shutterPhysChanComboBox->addItems(NI::getCOPhysicalChans());
     shutterPhysChanComboBox->setCurrentText(t->getShutterPulseCounter());
-    QDoubleSpinBox *shutterDelay = new QDoubleSpinBox();
-    shutterDelay->setSuffix("s");
-    shutterDelay->setRange(0, 3600);
-    shutterDelay->setValue(t->getShutterInitialDelay());
     QSpinBox *shutterDutySpinBox = new QSpinBox();
     shutterDutySpinBox->setSuffix("%");
     shutterDutySpinBox->setRange(0, 100);
@@ -96,9 +87,6 @@ void ControlsWidget::setupUi()
     shutterTermComboBox->addItems(NI::getTerminals());
     shutterTermComboBox->setMinimumContentsLength(15);
     shutterTermComboBox->setCurrentText(t->getShutterPulseTerm());
-    QSpinBox *shutterNPulsesSpinBox = new QSpinBox();
-    shutterNPulsesSpinBox->setRange(0, 100000);
-    shutterNPulsesSpinBox->setValue(t->getShutterPulseNPulses());
 
     row = 0;
     grid = new QGridLayout();
@@ -106,26 +94,74 @@ void ControlsWidget::setupUi()
     grid->addWidget(shutterPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(shutterTermComboBox, row++, 1);
-    grid->addWidget(new QLabel("Initial delay"), row, 0);
-    grid->addWidget(shutterDelay, row++, 1);
     grid->addWidget(new QLabel("Frequency"), row, 0);
     grid->addWidget(shutterFreqSpinBox, row++, 1);
     grid->addWidget(new QLabel("Duty cycle"), row, 0);
     grid->addWidget(shutterDutySpinBox, row++, 1);
-    grid->addWidget(new QLabel("Number of pulses"), row, 0);
-    grid->addWidget(shutterNPulsesSpinBox, row++, 1);
 
     QGroupBox *shutterGb = new QGroupBox("Shutter pulse");
     shutterGb->setLayout(grid);
 
+
+    // Timing
+
+    QDoubleSpinBox *shutterDelaySpinBox = new QDoubleSpinBox();
+    shutterDelaySpinBox->setSuffix("s");
+    shutterDelaySpinBox->setRange(0, 3600);
+    shutterDelaySpinBox->setValue(t->getShutterInitialDelay());
+
+    QSpinBox *postStimulationSpinBox = new QSpinBox();
+    postStimulationSpinBox->setSuffix("s");
+    postStimulationSpinBox->setRange(0, 3600);
+    postStimulationSpinBox->setValue(optrode().getPostStimulation());
+
+    QDoubleSpinBox *stimulationSpinBox = new QDoubleSpinBox();
+    stimulationSpinBox->setRange(0, 3600);
+    stimulationSpinBox->setSuffix("s");
+    stimulationSpinBox->setValue(t->stimulationDuration());
+
+    row = 0;
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("Baseline"), row, 0);
+    grid->addWidget(shutterDelaySpinBox, row++, 1);
+    grid->addWidget(new QLabel("Stimulation"), row, 0);
+    grid->addWidget(stimulationSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Post stimul."), row, 0);
+    grid->addWidget(postStimulationSpinBox, row++, 1);
+
+    QGroupBox *timingGb = new QGroupBox("Timing");
+    timingGb->setLayout(grid);
+
+
+    // Controls
+
+    QPushButton *initButton = new QPushButton("Initialize");
+    QPushButton *startFreeRunButton = new QPushButton("Start free run");
+    QPushButton *startButton = new QPushButton("Start");
+    QPushButton *stopButton = new QPushButton("Stop");
+
     QVBoxLayout *vLayout = new QVBoxLayout();
+    vLayout->addWidget(initButton);
+    vLayout->addWidget(startFreeRunButton);
+    vLayout->addWidget(startButton);
+    vLayout->addWidget(stopButton);
+    vLayout->addStretch();
+
+    QGroupBox *controlsGb = new QGroupBox("Controls");
+    controlsGb->setLayout(vLayout);
+
+    vLayout = new QVBoxLayout();
     vLayout->addWidget(mainTrigGb);
     vLayout->addWidget(electrodeGb);
     vLayout->addWidget(shutterGb);
 
-    QVBoxLayout *myLayout = new QVBoxLayout();
+    QVBoxLayout *vLayout2 = new QVBoxLayout();
+    vLayout2->addWidget(timingGb);
+    vLayout2->addWidget(controlsGb);
+
+    QHBoxLayout *myLayout = new QHBoxLayout();
     myLayout->addLayout(vLayout);
-    myLayout->addWidget(controlsGb);
+    myLayout->addLayout(vLayout2);
     setLayout(myLayout);
 
     setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -149,6 +185,7 @@ void ControlsWidget::setupUi()
     wList = {
         startFreeRunButton,
         stopButton,
+        startButton,
     };
 
     for (QWidget * w : wList) {
@@ -158,6 +195,7 @@ void ControlsWidget::setupUi()
 
     wList = {
         startFreeRunButton,
+        startButton,
     };
 
     for (QWidget * w : wList) {
@@ -174,24 +212,33 @@ void ControlsWidget::setupUi()
         cs->assignProperty(w, "enabled", true);
     }
 
-    auto clicked = &QPushButton::clicked;
-    connect(initButton, clicked, &optrode(), &Optrode::initialize);
-    connect(startFreeRunButton, clicked, this, [ = ](){
+    std::function<void()> applyValues = [ = ](){
         Tasks *t = optrode().NITasks();
         t->setMainTrigFreq(mainTrigFreqSpinBox->value());
         t->setMainTrigPhysChan(mainTrigPhysChanComboBox->currentText());
 
         t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
         t->setShutterPulseTerm(shutterTermComboBox->currentText());
-        t->setShutterInitialDelay(shutterDelay->value());
         t->setShutterPulseCounter(shutterPhysChanComboBox->currentText());
         t->setShutterPulseFrequency(shutterFreqSpinBox->value());
-        t->setShutterPulseNPulses(shutterNPulsesSpinBox->value());
+        t->setStimulationDuration(stimulationSpinBox->value());
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
 
+        t->setShutterInitialDelay(shutterDelaySpinBox->value());
+        optrode().setPostStimulation(postStimulationSpinBox->value());
+    };
+
+    auto clicked = &QPushButton::clicked;
+    connect(initButton, clicked, &optrode(), &Optrode::initialize);
+    connect(startFreeRunButton, clicked, &optrode(), [ = ](){
+        applyValues();
         optrode().startFreeRun();
+    });
+    connect(startButton, clicked, &optrode(), [ = ](){
+        applyValues();
+        optrode().start();
     });
     connect(stopButton, clicked, &optrode(), &Optrode::stop);
 }

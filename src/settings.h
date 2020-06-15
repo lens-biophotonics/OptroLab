@@ -9,6 +9,7 @@
 #define SETTINGSGROUP_MAINTRIG "MainTrigger"
 #define SETTINGSGROUP_ELREADOUT "ElectrodeReadout"
 #define SETTINGSGROUP_SHUTTER "ShutterPulse"
+#define SETTINGSGROUP_TIMING "Timing"
 
 #define SETTINGSGROUP_CAMTRIG "CameraTrigger"
 
@@ -17,9 +18,11 @@
 #define SETTING_PHYSCHAN "physicalChannel"
 #define SETTING_FREQ "frequency"
 #define SETTING_TERM "terminal"
-#define SETTING_INITIALDELAY "initialDelay"
 #define SETTING_DUTY "dutyCycle"
-#define SETTING_NPULSES "NP"
+#define SETTING_STIMDURATION "stimDuration"
+
+#define SETTING_INITIALDELAY "initialDelay"
+#define SETTING_POSTSTIMULATION "postStimulation"
 
 #define SETTING_TRIGGER_TERM "triggerTerm"
 

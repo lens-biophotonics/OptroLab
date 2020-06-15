@@ -109,11 +109,13 @@ void MainWindow::saveSettings() const
     s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_FREQ, t->getElectrodeReadoutRate());
 
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_PHYSCHAN, t->getShutterPulseCounter());
-    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_INITIALDELAY, t->getShutterInitialDelay());
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_DUTY, t->getShutterPulseDuty());
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_FREQ, t->getShutterPulseFrequency());
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_TERM, t->getShutterPulseTerm());
-    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_NPULSES, t->getShutterPulseNPulses());
+
+    s.setValue(SETTINGSGROUP_TIMING, SETTING_INITIALDELAY, t->getShutterInitialDelay());
+    s.setValue(SETTINGSGROUP_TIMING, SETTING_STIMDURATION, t->stimulationDuration());
+    s.setValue(SETTINGSGROUP_TIMING, SETTING_POSTSTIMULATION, optrode().getPostStimulation());
 
     s.saveSettings();
 
@@ -137,11 +139,13 @@ void MainWindow::loadSettings()
     t->setElectrodeReadoutRate(s.value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble());
 
     t->setShutterPulseCounter(s.value(SETTINGSGROUP_SHUTTER, SETTING_PHYSCHAN).toString());
-    t->setShutterInitialDelay(s.value(SETTINGSGROUP_SHUTTER, SETTING_INITIALDELAY).toDouble());
     t->setShutterPulseDuty(s.value(SETTINGSGROUP_SHUTTER, SETTING_DUTY).toDouble());
     t->setShutterPulseFrequency(s.value(SETTINGSGROUP_SHUTTER, SETTING_FREQ).toDouble());
     t->setShutterPulseTerm(s.value(SETTINGSGROUP_SHUTTER, SETTING_TERM).toString());
-    t->setShutterPulseNPulses(s.value(SETTINGSGROUP_SHUTTER, SETTING_NPULSES).toInt());
+
+    t->setShutterInitialDelay(s.value(SETTINGSGROUP_TIMING, SETTING_INITIALDELAY).toDouble());
+    t->setStimulationDuration(s.value(SETTINGSGROUP_TIMING, SETTING_STIMDURATION).toDouble());
+    optrode().setPostStimulation(s.value(SETTINGSGROUP_TIMING, SETTING_POSTSTIMULATION).toDouble());
 
     QSettings settings;
 

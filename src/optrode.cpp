@@ -18,6 +18,11 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
 {
     behaviorCamera = new ChameleonCamera(this);
     tasks = new Tasks(this);
+    postStimulation = 0;
+
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, this, &Optrode::stop);
 
     setupStateMachine();
 }
@@ -60,6 +65,37 @@ Tasks *Optrode::NITasks() const
     return tasks;
 }
 
+bool Optrode::isFreeRunEnabled() const
+{
+    return tasks->isFreeRunEnabled();
+}
+
+void Optrode::setPostStimulation(double s)
+{
+    postStimulation = s;
+}
+
+/**
+ * @brief Return the total duration of a single run.
+ * @return seconds
+ *
+ * Baseline + stimulation + post stimulation
+ */
+
+double Optrode::totalDuration() const
+{
+    double d = tasks->getShutterInitialDelay();
+    d += tasks->stimulationDuration();
+    d += postStimulation;
+
+    return d;
+}
+
+int Optrode::remainingTime() const
+{
+    return timer->remainingTime();
+}
+
 void Optrode::setupStateMachine()
 {
     std::function<QState*(const MACHINE_STATE, QState *parent)> newState
@@ -96,9 +132,24 @@ void Optrode::setupStateMachine()
 
 void Optrode::startFreeRun()
 {
-    logger->info("Start acquisition");
-    tasks->setFreeRunEnabled(false);
+    logger->info("Start acquisition (free run)");
+    tasks->setFreeRunEnabled(true);
     _startAcquisition();
+}
+
+void Optrode::start()
+{
+    logger->info("Start acquisition");
+    logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
+                 .arg(tasks->getShutterInitialDelay())
+                 .arg(tasks->stimulationDuration())
+                 .arg(tasks->getShutterPulseNPulses())
+                 .arg(getPostStimulation()));
+    logger->info(QString("Total duration: %1s").arg(totalDuration()));
+    tasks->setFreeRunEnabled(false);
+    timer->setInterval(totalDuration() * 1000);
+    _startAcquisition();
+    timer->start();
 }
 
 void Optrode::stop()
@@ -108,11 +159,19 @@ void Optrode::stop()
     running = false;
     emit stopped();
     try {
+        timer->stop();
         behaviorCamera->stopAcquisition();
         tasks->stop();
     } catch (std::runtime_error e) {
         onError(e.what());
+    } catch (Spinnaker::Exception e) {
+        onError(e.what());
     }
+}
+
+double Optrode::getPostStimulation() const
+{
+    return postStimulation;
 }
 
 void Optrode::_startAcquisition()
@@ -122,6 +181,9 @@ void Optrode::_startAcquisition()
         behaviorCamera->startAcquisition();
         tasks->start();
     } catch (std::runtime_error e) {
+        onError(e.what());
+        return;
+    } catch (Spinnaker::Exception e) {
         onError(e.what());
         return;
     }

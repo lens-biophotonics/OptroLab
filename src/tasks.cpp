@@ -24,7 +24,7 @@ void Tasks::init()
     // mainTrigger
     // we have to use an AO for the main trigger because this board has only 2
     // counters and they are both used for the SampMode_FiniteSamps in task
-    // shutterCO
+    // shutterPulse
     mainTrigger->createTask();
     mainTrigger->createAOVoltageChan(mainTrigPhysChan.toLatin1(),
                                      nullptr,
@@ -131,6 +131,23 @@ bool Tasks::isFreeRunEnabled() const
 void Tasks::setFreeRunEnabled(bool value)
 {
     freeRunEnabled = value;
+}
+
+/**
+ * @brief Set the duration of the stimulation (shutter pulse)
+ * @param s Duration in seconds.
+ *
+ * \note Set shutter pulse frequency beforehand. This will call setShutterPulseNPulses().
+ */
+
+void Tasks::setStimulationDuration(double s)
+{
+    setShutterPulseNPulses(s * shutterPulseFrequency);
+}
+
+double Tasks::stimulationDuration()
+{
+    return shutterPulseNPulses / shutterPulseFrequency;
 }
 
 QString Tasks::getMainTrigPhysChan() const

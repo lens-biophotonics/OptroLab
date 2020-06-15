@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QStateMachine>
+#include <QTimer>
 
 class ChameleonCamera;
 class Tasks;
@@ -26,7 +27,11 @@ public:
     QState *getState(const MACHINE_STATE stateEnum);
     ChameleonCamera *getBehaviorCamera() const;
     Tasks *NITasks() const;
-    void isFreeRunEnabled();
+    bool isFreeRunEnabled() const;
+    void setPostStimulation(double s);
+    double getPostStimulation() const;
+    double totalDuration() const;
+    int remainingTime() const;
 
 signals:
     void initializing() const;
@@ -40,15 +45,18 @@ public slots:
     void initialize();
     void uninitialize();
     void startFreeRun();
+    void start();
     void stop();
 
 private:
     ChameleonCamera *behaviorCamera;
     Tasks *tasks;
+    QTimer *timer;
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
     bool running = false;
+    double postStimulation;
 
     void setupStateMachine();
     void onError(const QString &errMsg);

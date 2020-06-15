@@ -81,7 +81,16 @@ void Settings::loadSettings()
     SET_VALUE(groupName, SETTING_FREQ, 50);
     SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
     SET_VALUE(groupName, SETTING_DUTY, 50);
-    SET_VALUE(groupName, SETTING_NPULSES, 10);
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_TIMING;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
+    SET_VALUE(groupName, SETTING_STIMDURATION, 10);
+    SET_VALUE(groupName, SETTING_POSTSTIMULATION, 60);
 
     settings.endGroup();
 

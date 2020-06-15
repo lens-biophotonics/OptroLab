@@ -47,6 +47,9 @@ public:
     bool isFreeRunEnabled() const;
     void setFreeRunEnabled(bool value);
 
+    void setStimulationDuration(double s);
+    double stimulationDuration();
+
 signals:
     void started();
     void stopped();
