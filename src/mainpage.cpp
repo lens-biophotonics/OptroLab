@@ -2,6 +2,7 @@
 #include <QLabel>
 #include <QSettings>
 #include <QTimer>
+#include <QtSvg/QSvgRenderer>
 
 #include <qwt_plot_marker.h>
 
@@ -38,7 +39,13 @@ void MainPage::setupUi()
     QSettings sett;
 
     pmw = new PixmapWidget();
-    pmw->setPixmap(QPixmap(":/res/lemmling-Simple-cartoon-mouse.svg"));
+    QSvgRenderer renderer(QString(":/res/lemmling-Simple-cartoon-mouse.svg"));
+    QPixmap pm(1000, 1000);
+    pm.fill(Qt::transparent);
+    QPainter painter(&pm);
+    renderer.render(&painter, pm.rect());
+
+    pmw->setPixmap(pm.scaled(1280, 1024, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 
     if (sett.value(SETTING_BEHAVCAM_FLIPLR).toBool())
         pmw->fliplr();

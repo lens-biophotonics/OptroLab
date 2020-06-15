@@ -10,7 +10,7 @@ if(WIN32)
 endif()
 
 find_package(Qt5 5.8 REQUIRED COMPONENTS
-    Widgets
+    Widgets Svg
 )
 find_package(QtLab REQUIRED Core Widgets Hamamatsu NI)
 find_package(Spinnaker REQUIRED)
@@ -50,6 +50,7 @@ target_include_directories(OptroLab PUBLIC ${Spinnaker_INCLUDE_DIR})
 
 target_link_libraries(OptroLab
     Qt5::Widgets
+    Qt5::Svg
     QtLab::Core
     QtLab::Widgets
     QtLab::NI
