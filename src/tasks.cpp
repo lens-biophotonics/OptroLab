@@ -33,7 +33,7 @@ void Tasks::init()
 
     // because there are 2 samples, the sampling rate is double the wanted
     // square wave frequency
-    mainTrigger->cfgSampClkTiming("OnboardClock",
+    mainTrigger->cfgSampClkTiming(nullptr,
                                   2 * mainTrigFreq,
                                   NITask::Edge_Rising,
                                   NITask::SampMode_ContSamps, 2);
@@ -50,7 +50,7 @@ void Tasks::init()
         throw std::runtime_error("invalid number of samples written");
 #endif
 
-    QString startTriggerSOurce = mainTrigPhysChan + "/StartTrigger";
+    const char startTriggerSource[] = "ao/StartTrigger";
 
 
 
@@ -67,8 +67,7 @@ void Tasks::init()
     shutterPulse->setCOPulseTerm(nullptr, shutterPulseTerm.toLatin1());
     shutterPulse->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                     shutterPulseNPulses);
-    shutterPulse->cfgDigEdgeStartTrig(startTriggerSOurce.toLatin1(),
-                                      NITask::Edge_Rising);
+    shutterPulse->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
 
 
 
@@ -85,8 +84,7 @@ void Tasks::init()
         NITask::Edge_Rising,
         NITask::SampMode_ContSamps,
         2 * electrodeReadoutRate);  // 2s worth of buffering
-    elReadout->cfgDigEdgeStartTrig(startTriggerSOurce.toLatin1(),
-                                   NITask::Edge_Rising);
+    elReadout->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
 
     needsInit = false;
 }
@@ -104,7 +102,7 @@ void Tasks::start()
         shutterPulse->startTask();
     elReadout->startTask();
 
-    // started for last because it will trigger the other two tasks
+    // last to be started because it will trigger the other two tasks
     mainTrigger->startTask();
 }
 
