@@ -46,7 +46,11 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_OTHERSETTINGS;
     settings.beginGroup(groupName);
 
+#ifdef WIN32
+    SET_VALUE(groupName, SETTING_LUTPATH, "C:/fiji");
+#else
     SET_VALUE(groupName, SETTING_LUTPATH, "/opt/Fiji.app/luts/");
+#endif
 
     settings.endGroup();
 
