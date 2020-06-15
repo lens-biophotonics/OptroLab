@@ -45,8 +45,6 @@ void MainPage::setupUi()
     if (sett.value(SETTING_BEHAVCAM_FLIPUD).toBool())
         pmw->flipud();
     pmw->setRotationStep(sett.value(SETTING_BEHAVCAM_ROTSTEP).toUInt());
-    pmw->setMaximumWidth(400);
-    pmw->setMaximumHeight(400);
 
     BehavDispWorker *worker = new BehavDispWorker(optrode().getBehaviorCamera());
     connect(worker, &BehavDispWorker::newImage, pmw, &PixmapWidget::setPixmap);
@@ -93,10 +91,8 @@ void MainPage::setupUi()
         settings().value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH)
         .toString());
     AspectRatioWidget *arw = new AspectRatioWidget(camDisplay, 1);
-    hLayout->addWidget(arw, 2);
-    hLayout->addStretch(1);
-    hLayout->addWidget(pmw, 2);
-    hLayout->addStretch(1);
+    hLayout->addWidget(arw, 3);
+    hLayout->addWidget(pmw, 4);
     hLayout->addWidget(new ControlsWidget());
 
     QVBoxLayout *vLayout = new QVBoxLayout();

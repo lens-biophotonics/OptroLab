@@ -83,7 +83,7 @@ void ControlsWidget::setupUi()
     QSpinBox *shutterDutySpinBox = new QSpinBox();
     shutterDutySpinBox->setSuffix("%");
     shutterDutySpinBox->setRange(0, 100);
-    shutterDutySpinBox->setValue(t->getShutterPulseDuty() * 100);
+    shutterDutySpinBox->setValue(t->getShutterPulseDuty());
     QDoubleSpinBox *shutterFreqSpinBox = new QDoubleSpinBox();
     shutterFreqSpinBox->setSuffix("Hz");
     shutterFreqSpinBox->setRange(0, 100e6);
@@ -121,13 +121,10 @@ void ControlsWidget::setupUi()
     QVBoxLayout *vLayout = new QVBoxLayout();
     vLayout->addWidget(mainTrigGb);
     vLayout->addWidget(electrodeGb);
-
-    hLayout = new QHBoxLayout();
-    hLayout->addLayout(vLayout);
-    hLayout->addWidget(shutterGb);
+    vLayout->addWidget(shutterGb);
 
     QVBoxLayout *myLayout = new QVBoxLayout();
-    myLayout->addLayout(hLayout);
+    myLayout->addLayout(vLayout);
     myLayout->addWidget(controlsGb);
     setLayout(myLayout);
 
