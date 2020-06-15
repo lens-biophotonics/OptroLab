@@ -54,10 +54,41 @@ void Settings::loadSettings()
 
     settings.endGroup();
 
+
+    groupName = SETTINGSGROUP_MAINTRIG;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ao0");
+    SET_VALUE(groupName, SETTING_FREQ, 50);
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_ELREADOUT;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ai0");
+    SET_VALUE(groupName, SETTING_FREQ, 50);
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_SHUTTER;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr0");
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI0");
+    SET_VALUE(groupName, SETTING_FREQ, 50);
+    SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
+    SET_VALUE(groupName, SETTING_DUTY, 50);
+    SET_VALUE(groupName, SETTING_NPULSES, 10);
+
+    settings.endGroup();
+
+
     groupName = SETTINGSGROUP_ACQUISITION;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_SAMPRATE, 10000);
     SET_VALUE(groupName, SETTING_EXPTIME, 0.15);
     SET_VALUE(groupName, SETTING_OUTPUTPATH,
               QDir::toNativeSeparators(QDir::homePath()));

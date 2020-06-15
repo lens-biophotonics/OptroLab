@@ -72,8 +72,7 @@ void MainPage::setupUi()
     endMarker->setVisible(false);
 
     connect(&optrode(), &Optrode::captureStarted, this, [ = ](bool freeRun){
-        double Hz = settings().value(
-            SETTINGSGROUP_ACQUISITION, SETTING_SAMPRATE).toDouble();
+        double Hz = settings().value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble();
         timePlot->setSamplingRate(Hz);
 
         if (freeRun) {

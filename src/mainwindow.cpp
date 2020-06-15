@@ -12,6 +12,7 @@
 
 #include "optrode.h"
 #include "settings.h"
+#include "tasks.h"
 
 #include "version.h"
 
@@ -98,8 +99,23 @@ void MainWindow::on_aboutAction_triggered() const
 
 void MainWindow::saveSettings() const
 {
-    Settings mySettings = settings();
-    mySettings.saveSettings();
+    Settings s = settings();
+
+    Tasks *t = optrode().NITasks();
+    s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN, t->getMainTrigPhysChan());
+    s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_FREQ, t->getMainTrigFreq());
+
+    s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
+    s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_FREQ, t->getElectrodeReadoutRate());
+
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_PHYSCHAN, t->getShutterPulseCounter());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_INITIALDELAY, t->getShutterInitialDelay());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_DUTY, t->getShutterPulseDuty());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_FREQ, t->getShutterPulseFrequency());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_TERM, t->getShutterPulseTerm());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_NPULSES, t->getShutterPulseNPulses());
+
+    s.saveSettings();
 
     QSettings settings;
 
@@ -111,7 +127,21 @@ void MainWindow::saveSettings() const
 
 void MainWindow::loadSettings()
 {
-    const Settings mySettings = settings();
+    const Settings s = settings();
+
+    Tasks *t = optrode().NITasks();
+    t->setMainTrigPhysChan(s.value(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN).toString());
+    t->setMainTrigFreq(s.value(SETTINGSGROUP_MAINTRIG, SETTING_FREQ).toDouble());
+
+    t->setElectrodeReadoutPhysChan(s.value(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN).toString());
+    t->setElectrodeReadoutRate(s.value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble());
+
+    t->setShutterPulseCounter(s.value(SETTINGSGROUP_SHUTTER, SETTING_PHYSCHAN).toString());
+    t->setShutterInitialDelay(s.value(SETTINGSGROUP_SHUTTER, SETTING_INITIALDELAY).toDouble());
+    t->setShutterPulseDuty(s.value(SETTINGSGROUP_SHUTTER, SETTING_DUTY).toDouble());
+    t->setShutterPulseFrequency(s.value(SETTINGSGROUP_SHUTTER, SETTING_FREQ).toDouble());
+    t->setShutterPulseTerm(s.value(SETTINGSGROUP_SHUTTER, SETTING_TERM).toString());
+    t->setShutterPulseNPulses(s.value(SETTINGSGROUP_SHUTTER, SETTING_NPULSES).toInt());
 
     QSettings settings;
 

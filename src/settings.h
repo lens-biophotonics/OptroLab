@@ -6,20 +6,26 @@
 
 #define SETTINGSGROUP_OTHERSETTINGS "OtherSettings"
 #define SETTINGSGROUP_ACQUISITION "Acquisition"
+#define SETTINGSGROUP_MAINTRIG "MainTrigger"
+#define SETTINGSGROUP_ELREADOUT "ElectrodeReadout"
+#define SETTINGSGROUP_SHUTTER "ShutterPulse"
 
 #define SETTINGSGROUP_CAMTRIG "CameraTrigger"
 
 #define SETTING_LUTPATH "LUTPath"
 
-#define SETTING_PHYSCHANS "physicalChannels"
+#define SETTING_PHYSCHAN "physicalChannel"
+#define SETTING_FREQ "frequency"
+#define SETTING_TERM "terminal"
+#define SETTING_INITIALDELAY "initialDelay"
+#define SETTING_DUTY "dutyCycle"
+#define SETTING_NPULSES "NP"
 
 #define SETTING_TRIGGER_TERM "triggerTerm"
 
 #define SETTING_EXPTIME "exposureTime"
 
 #define SETTING_OUTPUTPATH "outputPath"
-
-#define SETTING_SAMPRATE "samplingRate"
 
 typedef QMap<QString, QVariant> SettingsMap;
 
