@@ -31,7 +31,6 @@ public:
     void setPostStimulation(double s);
     double getPostStimulation() const;
     double totalDuration() const;
-    int remainingTime() const;
 
 signals:
     void initializing() const;

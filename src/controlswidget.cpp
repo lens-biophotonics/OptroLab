@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QListView>
 #include <QGridLayout>
+#include <QProgressBar>
 
 #include <qtlab/hw/ni/natinst.h>
 
@@ -139,6 +140,28 @@ void ControlsWidget::setupUi()
     QPushButton *startFreeRunButton = new QPushButton("Start free run");
     QPushButton *startButton = new QPushButton("Start");
     QPushButton *stopButton = new QPushButton("Stop");
+    QProgressBar *progressBar = new QProgressBar();
+    progressBar->setFormat("%p%");
+
+    QTimer *timer = new QTimer();
+    QTimer *totTimer = new QTimer();
+    totTimer->setSingleShot(true);
+    connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun) {
+        if (freeRun)
+            return;
+        progressBar->reset();
+        progressBar->setRange(0, optrode().totalDuration() * 1000);
+        timer->start(1000);
+        totTimer->start(optrode().totalDuration() * 1000);
+    });
+    connect(&optrode(), &Optrode::stopped, this, [ = ](){
+        timer->stop();
+        totTimer->stop();
+        progressBar->setValue(progressBar->maximum());
+    });
+    connect(timer, &QTimer::timeout, this, [ = ](){
+        progressBar->setValue(optrode().totalDuration() * 1000 - totTimer->remainingTime());
+    });
 
     QVBoxLayout *vLayout = new QVBoxLayout();
     vLayout->addWidget(initButton);
@@ -146,6 +169,7 @@ void ControlsWidget::setupUi()
     vLayout->addWidget(startButton);
     vLayout->addWidget(stopButton);
     vLayout->addStretch();
+    vLayout->addWidget(progressBar);
 
     QGroupBox *controlsGb = new QGroupBox("Controls");
     controlsGb->setLayout(vLayout);

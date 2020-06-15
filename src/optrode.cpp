@@ -91,11 +91,6 @@ double Optrode::totalDuration() const
     return d;
 }
 
-int Optrode::remainingTime() const
-{
-    return timer->remainingTime();
-}
-
 void Optrode::setupStateMachine()
 {
     std::function<QState*(const MACHINE_STATE, QState *parent)> newState
