@@ -81,7 +81,7 @@ void Optrode::setupStateMachine()
     uninitState->addTransition(this, &Optrode::initializing, initializingState);
     initializingState->addTransition(this, &Optrode::initialized, readyState);
     initializingState->addTransition(this, &Optrode::error, uninitState);
-    readyState->addTransition(this, &Optrode::captureStarted, capturingState);
+    readyState->addTransition(this, &Optrode::started, capturingState);
     capturingState->addTransition(this, &Optrode::stopped, readyState);
 
     QHistoryState *historyState = new QHistoryState(sm);
@@ -125,7 +125,7 @@ void Optrode::_startAcquisition()
         onError(e.what());
         return;
     }
-    emit captureStarted(tasks->isFreeRunEnabled());
+    emit started(tasks->isFreeRunEnabled());
 }
 
 Optrode &optrode()

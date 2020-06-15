@@ -31,7 +31,7 @@ public:
 signals:
     void initializing() const;
     void initialized() const;
-    void captureStarted(bool) const;
+    void started(bool) const;
     void stopped() const;
     void error(const QString) const;
     void temp(double prova) const;
