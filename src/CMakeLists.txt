@@ -38,6 +38,7 @@ set(SOURCE_FILES
     centralwidget.cpp
     controlswidget.cpp
     behavdispworker.cpp
+    elreadoutworker.cpp
     mainpage.cpp
 
     optrode.cpp

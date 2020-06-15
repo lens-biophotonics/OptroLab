@@ -1,7 +1,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSettings>
-#include <QTimer>
 #include <QtSvg/QSvgRenderer>
 
 #include <qwt_plot_marker.h>
@@ -12,9 +11,12 @@
 #include <qtlab/widgets/cameradisplay.h>
 
 #include "controlswidget.h"
+
 #include "behavdispworker.h"
+#include "elreadoutworker.h"
 
 #include "optrode.h"
+#include "tasks.h"
 #include "chameleoncamera.h"
 #include "settings.h"
 
@@ -57,12 +59,6 @@ void MainPage::setupUi()
     connect(worker, &BehavDispWorker::newImage, pmw, &PixmapWidget::setPixmap);
 
     TimePlot *timePlot = new TimePlot();
-    QTimer *timer = new QTimer();
-    connect(timer, &QTimer::timeout, this, [ = ](){
-        timePlot->appendPoint(rand());
-    });
-    timer->start(20);
-    timePlot->setSamplingRate(50);
 
     QwtPlotMarker *startMarker = new QwtPlotMarker();
     startMarker->setLineStyle((QwtPlotMarker::LineStyle)(QwtPlotMarker::VLine));
@@ -76,20 +72,21 @@ void MainPage::setupUi()
     endMarker->attach(timePlot);
     endMarker->setVisible(false);
 
+    ElReadoutWorker *elReadout = new ElReadoutWorker();
+    connect(elReadout, &ElReadoutWorker::newData, timePlot, &TimePlot::appendPoints);
+
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun){
-        double Hz = settings().value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble();
-        timePlot->setSamplingRate(Hz);
+        Tasks *t = optrode().NITasks();
+        double sr = t->getElectrodeReadoutRate();
+        timePlot->clear();
+        timePlot->setSamplingRate(sr);
+        timePlot->setBufSize(freeRun ? 22.0 : optrode().totalDuration());
 
-        if (freeRun) {
-            startMarker->setVisible(false);
-            endMarker->setVisible(false);
-            return;
-        }
+        startMarker->setVisible(!freeRun);
+        endMarker->setVisible(!freeRun);
 
-        startMarker->setVisible(true);
-        endMarker->setVisible(true);
-        startMarker->setValue(10 * Hz, 0);
-        endMarker->setValue(20 * Hz, 0);
+        startMarker->setValue(sr * t->getShutterInitialDelay(), 0);
+        endMarker->setValue(sr * (t->getShutterInitialDelay() + t->stimulationDuration()), 0);
     });
 
     QHBoxLayout *hLayout = new QHBoxLayout();
