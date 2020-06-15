@@ -4,6 +4,11 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# Make this a GUI application on Windows
+if(WIN32)
+  set(CMAKE_WIN32_EXECUTABLE ON)
+endif()
+
 find_package(Qt5 5.8 REQUIRED COMPONENTS
     Widgets
 )
