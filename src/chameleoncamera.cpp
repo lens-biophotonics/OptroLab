@@ -83,17 +83,6 @@ void ChameleonCamera::stopAcquisition()
 
 void ChameleonCamera::setupAcquisitionMode()
 {
-    CEnumerationPtr ptrAcquisitionMode = pCam->GetNodeMap().GetNode("AcquisitionMode");
-    if (!IsAvailable(ptrAcquisitionMode) || !IsWritable(ptrAcquisitionMode)) {
-        throw std::runtime_error("ChameleonCamera: Unable to write to AcquisitionMode node");
-    }
-    CEnumEntryPtr ptrAcquisitionModeContinuous = ptrAcquisitionMode->GetEntryByName("Continuous");
-    ptrAcquisitionMode->SetIntValue(ptrAcquisitionModeContinuous->GetValue());
-
-    CEnumerationPtr ptrPixelFormat = pCam->GetNodeMap().GetNode("PixelFormat");
-    if (!IsAvailable(ptrPixelFormat) || !IsWritable(ptrPixelFormat)) {
-        throw std::runtime_error("ChameleonCamera: Unable to write to PixelFormat node");
-    }
-    CEnumEntryPtr ptrPxfmtMono8 = ptrPixelFormat->GetEntryByName("Mono8");
-    ptrPixelFormat->SetIntValue(ptrPxfmtMono8->GetValue());
+    pCam->AcquisitionMode.SetValue(AcquisitionMode_Continuous);
+    pCam->PixelFormat.SetValue(PixelFormat_Mono8);
 }
