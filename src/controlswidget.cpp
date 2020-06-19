@@ -75,7 +75,7 @@ void ControlsWidget::setupUi()
     QSpinBox *shutterDutySpinBox = new QSpinBox();
     shutterDutySpinBox->setSuffix("%");
     shutterDutySpinBox->setRange(0, 100);
-    shutterDutySpinBox->setValue(t->getShutterPulseDuty());
+    shutterDutySpinBox->setValue(t->getShutterPulseDuty() * 100);
     QDoubleSpinBox *shutterFreqSpinBox = new QDoubleSpinBox();
     shutterFreqSpinBox->setSuffix("Hz");
     shutterFreqSpinBox->setRange(0, 100e6);

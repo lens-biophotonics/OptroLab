@@ -80,7 +80,7 @@ void Settings::loadSettings()
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI0");
     SET_VALUE(groupName, SETTING_FREQ, 50);
     SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
-    SET_VALUE(groupName, SETTING_DUTY, 50);
+    SET_VALUE(groupName, SETTING_DUTY, 0.5);
 
     settings.endGroup();
 
