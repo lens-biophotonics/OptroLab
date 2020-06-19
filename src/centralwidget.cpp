@@ -1,5 +1,6 @@
 #include <QHBoxLayout>
 
+#include <qtlab/core/logmanager.h>
 #include <qtlab/widgets/logwidget.h>
 
 #include "mainpage.h"
@@ -16,6 +17,7 @@ void CentralWidget::setupUi()
 
     tabWidget->addTab(new MainPage(), "Main");
     tabWidget->addTab(new LogWidget(), "Messages");
+    logManager().flushMessages();
 
     QHBoxLayout *layout = new QHBoxLayout(this);
     layout->addWidget(tabWidget);
