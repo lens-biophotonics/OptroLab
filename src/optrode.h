@@ -41,6 +41,9 @@ public:
     QString getRunName() const;
     void setRunName(const QString &value);
 
+    void writeRunParams(QString fileName);
+    void writeRunParams();
+
 signals:
     void initializing() const;
     void initialized() const;

@@ -1,6 +1,8 @@
 #include <memory>
 
 #include <QHistoryState>
+#include <QDir>
+#include <QTextStream>
 
 #include <qtlab/core/logger.h>
 #include <qtlab/hw/ni/nitask.h>
@@ -179,6 +181,7 @@ void Optrode::start()
 
     timer->start();
     _startAcquisition();
+    writeRunParams();
 }
 
 void Optrode::stop()
@@ -208,6 +211,38 @@ QString Optrode::getRunName() const
 void Optrode::setRunName(const QString &value)
 {
     runName = value;
+}
+
+void Optrode::writeRunParams(QString fileName)
+{
+    QFile outFile(fileName);
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        emit error(QString("Cannot open output file %1")
+                   .arg(outFile.fileName()));
+        return;
+    };
+
+    QTextStream out(&outFile);
+    out << "frame_rate: " << tasks->getMainTrigFreq() << "\n";
+    out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
+    out << "stimul_frequency: " << tasks->getShutterPulseFrequency() << "\n";
+    out << "stimul_n_pulses: " << tasks->getShutterPulseNPulses() << "\n";
+    out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
+
+    out << "timing:" << "\n";
+    out << "  baseline: " <<  tasks->getShutterInitialDelay() << "\n";
+    out << "  stimulation: " << tasks->stimulationDuration() << "\n";
+    out << "  post: " << getPostStimulation() << "\n";
+    out << "  total: " << totalDuration() << "\n";
+    outFile.close();
+
+    logger->info("Saved run params to " + fileName);
+}
+
+void Optrode::writeRunParams()
+{
+    QString fname = QString("%1.yaml").arg(QDir(outputPath).filePath(runName));
+    writeRunParams(fname);
 }
 
 QString Optrode::getOutputPath() const
