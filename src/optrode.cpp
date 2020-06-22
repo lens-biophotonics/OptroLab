@@ -10,6 +10,7 @@
 #include "optrode.h"
 #include "tasks.h"
 #include "chameleoncamera.h"
+#include "savestackworker.h"
 
 
 static Logger *logger = getLogger("Optrod");
@@ -18,8 +19,9 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
 {
     behaviorCamera = new ChameleonCamera(this);
     tasks = new Tasks(this);
-    postStimulation = 0;
+    orca  = new OrcaFlash(this);
 
+    postStimulation = 0;
     timer = new QTimer(this);
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, this, &Optrode::stop);
@@ -41,9 +43,18 @@ void Optrode::initialize()
 {
     emit initializing();
 
-    behaviorCamera->open(0);
-    behaviorCamera->logDeviceInfo();
-
+    try {
+        int nOfOrcas = DCAM::init_dcam();
+        if (nOfOrcas < 1) {
+            throw std::runtime_error("Cannot find Hamamatsu cameras");
+        }
+        orca->open(0);
+        orca->buf_alloc(300);
+        behaviorCamera->open(0);
+        behaviorCamera->logDeviceInfo();
+    } catch (std::runtime_error e) {
+        onError(e.what());
+    }
     emit initialized();
 }
 
@@ -141,10 +152,33 @@ void Optrode::start()
                  .arg(tasks->getShutterPulseNPulses())
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
+
+    // setup worker thread
+    SaveStackWorker *worker = new SaveStackWorker(orca);
+
+    worker->setTimeout(2 * 1e6 / NITasks()->getMainTrigFreq());
+    worker->setOutputPath(outputPath);
+    worker->setOutputFileName(runName);
+    worker->setFrameCount(200);
+
+    connect(worker, &QThread::finished,
+            worker, &QThread::deleteLater);
+
+    connect(worker, &SaveStackWorker::error,
+            this, &Optrode::onError);
+
+    connect(worker, &SaveStackWorker::captureCompleted,
+            this, &Optrode::stop);
+
+    connect(orca, &OrcaFlash::captureStarted, worker, [ = ](){
+        worker->start();
+    });
+
     tasks->setFreeRunEnabled(false);
     timer->setInterval(totalDuration() * 1000);
-    _startAcquisition();
+
     timer->start();
+    _startAcquisition();
 }
 
 void Optrode::stop()
@@ -155,13 +189,40 @@ void Optrode::stop()
     emit stopped();
     try {
         timer->stop();
-        behaviorCamera->stopAcquisition();
+//        behaviorCamera->stopAcquisition();
         tasks->stop();
+        orca->setExposureTime(0.1);
+        orca->cap_stop();
     } catch (std::runtime_error e) {
         onError(e.what());
     } catch (Spinnaker::Exception e) {
         onError(e.what());
     }
+}
+
+QString Optrode::getRunName() const
+{
+    return runName;
+}
+
+void Optrode::setRunName(const QString &value)
+{
+    runName = value;
+}
+
+QString Optrode::getOutputPath() const
+{
+    return outputPath;
+}
+
+void Optrode::setOutputPath(const QString &value)
+{
+    outputPath = value;
+}
+
+OrcaFlash *Optrode::getOrca() const
+{
+    return orca;
 }
 
 double Optrode::getPostStimulation() const
@@ -174,6 +235,7 @@ void Optrode::_startAcquisition()
     running = true;
     try {
         behaviorCamera->startAcquisition();
+        orca->cap_start();
         tasks->start();
     } catch (std::runtime_error e) {
         onError(e.what());

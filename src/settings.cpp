@@ -99,6 +99,7 @@ void Settings::loadSettings()
     settings.beginGroup(groupName);
 
     SET_VALUE(groupName, SETTING_EXPTIME, 0.15);
+    SET_VALUE(groupName, SETTING_RUNNAME, "myexperiment");
     SET_VALUE(groupName, SETTING_OUTPUTPATH,
               QDir::toNativeSeparators(QDir::homePath()));
 

@@ -9,6 +9,8 @@
 #include <QListView>
 #include <QGridLayout>
 #include <QProgressBar>
+#include <QLineEdit>
+#include <QFileDialog>
 
 #include <qtlab/hw/ni/natinst.h>
 
@@ -175,6 +177,26 @@ void ControlsWidget::setupUi()
     QGroupBox *controlsGb = new QGroupBox("Controls");
     controlsGb->setLayout(vLayout);
 
+
+    // output files
+    row = 0;
+    int col = 0;
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("Path"), row, col++);
+    QLineEdit *outputPathLineEdit = new QLineEdit();
+    outputPathLineEdit->setText(optrode().getOutputPath());
+    grid->addWidget(outputPathLineEdit, row, col++);
+    QPushButton *outputPathPushButton = new QPushButton("...");
+    grid->addWidget(outputPathPushButton, row++, col);
+    col = 0;
+    grid->addWidget(new QLabel("Run name"), row, col++);
+    QLineEdit *runNameLineEdit = new QLineEdit();
+    runNameLineEdit->setText(optrode().getRunName());
+    grid->addWidget(runNameLineEdit, row++, col++);
+
+    QGroupBox *outputGb = new QGroupBox("Output");
+    outputGb->setLayout(grid);
+
     vLayout = new QVBoxLayout();
     vLayout->addWidget(mainTrigGb);
     vLayout->addWidget(electrodeGb);
@@ -184,9 +206,14 @@ void ControlsWidget::setupUi()
     vLayout2->addWidget(timingGb);
     vLayout2->addWidget(controlsGb);
 
-    QHBoxLayout *myLayout = new QHBoxLayout();
-    myLayout->addLayout(vLayout);
-    myLayout->addLayout(vLayout2);
+    QHBoxLayout *hLayout = new QHBoxLayout();
+    hLayout->addLayout(vLayout);
+    hLayout->addLayout(vLayout2);
+
+    QVBoxLayout *myLayout = new QVBoxLayout();
+    myLayout->addLayout(hLayout);
+    myLayout->addWidget(outputGb);
+
     setLayout(myLayout);
 
     setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
@@ -253,6 +280,9 @@ void ControlsWidget::setupUi()
 
         t->setShutterInitialDelay(shutterDelaySpinBox->value());
         optrode().setPostStimulation(postStimulationSpinBox->value());
+
+        optrode().setOutputPath(outputPathLineEdit->text());
+        optrode().setRunName(runNameLineEdit->text());
     };
 
     auto clicked = &QPushButton::clicked;
@@ -266,4 +296,17 @@ void ControlsWidget::setupUi()
         optrode().start();
     });
     connect(stopButton, clicked, &optrode(), &Optrode::stop);
+
+    connect(outputPathPushButton, &QPushButton::clicked, this, [ = ](){
+        QFileDialog dialog;
+        dialog.setDirectory(outputPathLineEdit->text());
+        dialog.setFileMode(QFileDialog::Directory);
+        dialog.setOption(QFileDialog::ShowDirsOnly, true);
+
+        if (!dialog.exec())
+            return;
+
+        QString path = dialog.selectedFiles().at(0);
+        outputPathLineEdit->setText(path);
+    });
 }

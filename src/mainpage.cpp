@@ -9,11 +9,13 @@
 #include <qtlab/widgets/pixmapwidget.h>
 #include <qtlab/widgets/timeplot.h>
 #include <qtlab/widgets/cameradisplay.h>
+#include <qtlab/widgets/cameraplot.h>
 
 #include "controlswidget.h"
 
 #include "behavdispworker.h"
 #include "elreadoutworker.h"
+#include "displayworker.h"
 
 #include "optrode.h"
 #include "tasks.h"
@@ -94,6 +96,11 @@ void MainPage::setupUi()
     camDisplay->setLUTPath(
         settings().value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH)
         .toString());
+
+    DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca(), camDisplay);
+    void (CameraPlot::*fp)(const double*, const size_t) = &CameraPlot::setData;
+    connect(dispWorker, &DisplayWorker::newImage, camDisplay->getPlot(), fp);
+
     AspectRatioWidget *arw = new AspectRatioWidget(camDisplay, 1);
     hLayout->addWidget(arw, 3);
     hLayout->addWidget(pmw, 4);

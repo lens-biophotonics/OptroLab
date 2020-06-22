@@ -12,7 +12,7 @@ endif()
 find_package(Qt5 5.8 REQUIRED COMPONENTS
     Widgets Svg
 )
-find_package(QtLab REQUIRED Core Widgets Hamamatsu NI)
+find_package(QtLab REQUIRED Core IO Widgets Hamamatsu NI)
 find_package(Spinnaker REQUIRED)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
@@ -39,6 +39,8 @@ set(SOURCE_FILES
     controlswidget.cpp
     behavdispworker.cpp
     elreadoutworker.cpp
+    displayworker.cpp
+    savestackworker.cpp
     mainpage.cpp
 
     optrode.cpp
@@ -53,6 +55,7 @@ target_link_libraries(OptroLab
     Qt5::Widgets
     Qt5::Svg
     QtLab::Core
+    QtLab::IO
     QtLab::Widgets
     QtLab::NI
     QtLab::Hamamatsu

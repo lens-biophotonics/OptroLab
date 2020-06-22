@@ -5,6 +5,8 @@
 #include <QStateMachine>
 #include <QTimer>
 
+#include <qtlab/hw/hamamatsu/orcaflash.h>
+
 class ChameleonCamera;
 class Tasks;
 
@@ -31,6 +33,13 @@ public:
     void setPostStimulation(double s);
     double getPostStimulation() const;
     double totalDuration() const;
+    OrcaFlash *getOrca() const;
+
+    QString getOutputPath() const;
+    void setOutputPath(const QString &value);
+
+    QString getRunName() const;
+    void setRunName(const QString &value);
 
 signals:
     void initializing() const;
@@ -51,6 +60,9 @@ private:
     ChameleonCamera *behaviorCamera;
     Tasks *tasks;
     QTimer *timer;
+    OrcaFlash *orca;
+    QString outputPath;
+    QString runName;
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
