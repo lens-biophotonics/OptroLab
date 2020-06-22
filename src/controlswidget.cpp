@@ -157,7 +157,8 @@ void ControlsWidget::setupUi()
     connect(&optrode(), &Optrode::stopped, this, [ = ](){
         timer->stop();
         totTimer->stop();
-        progressBar->setValue(progressBar->maximum());
+        if (!optrode().isFreeRunEnabled())
+            progressBar->setValue(progressBar->maximum());
     });
     connect(timer, &QTimer::timeout, this, [ = ](){
         progressBar->setValue(optrode().totalDuration() * 1000 - totTimer->remainingTime());
