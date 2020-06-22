@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include <memory>
 
 #include <QHistoryState>
@@ -15,7 +16,7 @@
 #include "savestackworker.h"
 
 
-static Logger *logger = getLogger("Optrod");
+static Logger *logger = getLogger("Optrode");
 
 Optrode::Optrode(QObject *parent) : QObject(parent)
 {
