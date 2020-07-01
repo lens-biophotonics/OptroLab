@@ -47,8 +47,8 @@ void SaveStackWorker::run()
 
         DCAM_TIMESTAMP timeStamp;
 
-        int32 mask = DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED;
-        uint32 event;
+        qint32 mask = DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED;
+        qint32 event;
         try {
             event = orca->wait(1000, mask);
         }
