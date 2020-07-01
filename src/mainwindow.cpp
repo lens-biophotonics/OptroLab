@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setupUi();
 
     QThread *thread = new QThread();
-    thread->setObjectName("Optrod_thread");
+    thread->setObjectName("Optrode_thread");
     optrode().moveToThread(thread);
     thread->start();
 }
