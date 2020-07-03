@@ -74,8 +74,9 @@ void MainPage::setupUi()
     endMarker->attach(timePlot);
     endMarker->setVisible(false);
 
-    ElReadoutWorker *elReadout = new ElReadoutWorker();
-    connect(elReadout, &ElReadoutWorker::newData, timePlot, &TimePlot::appendPoints);
+    qRegisterMetaType<QVector<double>>("QVector<double>");
+    connect(optrode().getElReadoutWorker(), &ElReadoutWorker::newData,
+            timePlot, &TimePlot::appendPoints);
 
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun){
         Tasks *t = optrode().NITasks();
@@ -91,17 +92,21 @@ void MainPage::setupUi()
         endMarker->setValue(sr * (t->getShutterInitialDelay() + t->stimulationDuration()), 0);
     });
 
-    QHBoxLayout *hLayout = new QHBoxLayout();
+    DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca());
+
     CameraDisplay *camDisplay = new CameraDisplay(this);
+    camDisplay->setPlotSize(QSize(512, 512));
+
     camDisplay->setLUTPath(
         settings().value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH)
         .toString());
 
-    DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca(), camDisplay);
     void (CameraPlot::*fp)(const double*, const size_t) = &CameraPlot::setData;
     connect(dispWorker, &DisplayWorker::newImage, camDisplay->getPlot(), fp);
 
     AspectRatioWidget *arw = new AspectRatioWidget(camDisplay, 1);
+
+    QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->addWidget(arw, 3);
     hLayout->addWidget(pmw, 4);
     hLayout->addWidget(new ControlsWidget());

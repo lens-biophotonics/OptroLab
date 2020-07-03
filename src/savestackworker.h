@@ -30,6 +30,8 @@ private:
     QString outputFile;
     int32_t frameCount;
     OrcaFlash *orca;
+
+    QString timeoutString(double delta, int i);
 };
 
 #endif // SAVESTACKWORKER_H

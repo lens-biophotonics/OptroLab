@@ -17,6 +17,7 @@
 #include "optrode.h"
 
 #include "controlswidget.h"
+#include "elreadoutworker.h"
 #include "tasks.h"
 
 ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
@@ -33,9 +34,9 @@ void ControlsWidget::setupUi()
     QComboBox *mainTrigPhysChanComboBox = new QComboBox();
     mainTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
     mainTrigPhysChanComboBox->setCurrentText(t->getMainTrigPhysChan());
-    QDoubleSpinBox *mainTrigFreqSpinBox = new QDoubleSpinBox();
+    QSpinBox *mainTrigFreqSpinBox = new QSpinBox();
     mainTrigFreqSpinBox->setSuffix("Hz");
-    mainTrigFreqSpinBox->setRange(0, 100e6);
+    mainTrigFreqSpinBox->setRange(1, 90);
     mainTrigFreqSpinBox->setValue(t->getMainTrigFreq());
 
     int row = 0;
@@ -146,24 +147,22 @@ void ControlsWidget::setupUi()
     progressBar->setFormat("%p%");
 
     QTimer *timer = new QTimer();
-    QTimer *totTimer = new QTimer();
-    totTimer->setSingleShot(true);
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun) {
         if (freeRun)
             return;
         progressBar->reset();
-        progressBar->setRange(0, optrode().totalDuration() * 1000);
+        int maximum = optrode().totalDuration()
+                      * optrode().NITasks()->getElectrodeReadoutRate();
+        progressBar->setRange(0, maximum);
         timer->start(1000);
-        totTimer->start(optrode().totalDuration() * 1000);
     });
     connect(&optrode(), &Optrode::stopped, this, [ = ](){
         timer->stop();
-        totTimer->stop();
         if (!optrode().isFreeRunEnabled())
             progressBar->setValue(progressBar->maximum());
     });
     connect(timer, &QTimer::timeout, this, [ = ](){
-        progressBar->setValue(optrode().totalDuration() * 1000 - totTimer->remainingTime());
+        progressBar->setValue(optrode().getElReadoutWorker()->getTotRead());
     });
 
     QVBoxLayout *vLayout = new QVBoxLayout();

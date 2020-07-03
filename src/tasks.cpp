@@ -31,13 +31,13 @@ void Tasks::init()
                                      0, 5, // range
                                      NITask::VoltUnits_Volts, nullptr);
 
-    // because there are 2 samples, the sampling rate is double the wanted
+    // because there are 2 samples, the sampling rate is twice the wanted
     // square wave frequency
     mainTrigger->cfgSampClkTiming(nullptr,
                                   2 * mainTrigFreq,
                                   NITask::Edge_Rising,
                                   NITask::SampMode_ContSamps, 2);
-    const float64 data[] = {0, 5};
+    const float64 data[] = {5, 0};
     int32 sampsPerChanWritten;
     mainTrigger->writeAnalogF64(2,      // number of samples
                                 false,  // autostart
@@ -78,13 +78,26 @@ void Tasks::init()
                                    NITask::TermConf_Default,
                                    -10., 10.,
                                    NITask::VoltUnits_Volts, nullptr);
+
+    double sBuffer;  // how many seconds of buffering
+    NITask::SampleMode sampleMode;
+
+    if (freeRunEnabled) {
+        sBuffer = 2;
+        sampleMode = NITask::SampMode_ContSamps;
+    } else {
+        sBuffer = totalDuration;
+        sampleMode = NITask::SampMode_FiniteSamps;
+    }
+
     elReadout->cfgSampClkTiming(
         "OnboardClock",
         electrodeReadoutRate,
         NITask::Edge_Rising,
-        NITask::SampMode_ContSamps,
-        2 * electrodeReadoutRate);  // 2s worth of buffering
+        sampleMode,
+        sBuffer * electrodeReadoutRate);
     elReadout->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
+    elReadout->setReadReadAllAvailSamp(true);
 
     needsInit = false;
 }
@@ -113,6 +126,17 @@ void Tasks::stop()
     elReadout->stopTask();
 }
 
+void Tasks::setTotalDuration(double value)
+{
+    totalDuration = value;
+    needsInit = true;
+}
+
+NITask *Tasks::getElReadout() const
+{
+    return elReadout;
+}
+
 double Tasks::getShutterInitialDelay() const
 {
     return shutterInitialDelay;
@@ -131,6 +155,7 @@ bool Tasks::isFreeRunEnabled() const
 void Tasks::setFreeRunEnabled(bool value)
 {
     freeRunEnabled = value;
+    needsInit = true;
 }
 
 /**

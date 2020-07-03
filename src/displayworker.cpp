@@ -4,9 +4,9 @@
 #include <qtlab/widgets/cameradisplay.h>
 #include <qtlab/widgets/cameraplot.h>
 
-#define BUFSIZE (2048 * 2048)
+#define BUFSIZE (512 * 512)
 
-DisplayWorker::DisplayWorker(OrcaFlash *camera, CameraDisplay *cd, QObject *parent)
+DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
     : QThread(parent)
 {
     qRegisterMetaType<size_t>("size_t");
@@ -15,7 +15,6 @@ DisplayWorker::DisplayWorker(OrcaFlash *camera, CameraDisplay *cd, QObject *pare
     bufd = new double[BUFSIZE];
 
     orca = camera;
-    this->cd = cd;
 
     connect(orca, &OrcaFlash::captureStarted, this, [ = ](){
         start();
@@ -35,7 +34,7 @@ void DisplayWorker::run()
 {
     running = true;
     while (true) {
-        msleep(250);
+        msleep(40);
         if (!running) {
             break;
         }

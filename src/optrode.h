@@ -9,6 +9,7 @@
 
 class ChameleonCamera;
 class Tasks;
+class ElReadoutWorker;
 
 class Optrode : public QObject
 {
@@ -45,6 +46,8 @@ public:
     void writeRunParams(QString fileName);
     void writeRunParams();
 
+    ElReadoutWorker *getElReadoutWorker() const;
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -63,10 +66,10 @@ public slots:
 private:
     ChameleonCamera *behaviorCamera;
     Tasks *tasks;
-    QTimer *timer;
     OrcaFlash *orca;
     QString outputPath;
     QString runName;
+    ElReadoutWorker *elReadoutWorker;
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;

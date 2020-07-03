@@ -4,6 +4,7 @@
 #include <QHistoryState>
 #include <QDir>
 #include <QTextStream>
+#include <QtMath>
 
 #include <qtlab/core/logger.h>
 #include <qtlab/hw/ni/nitask.h>
@@ -14,6 +15,7 @@
 #include "tasks.h"
 #include "chameleoncamera.h"
 #include "savestackworker.h"
+#include "elreadoutworker.h"
 
 
 static Logger *logger = getLogger("Optrode");
@@ -23,11 +25,18 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     behaviorCamera = new ChameleonCamera(this);
     tasks = new Tasks(this);
     orca  = new OrcaFlash(this);
+    elReadoutWorker = new ElReadoutWorker(tasks->getElReadout());
+    QThread *thread = new QThread();
+    thread->setObjectName("ElReadoutWorker_thread");
+    elReadoutWorker->moveToThread(thread);
+    thread->start();
+
+    connect(this, &Optrode::started, elReadoutWorker, &ElReadoutWorker::start);
+    connect(this, &Optrode::stopped, elReadoutWorker, &ElReadoutWorker::stop);
+    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
+            this, &Optrode::stop);
 
     postStimulation = 0;
-    timer = new QTimer(this);
-    timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, this, &Optrode::stop);
 
     setupStateMachine();
 }
@@ -52,7 +61,13 @@ void Optrode::initialize()
             throw std::runtime_error("Cannot find Hamamatsu cameras");
         }
         orca->open(0);
-        orca->buf_alloc(300);
+
+        orca->setSensorMode(OrcaFlash::SENSOR_MODE_AREA);
+        orca->setTriggerSource(OrcaFlash::TRIGGERSOURCE_EXTERNAL);
+        orca->setTriggerPolarity(OrcaFlash::POL_POSITIVE);
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_BINNING, DCAM::DCAMPROP_BINNING__4);
+        orca->buf_alloc(3000);
+
         behaviorCamera->open(0);
         behaviorCamera->logDeviceInfo();
     } catch (std::runtime_error e) {
@@ -159,28 +174,21 @@ void Optrode::start()
     // setup worker thread
     SaveStackWorker *worker = new SaveStackWorker(orca);
 
-    worker->setTimeout(2 * 1e6 / NITasks()->getMainTrigFreq());
-    worker->setFrameCount(200);
-
     connect(worker, &QThread::finished,
             worker, &QThread::deleteLater);
     worker->setOutputFile(outputFileFullPath() + ".tiff");
+    worker->setFrameCount(tasks->getMainTrigFreq() * totalDuration());
 
     connect(worker, &SaveStackWorker::error,
             this, &Optrode::onError);
 
-    connect(worker, &SaveStackWorker::captureCompleted,
-            this, &Optrode::stop);
-
-    connect(orca, &OrcaFlash::captureStarted, worker, [ = ](){
-        worker->start();
-    });
-
     tasks->setFreeRunEnabled(false);
-    timer->setInterval(totalDuration() * 1000);
+    tasks->setTotalDuration(totalDuration());
 
-    timer->start();
+    elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
+
     _startAcquisition();
+    worker->setTimeout(2e6 / NITasks()->getMainTrigFreq());
     writeRunParams();
 }
 
@@ -191,16 +199,20 @@ void Optrode::stop()
     running = false;
     emit stopped();
     try {
-        timer->stop();
-//        behaviorCamera->stopAcquisition();
         tasks->stop();
-        orca->setExposureTime(0.1);
+        behaviorCamera->stopAcquisition();
         orca->cap_stop();
     } catch (std::runtime_error e) {
         onError(e.what());
     } catch (Spinnaker::Exception e) {
         onError(e.what());
     }
+    logger->info("Stopped");
+}
+
+ElReadoutWorker *Optrode::getElReadoutWorker() const
+{
+    return elReadoutWorker;
 }
 
 QString Optrode::getRunName() const
@@ -224,6 +236,7 @@ void Optrode::writeRunParams(QString fileName)
 
     QTextStream out(&outFile);
     out << "frame_rate: " << tasks->getMainTrigFreq() << "\n";
+    out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
     out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
     out << "stimul_frequency: " << tasks->getShutterPulseFrequency() << "\n";
     out << "stimul_n_pulses: " << tasks->getShutterPulseNPulses() << "\n";
@@ -234,6 +247,7 @@ void Optrode::writeRunParams(QString fileName)
     out << "  stimulation: " << tasks->stimulationDuration() << "\n";
     out << "  post: " << getPostStimulation() << "\n";
     out << "  total: " << totalDuration() << "\n";
+
     outFile.close();
 
     logger->info("Saved run params to " + fileName);
@@ -279,8 +293,26 @@ void Optrode::_startAcquisition()
 {
     running = true;
     try {
+        int Vn = 2048;
+        double lineInterval = orca->getLineInterval();
+
+        // inverse formula to obtain exposure time
+        double temp = 1. / (1.01 * tasks->getMainTrigFreq()) - (Vn / 2 + 10) * lineInterval;
+        double expTime = orca->setGetExposureTime(temp);
+
+        double frameRate = qFloor(1. / (expTime + (Vn / 2 + 10) * lineInterval));
+
+        if (tasks->getMainTrigFreq() != frameRate) {
+            throw std::runtime_error("frame rate mismatch");
+        }
+
+        elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
+        elReadoutWorker->setFreeRun(isFreeRunEnabled());
+
         behaviorCamera->startAcquisition();
         orca->cap_start();
+
+        tasks->setMainTrigFreq(frameRate);
         tasks->start();
     } catch (std::runtime_error e) {
         onError(e.what());
@@ -302,5 +334,5 @@ void Optrode::onError(const QString &errMsg)
 {
     stop();
     emit error(errMsg);
-    logger->error(errMsg);
+    logger->critical(errMsg);
 }

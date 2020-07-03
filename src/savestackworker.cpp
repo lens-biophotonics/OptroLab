@@ -1,4 +1,3 @@
-#include <QVector>
 #include <QDir>
 
 #include <qtlab/io/tiffwriter.h>
@@ -15,20 +14,24 @@ SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
     : QThread(parent), orca(orca)
 {
     frameCount = 0;
+
+    connect(orca, &OrcaFlash::captureStarted, this, [ = ](){
+        start();
+    });
 }
 
 void SaveStackWorker::run()
 {
     int i = 0;
     void *buf;
-    size_t width = 2048;
-    size_t height = 2048;
-    size_t n = 2 * width * height;
+    size_t width = 512;
+    size_t height = 512;
 
 #ifdef WITH_HARDWARE
     const int32_t nFramesInBuffer = orca->nFramesInBuffer();
     QVector<qint64> timeStamps(frameCount, 0);
 #else
+    size_t n = 2 * width * height;
     buf = malloc(n);
 #endif
 
@@ -52,7 +55,8 @@ void SaveStackWorker::run()
         try {
             event = orca->wait(1000, mask);
         }
-        catch (std::runtime_error) {
+        catch (std::runtime_error e) {
+            continue;
         }
 
         switch (event) {
@@ -63,12 +67,10 @@ void SaveStackWorker::run()
                 if (i != 0) {
                     double delta = double(timeStamps[i]) - double(timeStamps[i - 1]);
                     if (abs(delta) > timeout) {
-                        logger->error(QString("Camera %1 timeout by %2 ms at frame %3")
-                                      .arg(orca->getCameraIndex()).arg(delta * 1e-3).arg(i + 1));
+                        logger->critical(timeoutString(delta, i));
                     }
                     else if (abs(delta) > timeout * 0.75 || abs(delta) < timeout * 0.25) {
-                        logger->warning(QString("Camera %1 timeout by %2 ms at frame %3")
-                                        .arg(orca->getCameraIndex()).arg(delta * 1e-3).arg(i + 1));
+                        logger->warning(timeoutString(delta, i));
                     }
                 }
             }
@@ -99,6 +101,14 @@ void SaveStackWorker::run()
 
     emit captureCompleted();
     logger->info(QString("Saved %1 frames").arg(i));
+}
+
+QString SaveStackWorker::timeoutString(double delta, int i)
+{
+    return QString("Camera %1 timeout by %2 ms at frame %3 (timeout: %4)")
+           .arg(orca->getCameraIndex())
+           .arg(delta * 1e-3).arg(i + 1)
+           .arg(timeout);
 }
 
 void SaveStackWorker::setFrameCount(int32_t count)

@@ -50,6 +50,10 @@ public:
     void setStimulationDuration(double s);
     double stimulationDuration();
 
+    NITask *getElReadout() const;
+
+    void setTotalDuration(double value);
+
 signals:
     void started();
     void stopped();
@@ -75,6 +79,8 @@ private:
 
     QString electrodeReadoutPhysChan;
     double electrodeReadoutRate = 10000;
+
+    double totalDuration = 10;
 
     bool needsInit;
     bool freeRunEnabled;
