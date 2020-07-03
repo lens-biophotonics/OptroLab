@@ -117,7 +117,7 @@ void MainWindow::saveSettings() const
     s.setValue(SETTINGSGROUP_TIMING, SETTING_STIMDURATION, t->stimulationDuration());
     s.setValue(SETTINGSGROUP_TIMING, SETTING_POSTSTIMULATION, optrode().getPostStimulation());
 
-    s.setValue(SETTINGSGROUP_ACQUISITION, SETTING_OUTPUTPATH, optrode().getOutputPath());
+    s.setValue(SETTINGSGROUP_ACQUISITION, SETTING_OUTPUTPATH, optrode().getOutputDir());
     s.setValue(SETTINGSGROUP_ACQUISITION, SETTING_RUNNAME, optrode().getRunName());
 
     s.saveSettings();
@@ -150,7 +150,7 @@ void MainWindow::loadSettings()
     t->setStimulationDuration(s.value(SETTINGSGROUP_TIMING, SETTING_STIMDURATION).toDouble());
     optrode().setPostStimulation(s.value(SETTINGSGROUP_TIMING, SETTING_POSTSTIMULATION).toDouble());
 
-    optrode().setOutputPath(s.value(SETTINGSGROUP_ACQUISITION, SETTING_OUTPUTPATH).toString());
+    optrode().setOutputDir(s.value(SETTINGSGROUP_ACQUISITION, SETTING_OUTPUTPATH).toString());
     optrode().setRunName(s.value(SETTINGSGROUP_ACQUISITION, SETTING_RUNNAME).toString());
 
     QSettings settings;

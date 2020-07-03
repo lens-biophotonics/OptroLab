@@ -184,7 +184,7 @@ void ControlsWidget::setupUi()
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Path"), row, col++);
     QLineEdit *outputPathLineEdit = new QLineEdit();
-    outputPathLineEdit->setText(optrode().getOutputPath());
+    outputPathLineEdit->setText(optrode().getOutputDir());
     grid->addWidget(outputPathLineEdit, row, col++);
     QPushButton *outputPathPushButton = new QPushButton("...");
     grid->addWidget(outputPathPushButton, row++, col);
@@ -281,7 +281,7 @@ void ControlsWidget::setupUi()
         t->setShutterInitialDelay(shutterDelaySpinBox->value());
         optrode().setPostStimulation(postStimulationSpinBox->value());
 
-        optrode().setOutputPath(outputPathLineEdit->text());
+        optrode().setOutputDir(outputPathLineEdit->text());
         optrode().setRunName(runNameLineEdit->text());
     };
 

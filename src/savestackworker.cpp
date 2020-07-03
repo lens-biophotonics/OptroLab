@@ -38,7 +38,7 @@ void SaveStackWorker::run()
         stopped = true;
     });
 
-    TIFFWriter writer(QString("%1.tiff").arg(QDir(outputPath).filePath(outputFileName)), true);
+    TIFFWriter writer(outputFile, true);
 
     while (!stopped && i < frameCount) {
 #ifdef WITH_HARDWARE
@@ -101,19 +101,14 @@ void SaveStackWorker::run()
     logger->info(QString("Saved %1 frames").arg(i));
 }
 
-void SaveStackWorker::setOutputPath(const QString &value)
-{
-    outputPath = value;
-}
-
 void SaveStackWorker::setFrameCount(int32_t count)
 {
     frameCount = count;
 }
 
-void SaveStackWorker::setOutputFileName(const QString &fname)
+void SaveStackWorker::setOutputFile(const QString &fname)
 {
-    outputFileName = fname;
+    outputFile = fname;
 }
 
 double SaveStackWorker::getTimeout() const

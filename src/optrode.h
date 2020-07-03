@@ -35,8 +35,9 @@ public:
     double totalDuration() const;
     OrcaFlash *getOrca() const;
 
-    QString getOutputPath() const;
-    void setOutputPath(const QString &value);
+    QString getOutputDir() const;
+    void setOutputDir(const QString &value);
+    QString outputFileFullPath();
 
     QString getRunName() const;
     void setRunName(const QString &value);

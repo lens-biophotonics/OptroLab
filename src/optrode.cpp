@@ -160,12 +160,11 @@ void Optrode::start()
     SaveStackWorker *worker = new SaveStackWorker(orca);
 
     worker->setTimeout(2 * 1e6 / NITasks()->getMainTrigFreq());
-    worker->setOutputPath(outputPath);
-    worker->setOutputFileName(runName);
     worker->setFrameCount(200);
 
     connect(worker, &QThread::finished,
             worker, &QThread::deleteLater);
+    worker->setOutputFile(outputFileFullPath() + ".tiff");
 
     connect(worker, &SaveStackWorker::error,
             this, &Optrode::onError);
@@ -242,18 +241,28 @@ void Optrode::writeRunParams(QString fileName)
 
 void Optrode::writeRunParams()
 {
-    QString fname = QString("%1.yaml").arg(QDir(outputPath).filePath(runName));
+    QString fname = outputFileFullPath() + ".yaml";
     writeRunParams(fname);
 }
 
-QString Optrode::getOutputPath() const
+QString Optrode::getOutputDir() const
 {
     return outputPath;
 }
 
-void Optrode::setOutputPath(const QString &value)
+void Optrode::setOutputDir(const QString &value)
 {
     outputPath = value;
+}
+
+/**
+ * @brief Full output path without file extension
+ * @return Concatenation of outputPath and runName
+ */
+
+QString Optrode::outputFileFullPath()
+{
+    return QDir(outputPath).filePath(runName);
 }
 
 OrcaFlash *Optrode::getOrca() const
