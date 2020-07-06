@@ -16,6 +16,7 @@ public:
     void open(uint index);
     void logDeviceInfo();
     Spinnaker::ImagePtr getNextImage(uint64_t timeout);
+    QSize imageSize();
 
 public slots:
     void startAcquisition();

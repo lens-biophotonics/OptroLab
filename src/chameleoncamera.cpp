@@ -1,5 +1,7 @@
 #include <stdexcept>
 
+#include <QSize>
+
 #include <qtlab/core/logmanager.h>
 
 #include <SpinGenApi/SpinnakerGenApi.h>
@@ -65,6 +67,11 @@ ImagePtr ChameleonCamera::getNextImage(uint64_t timeout)
     catch (Spinnaker::Exception e) {
     }
     return img;
+}
+
+QSize ChameleonCamera::imageSize()
+{
+    return QSize(pCam->Width.GetValue(), pCam->Height.GetValue());
 }
 
 void ChameleonCamera::startAcquisition()

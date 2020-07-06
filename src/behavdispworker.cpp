@@ -23,6 +23,11 @@ BehavDispWorker::BehavDispWorker(ChameleonCamera *camera,
 
 void BehavDispWorker::run()
 {
+    QImage qimg(camera->imageSize(), QImage::Format_Indexed8);
+
+    for (int i = 0; i < 256; ++i)  // populate index
+        qimg.setColor(i, qRgb(i, i, i));
+
     while (true) {
         if (stop) {
             return;
@@ -34,10 +39,6 @@ void BehavDispWorker::run()
         imgMono = img->Convert(PixelFormat_Mono8, HQ_LINEAR);
         img->Release();
 
-        QImage qimg(imgMono->GetWidth(), imgMono->GetHeight(), QImage::Format_Indexed8);
-
-        for (int i = 0; i < 256; ++i)  // populate index
-            qimg.setColor(i, qRgb(i, i, i));
         memcpy(qimg.bits(), imgMono->GetData(), imgMono->GetBufferSize());
         emit newImage(QPixmap::fromImage(qimg));
     }
