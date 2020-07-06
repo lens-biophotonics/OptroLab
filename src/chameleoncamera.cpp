@@ -60,13 +60,7 @@ void ChameleonCamera::logDeviceInfo()
 
 ImagePtr ChameleonCamera::getNextImage(uint64_t timeout)
 {
-    ImagePtr img = nullptr;
-    try {
-        img = pCam->GetNextImage(timeout);
-    }
-    catch (Spinnaker::Exception e) {
-    }
-    return img;
+    return pCam->GetNextImage(timeout);
 }
 
 QSize ChameleonCamera::imageSize()

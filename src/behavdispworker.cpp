@@ -2,10 +2,15 @@
 
 #include <Spinnaker.h>
 
+#include <qtlab/core/logmanager.h>
+
 #include "behavdispworker.h"
 #include "chameleoncamera.h"
 
 using namespace Spinnaker;
+
+static Logger *logger = logManager().getLogger("BehavDispWorker");
+
 
 BehavDispWorker::BehavDispWorker(ChameleonCamera *camera,
                                  QObject *parent) : QThread(parent)
@@ -32,8 +37,14 @@ void BehavDispWorker::run()
         if (stop) {
             return;
         }
-        ImagePtr imgMono;
-        ImagePtr img = camera->getNextImage(5000);
+        ImagePtr imgMono, img;
+        try {
+            img = camera->getNextImage(5000);
+        }
+        catch (Spinnaker::Exception e) {
+            logger->warning(e.what());
+            continue;
+        }
         if (!img)
             continue;
         imgMono = img->Convert(PixelFormat_Mono8, HQ_LINEAR);
