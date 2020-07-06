@@ -245,22 +245,27 @@ void ControlsWidget::setupUi()
     }
 
     wList = {
-        startFreeRunButton,
-        startButton,
-    };
-
-    for (QWidget * w : wList) {
-        rs->assignProperty(w, "enabled", true);
-        cs->assignProperty(w, "enabled", false);
-    }
-
-    wList = {
         stopButton,
     };
 
     for (QWidget * w : wList) {
         rs->assignProperty(w, "enabled", false);
         cs->assignProperty(w, "enabled", true);
+    }
+
+    wList = {
+        startFreeRunButton,
+        startButton,
+        mainTrigGb,
+        electrodeGb,
+        shutterGb,
+        outputGb,
+        timingGb,
+    };
+
+    for (QWidget * w : wList) {
+        rs->assignProperty(w, "enabled", true);
+        cs->assignProperty(w, "enabled", false);
     }
 
     std::function<void()> applyValues = [ = ](){
