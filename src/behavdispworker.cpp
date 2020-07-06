@@ -1,4 +1,5 @@
 #include <QImage>
+#include <QElapsedTimer>
 
 #include <Spinnaker.h>
 
@@ -33,6 +34,9 @@ void BehavDispWorker::run()
     for (int i = 0; i < 256; ++i)  // populate index
         qimg.setColor(i, qRgb(i, i, i));
 
+    QElapsedTimer timer;
+    timer.start();
+
     while (true) {
         if (stop) {
             return;
@@ -51,6 +55,10 @@ void BehavDispWorker::run()
         img->Release();
 
         memcpy(qimg.bits(), imgMono->GetData(), imgMono->GetBufferSize());
-        emit newImage(QPixmap::fromImage(qimg));
+
+        if (timer.elapsed() >= 40) {  // no more than 25 fps
+            emit newImage(QPixmap::fromImage(qimg));
+            timer.restart();
+        }
     }
 }
