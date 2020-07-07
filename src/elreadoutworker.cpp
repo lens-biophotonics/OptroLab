@@ -58,6 +58,8 @@ void ElReadoutWorker::readOut()
     QVector<double> buf;
     buf.resize(Hz * INTERVALMSEC / 1000. * 3);
     int32 sampsPerChanRead;
+
+#ifdef WITH_HARDWARE
     try {
         quint32 avail = task->getReadAvailSampPerChan();
         if (!avail)
@@ -68,9 +70,8 @@ void ElReadoutWorker::readOut()
     } catch (std::runtime_error e) {
         logManager().getLogger("ElReadoutWorker")->critical(e.what());
     }
-
-#ifndef WITH_HARDWARE
-    sampsPerChanRead = Hz * INTERVALMSEC / 1000.;
+#else
+    sampsPerChanRead = 25 * INTERVALMSEC / 1000.;
     buf = QVector<double>(sampsPerChanRead, rand());
 #endif
     if (!sampsPerChanRead) {
