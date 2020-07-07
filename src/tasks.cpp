@@ -3,6 +3,7 @@
 Tasks::Tasks(QObject *parent) : QObject(parent)
 {
     mainTrigger = new NITask("mainTrigger", this);
+    behavCamTrigger = new NITask("behavCamTrigger", this);
     shutterPulse = new NITask("shutterPulse", this);
     elReadout = new NITask("electrodeReadout", this);
 
@@ -13,7 +14,7 @@ void Tasks::init()
 {
     QList<NITask *> taskList;
 
-    taskList << mainTrigger << shutterPulse << elReadout;
+    taskList << mainTrigger << behavCamTrigger << shutterPulse << elReadout;
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -51,6 +52,29 @@ void Tasks::init()
 #endif
 
     const char startTriggerSource[] = "ao/StartTrigger";
+
+
+    // behavior camera trigger
+    behavCamTrigger->createTask();
+    behavCamTrigger->createAOVoltageChan(behavCamTrigPhysChan.toLatin1(),
+                                         nullptr, 0, 5,
+                                         NITask::VoltUnits_Volts, nullptr);
+    behavCamTrigger->cfgSampClkTiming(nullptr,
+                                      2 * behavCamTrigFreq,
+                                      NITask::Edge_Rising,
+                                      NITask::SampMode_ContSamps, 2);
+    behavCamTrigger->writeAnalogF64(2,      // number of samples
+                                    false,  // autostart
+                                    .2,     // timeout
+                                    NITask::DataLayout_GroupByChannel,
+                                    data,
+                                    &sampsPerChanWritten);
+    behavCamTrigger->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
+
+#ifdef WITH_HARDWARE
+    if (sampsPerChanWritten != 2)
+        throw std::runtime_error("invalid number of samples written");
+#endif
 
 
 
@@ -114,8 +138,9 @@ void Tasks::start()
     if (!isFreeRunEnabled())
         shutterPulse->startTask();
     elReadout->startTask();
+    behavCamTrigger->startTask();
 
-    // last to be started because it will trigger the other two tasks
+    // last to be started because it will trigger the other three tasks
     mainTrigger->startTask();
 }
 
@@ -124,6 +149,27 @@ void Tasks::stop()
     mainTrigger->stopTask();
     shutterPulse->stopTask();
     elReadout->stopTask();
+    behavCamTrigger->stopTask();
+}
+
+QString Tasks::getBehavCamTrigPhysChan() const
+{
+    return behavCamTrigPhysChan;
+}
+
+void Tasks::setBehavCamTrigPhysChan(const QString &value)
+{
+    behavCamTrigPhysChan = value;
+}
+
+double Tasks::getBehavCamTrigFreq() const
+{
+    return behavCamTrigFreq;
+}
+
+void Tasks::setBehavCamTrigFreq(double value)
+{
+    behavCamTrigFreq = value;
 }
 
 void Tasks::setTotalDuration(double value)

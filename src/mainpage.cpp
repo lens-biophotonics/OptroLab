@@ -13,7 +13,7 @@
 
 #include "controlswidget.h"
 
-#include "behavdispworker.h"
+#include "behavworker.h"
 #include "elreadoutworker.h"
 #include "displayworker.h"
 
@@ -57,8 +57,7 @@ void MainPage::setupUi()
         pmw->flipud();
     pmw->setRotationStep(sett.value(SETTING_BEHAVCAM_ROTSTEP).toUInt());
 
-    BehavDispWorker *worker = new BehavDispWorker(optrode().getBehaviorCamera());
-    connect(worker, &BehavDispWorker::newImage, pmw, &PixmapWidget::setPixmap);
+    connect(optrode().getBehavWorker(), &BehavWorker::newImage, pmw, &PixmapWidget::setPixmap);
 
     TimePlot *timePlot = new TimePlot();
 

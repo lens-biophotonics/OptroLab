@@ -29,7 +29,7 @@ void ControlsWidget::setupUi()
 {
     Tasks *t = optrode().NITasks();
 
-    // main Trigger
+    // trigger
 
     QComboBox *mainTrigPhysChanComboBox = new QComboBox();
     mainTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
@@ -39,15 +39,29 @@ void ControlsWidget::setupUi()
     mainTrigFreqSpinBox->setRange(1, 90);
     mainTrigFreqSpinBox->setValue(t->getMainTrigFreq());
 
+    QComboBox *behavCamTrigPhysChanComboBox = new QComboBox();
+    behavCamTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
+    behavCamTrigPhysChanComboBox->setCurrentText(t->getBehavCamTrigPhysChan());
+    QSpinBox *behavCamTrigFreqSpinBox = new QSpinBox();
+    behavCamTrigFreqSpinBox->setSuffix("Hz");
+    behavCamTrigFreqSpinBox->setRange(1, 50);
+    behavCamTrigFreqSpinBox->setValue(t->getBehavCamTrigFreq());
+
     int row = 0;
 
     QGridLayout *grid = new QGridLayout();
+    grid->addWidget(new QLabel("Main trigger"), row++, 0);
     grid->addWidget(new QLabel("Physical channel"), row, 0);
     grid->addWidget(mainTrigPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Frequency"), row, 0);
     grid->addWidget(mainTrigFreqSpinBox, row++, 1);
-    QGroupBox *mainTrigGb = new QGroupBox("Main Trigger");
-    mainTrigGb->setLayout(grid);
+    grid->addWidget(new QLabel("Behavior camera"), row++, 0);
+    grid->addWidget(new QLabel("Physical channel"), row, 0);
+    grid->addWidget(behavCamTrigPhysChanComboBox, row++, 1);
+    grid->addWidget(new QLabel("Frequency"), row, 0);
+    grid->addWidget(behavCamTrigFreqSpinBox, row++, 1);
+    QGroupBox *trigGb = new QGroupBox("Trigger");
+    trigGb->setLayout(grid);
 
 
     // electrode readout
@@ -197,7 +211,7 @@ void ControlsWidget::setupUi()
     outputGb->setLayout(grid);
 
     vLayout = new QVBoxLayout();
-    vLayout->addWidget(mainTrigGb);
+    vLayout->addWidget(trigGb);
     vLayout->addWidget(electrodeGb);
     vLayout->addWidget(shutterGb);
 
@@ -256,7 +270,7 @@ void ControlsWidget::setupUi()
     wList = {
         startFreeRunButton,
         startButton,
-        mainTrigGb,
+        trigGb,
         electrodeGb,
         shutterGb,
         outputGb,
@@ -272,6 +286,8 @@ void ControlsWidget::setupUi()
         Tasks *t = optrode().NITasks();
         t->setMainTrigFreq(mainTrigFreqSpinBox->value());
         t->setMainTrigPhysChan(mainTrigPhysChanComboBox->currentText());
+        t->setBehavCamTrigPhysChan(behavCamTrigPhysChanComboBox->currentText());
+        t->setBehavCamTrigFreq(behavCamTrigFreqSpinBox->value());
 
         t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
         t->setShutterPulseTerm(shutterTermComboBox->currentText());

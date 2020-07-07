@@ -64,6 +64,15 @@ void Settings::loadSettings()
     settings.endGroup();
 
 
+    groupName = SETTINGSGROUP_BEHAVCAMTRIG;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ao1");
+    SET_VALUE(groupName, SETTING_FREQ, 25);
+
+    settings.endGroup();
+
+
     groupName = SETTINGSGROUP_ELREADOUT;
     settings.beginGroup(groupName);
 

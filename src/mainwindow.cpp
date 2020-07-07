@@ -104,6 +104,8 @@ void MainWindow::saveSettings() const
     Tasks *t = optrode().NITasks();
     s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN, t->getMainTrigPhysChan());
     s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_FREQ, t->getMainTrigFreq());
+    s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN, t->getBehavCamTrigPhysChan());
+    s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ, t->getBehavCamTrigFreq());
 
     s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
     s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_FREQ, t->getElectrodeReadoutRate());
@@ -137,6 +139,8 @@ void MainWindow::loadSettings()
     Tasks *t = optrode().NITasks();
     t->setMainTrigPhysChan(s.value(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN).toString());
     t->setMainTrigFreq(s.value(SETTINGSGROUP_MAINTRIG, SETTING_FREQ).toDouble());
+    t->setBehavCamTrigPhysChan(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN).toString());
+    t->setBehavCamTrigFreq(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ).toDouble());
 
     t->setElectrodeReadoutPhysChan(s.value(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN).toString());
     t->setElectrodeReadoutRate(s.value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble());

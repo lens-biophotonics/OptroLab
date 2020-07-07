@@ -33,7 +33,6 @@ void ChameleonCamera::open(uint index)
     CameraList camList = sys->GetCameras();
     pCam = camList.GetByIndex(index);
     camList.Clear();
-    pCam->GetTLDeviceNodeMap();
     pCam->Init();
     setupAcquisitionMode();
 }
@@ -86,4 +85,12 @@ void ChameleonCamera::setupAcquisitionMode()
 {
     pCam->AcquisitionMode.SetValue(AcquisitionMode_Continuous);
     pCam->PixelFormat.SetValue(PixelFormat_Mono8);
+
+    pCam->TriggerMode.SetValue(TriggerMode_Off);
+#ifdef WITH_HARDWARE
+    pCam->TriggerSelector.SetValue(TriggerSelector_FrameStart);
+    pCam->TriggerSource.SetValue(TriggerSource_Line2);
+    pCam->TriggerActivation.SetValue(TriggerActivation_RisingEdge);
+    pCam->TriggerMode.SetValue(TriggerMode_On);
+#endif
 }

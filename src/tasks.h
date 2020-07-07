@@ -54,6 +54,12 @@ public:
 
     void setTotalDuration(double value);
 
+    double getBehavCamTrigFreq() const;
+    void setBehavCamTrigFreq(double value);
+
+    QString getBehavCamTrigPhysChan() const;
+    void setBehavCamTrigPhysChan(const QString &value);
+
 signals:
     void started();
     void stopped();
@@ -64,11 +70,14 @@ public slots:
 
 private:
     NITask *mainTrigger;
+    NITask *behavCamTrigger;
     NITask *shutterPulse;
     NITask *elReadout;
 
     QString mainTrigPhysChan;
+    QString behavCamTrigPhysChan;
     double mainTrigFreq;
+    double behavCamTrigFreq;
 
     QString shutterPulseCounter;
     QString shutterPulseTerm;

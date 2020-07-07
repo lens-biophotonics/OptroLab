@@ -16,6 +16,7 @@
 #include "chameleoncamera.h"
 #include "savestackworker.h"
 #include "elreadoutworker.h"
+#include "behavworker.h"
 
 
 static Logger *logger = getLogger("Optrode");
@@ -29,6 +30,7 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     QThread *thread = new QThread();
     thread->setObjectName("ElReadoutWorker_thread");
     elReadoutWorker->moveToThread(thread);
+    behavWorker = new BehavWorker(behaviorCamera);
     thread->start();
 
     connect(this, &Optrode::started, elReadoutWorker, &ElReadoutWorker::start);
@@ -72,6 +74,9 @@ void Optrode::initialize()
         behaviorCamera->logDeviceInfo();
     } catch (std::runtime_error e) {
         onError(e.what());
+    }
+    catch (Spinnaker::Exception e) {
+        onError(QString("Cannot open behavior camera.\n\n%1").arg(e.what()));
     }
     emit initialized();
 }
@@ -158,6 +163,7 @@ void Optrode::startFreeRun()
 {
     logger->info("Start acquisition (free run)");
     tasks->setFreeRunEnabled(true);
+    behavWorker->setSaveToFileEnabled(false);
     _startAcquisition();
 }
 
@@ -187,8 +193,12 @@ void Optrode::start()
 
     elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
 
+    behavWorker->setSaveToFileEnabled(true);
+    behavWorker->setOutputFile(outputFileFullPath());
+
     _startAcquisition();
-    worker->setTimeout(2e6 / NITasks()->getMainTrigFreq());
+    worker->setTimeout(2e6 / tasks->getMainTrigFreq());
+    behavWorker->setFrameRate(tasks->getBehavCamTrigFreq());
     writeRunParams();
 }
 
@@ -208,6 +218,11 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+BehavWorker *Optrode::getBehavWorker() const
+{
+    return behavWorker;
 }
 
 ElReadoutWorker *Optrode::getElReadoutWorker() const

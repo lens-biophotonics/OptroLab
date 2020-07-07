@@ -7,6 +7,7 @@
 #define SETTINGSGROUP_OTHERSETTINGS "OtherSettings"
 #define SETTINGSGROUP_ACQUISITION "Acquisition"
 #define SETTINGSGROUP_MAINTRIG "MainTrigger"
+#define SETTINGSGROUP_BEHAVCAMTRIG "BehavCamTrigger"
 #define SETTINGSGROUP_ELREADOUT "ElectrodeReadout"
 #define SETTINGSGROUP_SHUTTER "ShutterPulse"
 #define SETTINGSGROUP_TIMING "Timing"

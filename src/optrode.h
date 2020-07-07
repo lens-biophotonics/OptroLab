@@ -10,6 +10,7 @@
 class ChameleonCamera;
 class Tasks;
 class ElReadoutWorker;
+class BehavWorker;
 
 class Optrode : public QObject
 {
@@ -47,6 +48,7 @@ public:
     void writeRunParams();
 
     ElReadoutWorker *getElReadoutWorker() const;
+    BehavWorker *getBehavWorker() const;
 
 signals:
     void initializing() const;
@@ -70,6 +72,7 @@ private:
     QString outputPath;
     QString runName;
     ElReadoutWorker *elReadoutWorker;
+    BehavWorker *behavWorker;
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;

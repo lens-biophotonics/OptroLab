@@ -37,7 +37,7 @@ set(SOURCE_FILES
 
     centralwidget.cpp
     controlswidget.cpp
-    behavdispworker.cpp
+    behavworker.cpp
     elreadoutworker.cpp
     displayworker.cpp
     savestackworker.cpp
