@@ -6,8 +6,6 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
     behavCamTrigger = new NITask("behavCamTrigger", this);
     shutterPulse = new NITask("shutterPulse", this);
     elReadout = new NITask("electrodeReadout", this);
-
-    needsInit = true;
 }
 
 void Tasks::init()
@@ -122,8 +120,6 @@ void Tasks::init()
         sBuffer * electrodeReadoutRate);
     elReadout->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
     elReadout->setReadReadAllAvailSamp(true);
-
-    needsInit = false;
 }
 
 NITask *Tasks::electrodeReadout()
@@ -133,8 +129,7 @@ NITask *Tasks::electrodeReadout()
 
 void Tasks::start()
 {
-    if (needsInit)
-        init();
+    init();
     if (!isFreeRunEnabled())
         shutterPulse->startTask();
     elReadout->startTask();
@@ -175,7 +170,6 @@ void Tasks::setBehavCamTrigFreq(double value)
 void Tasks::setTotalDuration(double value)
 {
     totalDuration = value;
-    needsInit = true;
 }
 
 NITask *Tasks::getElReadout() const
@@ -201,7 +195,6 @@ bool Tasks::isFreeRunEnabled() const
 void Tasks::setFreeRunEnabled(bool value)
 {
     freeRunEnabled = value;
-    needsInit = true;
 }
 
 /**
@@ -228,7 +221,6 @@ QString Tasks::getMainTrigPhysChan() const
 
 void Tasks::setMainTrigPhysChan(const QString &value)
 {
-    needsInit = true;
     mainTrigPhysChan = value;
 }
 
@@ -239,7 +231,6 @@ double Tasks::getMainTrigFreq() const
 
 void Tasks::setMainTrigFreq(double value)
 {
-    needsInit = true;
     mainTrigFreq = value;
 }
 
@@ -250,7 +241,6 @@ QString Tasks::getShutterPulseCounter() const
 
 void Tasks::setShutterPulseCounter(const QString &value)
 {
-    needsInit = true;
     shutterPulseCounter = value;
 }
 
@@ -261,7 +251,6 @@ QString Tasks::getShutterPulseTerm() const
 
 void Tasks::setShutterPulseTerm(const QString &value)
 {
-    needsInit = true;
     shutterPulseTerm = value;
 }
 
@@ -272,7 +261,6 @@ double Tasks::getShutterPulseFrequency() const
 
 void Tasks::setShutterPulseFrequency(double value)
 {
-    needsInit = true;
     shutterPulseFrequency = value;
 }
 
@@ -283,7 +271,6 @@ double Tasks::getShutterPulseDuty() const
 
 void Tasks::setShutterPulseDuty(double value)
 {
-    needsInit = true;
     shutterPulseDuty = value;
 }
 
@@ -294,7 +281,6 @@ uInt64 Tasks::getShutterPulseNPulses() const
 
 void Tasks::setShutterPulseNPulses(const uInt64 &value)
 {
-    needsInit = true;
     shutterPulseNPulses = value;
 }
 
@@ -305,7 +291,6 @@ QString Tasks::getElectrodeReadoutPhysChan() const
 
 void Tasks::setElectrodeReadoutPhysChan(const QString &value)
 {
-    needsInit = true;
     electrodeReadoutPhysChan = value;
 }
 
@@ -316,6 +301,5 @@ double Tasks::getElectrodeReadoutRate() const
 
 void Tasks::setElectrodeReadoutRate(double value)
 {
-    needsInit = true;
     electrodeReadoutRate = value;
 }

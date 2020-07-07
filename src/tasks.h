@@ -91,7 +91,6 @@ private:
 
     double totalDuration = 10;
 
-    bool needsInit;
     bool freeRunEnabled;
 };
 
