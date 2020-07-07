@@ -7,7 +7,7 @@
 
 #include <qtlab/core/logmanager.h>
 
-#define INTERVALMSEC 150
+#define INTERVALMSEC 100
 
 ElReadoutWorker::ElReadoutWorker(NITask *elReadoutTask, QObject *parent)
     : QObject(parent), task(elReadoutTask)
@@ -20,12 +20,14 @@ ElReadoutWorker::ElReadoutWorker(NITask *elReadoutTask, QObject *parent)
 void ElReadoutWorker::start()
 {
     totRead = 0;
+    totEmitted = 0;
     mainBuffer.clear();
     if (!freeRun) {
         mainBuffer.reserve(totToBeRead);
     }
 
     timer->start(INTERVALMSEC);
+    et.restart();
 }
 
 void ElReadoutWorker::stop()
@@ -54,12 +56,11 @@ void ElReadoutWorker::saveToFile(QString fullPath)
 
 void ElReadoutWorker::readOut()
 {
-    double Hz = task->getSampClkRate();
-    QVector<double> buf;
-    buf.resize(Hz * INTERVALMSEC / 1000. * 3);
     int32 sampsPerChanRead;
+    double Hz = task->getSampClkRate();
 
 #ifdef WITH_HARDWARE
+    buf.resize(Hz * INTERVALMSEC / 1000. * 3);
     try {
         quint32 avail = task->getReadAvailSampPerChan();
         if (!avail)
@@ -71,7 +72,8 @@ void ElReadoutWorker::readOut()
         logManager().getLogger("ElReadoutWorker")->critical(e.what());
     }
 #else
-    sampsPerChanRead = 25 * INTERVALMSEC / 1000.;
+    Hz = 40;
+    sampsPerChanRead = Hz * INTERVALMSEC / 1000.;
     buf = QVector<double>(sampsPerChanRead, rand());
 #endif
     if (!sampsPerChanRead) {
@@ -90,7 +92,47 @@ void ElReadoutWorker::readOut()
     }
 
     totRead += buf.size();
-    emit newData(buf);
+
+    if (emissionRate <= 0) {
+        emit newData(buf);
+        return;
+    }
+
+    QVector<double> temp;
+    size_t tempSize;
+    double elapsed;
+    if (timer->isActive())
+        elapsed = et.elapsed() / 1000.;
+    else
+        elapsed = totToBeRead / Hz;
+    tempSize = elapsed * emissionRate - totEmitted;
+    temp.resize(tempSize);
+
+    size_t stride = Hz / emissionRate;
+    auto it = temp.begin();
+    auto buf_it = buf.begin();
+    while (it < temp.end()) {
+        *it = *buf_it;
+        it++;
+        buf_it += stride;
+    }
+
+    totEmitted += temp.size();
+    emit newData(temp);
+}
+
+/**
+ * @brief Force a lower rate for data emission
+ * @param Hz
+ *
+ * This is used to limit the amount of data sent for plotting. Even if the real sample rate is
+ * 10 kHz, by setting this value data will be emitted (newData() signal) at a lower rate as if it
+ * were acquired at that rate.
+ */
+
+void ElReadoutWorker::setEmissionRate(double Hz)
+{
+    emissionRate = Hz;
 }
 
 size_t ElReadoutWorker::getTotRead() const

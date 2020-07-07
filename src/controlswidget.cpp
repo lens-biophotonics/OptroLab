@@ -71,7 +71,7 @@ void ControlsWidget::setupUi()
     electrodePhysChanComboBox->setCurrentText(t->getElectrodeReadoutPhysChan());
     QDoubleSpinBox *electrodeSampRateSpinBox = new QDoubleSpinBox();
     electrodeSampRateSpinBox->setSuffix("Hz");
-    electrodeSampRateSpinBox->setRange(0, 50000);
+    electrodeSampRateSpinBox->setRange(25, 50000);
     electrodeSampRateSpinBox->setValue(t->getElectrodeReadoutRate());
 
     row = 0;

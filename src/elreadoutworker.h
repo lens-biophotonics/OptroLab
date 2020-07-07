@@ -3,6 +3,7 @@
 
 #include <QVector>
 #include <QTimer>
+#include <QElapsedTimer>
 
 #include <qtlab/hw/ni/nitask.h>
 
@@ -20,6 +21,8 @@ public:
 
     size_t getTotRead() const;
 
+    void setEmissionRate(double Hz);
+
 public slots:
     void start();
     void stop();
@@ -33,13 +36,16 @@ private:
     void readOut();
 
     QTimer *timer;
+    QElapsedTimer et;
     QVector<double> buf;
     QVector<double> mainBuffer;
     QString outputFile;
+    double emissionRate = -1;
 
     bool freeRun = true;
     size_t totRead;
     size_t totToBeRead;
+    size_t totEmitted;
 
     NITask *task;
 };

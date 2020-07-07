@@ -77,9 +77,12 @@ void MainPage::setupUi()
     connect(optrode().getElReadoutWorker(), &ElReadoutWorker::newData,
             timePlot, &TimePlot::appendPoints);
 
+    double sr = 25;  // limit plotting to 25 Hz
+
+    optrode().getElReadoutWorker()->setEmissionRate(sr);
+
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun){
         Tasks *t = optrode().NITasks();
-        double sr = t->getElectrodeReadoutRate();
         timePlot->clear();
         timePlot->setSamplingRate(sr);
         timePlot->setBufSize(freeRun ? 22.0 : optrode().totalDuration());
