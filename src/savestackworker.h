@@ -27,7 +27,7 @@ protected:
 private:
     bool stopped;
     double timeout;
-    QString outputFile;
+    QString outputFile1, outputFile2;
     int32_t frameCount;
     OrcaFlash *orca;
 

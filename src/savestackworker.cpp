@@ -41,7 +41,8 @@ void SaveStackWorker::run()
         stopped = true;
     });
 
-    TIFFWriter writer(outputFile, true);
+    TIFFWriter writer1(outputFile1, true);
+    TIFFWriter writer2(outputFile2, true);
 
     while (!stopped && i < frameCount) {
 #ifdef WITH_HARDWARE
@@ -77,22 +78,26 @@ void SaveStackWorker::run()
             catch (std::runtime_error) {
                 continue;
             }
-            writer.write((quint16 *)buf, width, height, 1);
+#else
+            orca->copyLastFrame(buf, n);
+            msleep(20);
+#endif
+            if (i % 2 == 0) {
+                writer1.write((quint16 *)buf, width, height, 1);
+            } else {
+                writer2.write((quint16 *)buf, width, height, 1);
+            }
             i++;
+#ifdef WITH_HARDWARE
             break;
         case DCAMERR_TIMEOUT:
             logger->warning(QString("Camera %1 timeout").arg(orca->getCameraIndex()));
             break;
         default:
             break;
-        }
-#else
-        orca->copyLastFrame(buf, n);
-        msleep(20);
-        writer.write((quint16 *)buf, width, height, 1);
-        i++;
+        }  // switch
 #endif
-    }
+    }  // while
 
 #ifdef WITH_HARDWARE
 #else
@@ -118,7 +123,8 @@ void SaveStackWorker::setFrameCount(int32_t count)
 
 void SaveStackWorker::setOutputFile(const QString &fname)
 {
-    outputFile = fname;
+    outputFile1 = fname + "_led1.tiff";
+    outputFile2 = fname + "_led2.tiff";
 }
 
 double SaveStackWorker::getTimeout() const

@@ -182,7 +182,7 @@ void Optrode::start()
 
     connect(worker, &QThread::finished,
             worker, &QThread::deleteLater);
-    worker->setOutputFile(outputFileFullPath() + ".tiff");
+    worker->setOutputFile(outputFileFullPath());
     worker->setFrameCount(tasks->getMainTrigFreq() * totalDuration());
 
     connect(worker, &SaveStackWorker::error,
