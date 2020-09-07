@@ -250,7 +250,7 @@ void Optrode::writeRunParams(QString fileName)
     };
 
     QTextStream out(&outFile);
-    out << "frame_rate: " << tasks->getMainTrigFreq() << "\n";
+    out << "led_rate: " << tasks->getLEDFreq() << "\n";
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
     out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
     out << "stimul_frequency: " << tasks->getShutterPulseFrequency() << "\n";
@@ -327,7 +327,7 @@ void Optrode::_startAcquisition()
         behaviorCamera->startAcquisition();
         orca->cap_start();
 
-        tasks->setMainTrigFreq(frameRate);
+        tasks->setLEDFreq(frameRate / 2);
         tasks->start();
     } catch (std::runtime_error e) {
         onError(e.what());

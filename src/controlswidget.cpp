@@ -32,12 +32,11 @@ void ControlsWidget::setupUi()
     // trigger
 
     QComboBox *mainTrigPhysChanComboBox = new QComboBox();
-    mainTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
+    mainTrigPhysChanComboBox->addItems(NI::getCOPhysicalChans());
     mainTrigPhysChanComboBox->setCurrentText(t->getMainTrigPhysChan());
-    QSpinBox *mainTrigFreqSpinBox = new QSpinBox();
-    mainTrigFreqSpinBox->setSuffix("Hz");
-    mainTrigFreqSpinBox->setRange(1, 90);
-    mainTrigFreqSpinBox->setValue(t->getMainTrigFreq());
+    QComboBox *mainTrigTermComboBox = new QComboBox();
+    mainTrigTermComboBox->addItems(NI::getTerminals());
+    mainTrigTermComboBox->setCurrentText(t->getMainTrigTerm());
 
     QComboBox *behavCamTrigPhysChanComboBox = new QComboBox();
     behavCamTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
@@ -50,19 +49,55 @@ void ControlsWidget::setupUi()
     int row = 0;
 
     QGridLayout *grid = new QGridLayout();
-    grid->addWidget(new QLabel("Main trigger"), row++, 0);
+//    grid->addWidget(new QLabel("Main trigger"), row++, 0);
     grid->addWidget(new QLabel("Physical channel"), row, 0);
     grid->addWidget(mainTrigPhysChanComboBox, row++, 1);
-    grid->addWidget(new QLabel("Frequency"), row, 0);
-    grid->addWidget(mainTrigFreqSpinBox, row++, 1);
-    grid->addWidget(new QLabel("Behavior camera"), row++, 0);
-    grid->addWidget(new QLabel("Physical channel"), row, 0);
-    grid->addWidget(behavCamTrigPhysChanComboBox, row++, 1);
-    grid->addWidget(new QLabel("Frequency"), row, 0);
-    grid->addWidget(behavCamTrigFreqSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Terminal"), row, 0);
+    grid->addWidget(mainTrigTermComboBox, row++, 1);
+//    grid->addWidget(new QLabel("Frequency"), row, 0);
+//    grid->addWidget(mainTrigFreqSpinBox, row++, 1);
+//    grid->addWidget(new QLabel("Behavior camera"), row++, 0);
+//    grid->addWidget(new QLabel("Physical channel"), row, 0);
+//    grid->addWidget(behavCamTrigPhysChanComboBox, row++, 1);
+//    grid->addWidget(new QLabel("Frequency"), row, 0);
+//    grid->addWidget(behavCamTrigFreqSpinBox, row++, 1);
     QGroupBox *trigGb = new QGroupBox("Trigger");
     trigGb->setLayout(grid);
 
+
+    // LEDs
+    QSpinBox *LEDFreqSpinBox = new QSpinBox();
+    LEDFreqSpinBox->setSuffix("Hz");
+    LEDFreqSpinBox->setRange(1, 90);
+    LEDFreqSpinBox->setValue(t->getLEDFreq());
+
+    QComboBox *LED1PhysChanComboBox = new QComboBox();
+    LED1PhysChanComboBox->addItems(NI::getCOPhysicalChans());
+    LED1PhysChanComboBox->setCurrentText(t->getLED1PhysChan());
+    QComboBox *LED1TermComboBox = new QComboBox();
+    LED1TermComboBox->addItems(NI::getTerminals());
+    LED1TermComboBox->setCurrentText(t->getLED1Term());
+
+    QComboBox *LED2PhysChanComboBox = new QComboBox();
+    LED2PhysChanComboBox->addItems(NI::getCOPhysicalChans());
+    LED2PhysChanComboBox->setCurrentText(t->getLED2PhysChan());
+    QComboBox *LED2TermComboBox = new QComboBox();
+    LED2TermComboBox->addItems(NI::getTerminals());
+    LED2TermComboBox->setCurrentText(t->getLED2Term());
+
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("LED 1 Phys chan"), row, 0);
+    grid->addWidget(LED1PhysChanComboBox, row++, 1);
+    grid->addWidget(new QLabel("LED 1 Terminal"), row, 0);
+    grid->addWidget(LED1TermComboBox, row++, 1);
+    grid->addWidget(new QLabel("LED 2 Phys chan"), row, 0);
+    grid->addWidget(LED2PhysChanComboBox, row++, 1);
+    grid->addWidget(new QLabel("LED 2 Terminal"), row, 0);
+    grid->addWidget(LED2TermComboBox, row++, 1);
+    grid->addWidget(new QLabel("Frequency"), row, 0);
+    grid->addWidget(LEDFreqSpinBox, row++, 1);
+    QGroupBox *LEDGb = new QGroupBox("LEDs");
+    LEDGb->setLayout(grid);
 
     // electrode readout
 
@@ -212,6 +247,7 @@ void ControlsWidget::setupUi()
 
     vLayout = new QVBoxLayout();
     vLayout->addWidget(trigGb);
+    vLayout->addWidget(LEDGb);
     vLayout->addWidget(electrodeGb);
     vLayout->addWidget(shutterGb);
 
@@ -271,6 +307,7 @@ void ControlsWidget::setupUi()
         startFreeRunButton,
         startButton,
         trigGb,
+        LEDGb,
         electrodeGb,
         shutterGb,
         outputGb,
@@ -284,10 +321,16 @@ void ControlsWidget::setupUi()
 
     std::function<void()> applyValues = [ = ](){
         Tasks *t = optrode().NITasks();
-        t->setMainTrigFreq(mainTrigFreqSpinBox->value());
         t->setMainTrigPhysChan(mainTrigPhysChanComboBox->currentText());
-        t->setBehavCamTrigPhysChan(behavCamTrigPhysChanComboBox->currentText());
-        t->setBehavCamTrigFreq(behavCamTrigFreqSpinBox->value());
+        t->setMainTrigTerm(mainTrigTermComboBox->currentText());
+//        t->setBehavCamTrigPhysChan(behavCamTrigPhysChanComboBox->currentText());
+//        t->setBehavCamTrigFreq(behavCamTrigFreqSpinBox->value());
+
+        t->setLEDFreq(LEDFreqSpinBox->value());
+        t->setLED1PhysChan(LED1PhysChanComboBox->currentText());
+        t->setLED1Term(LED1TermComboBox->currentText());
+        t->setLED2PhysChan(LED1PhysChanComboBox->currentText());
+        t->setLED2Term(LED2TermComboBox->currentText());
 
         t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
         t->setShutterPulseTerm(shutterTermComboBox->currentText());

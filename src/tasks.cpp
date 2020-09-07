@@ -5,14 +5,19 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
     mainTrigger = new NITask("mainTrigger", this);
     behavCamTrigger = new NITask("behavCamTrigger", this);
     shutterPulse = new NITask("shutterPulse", this);
+    LED1 = new NITask("LED1", this);
+    LED2 = new NITask("LED2", this);
     elReadout = new NITask("electrodeReadout", this);
 }
 
 void Tasks::init()
 {
     QList<NITask *> taskList;
+    QList<NITask *> triggeredTasks;
 
-    taskList << mainTrigger << behavCamTrigger << shutterPulse << elReadout;
+    triggeredTasks << behavCamTrigger << shutterPulse << elReadout << LED1 << LED2;
+
+    taskList << triggeredTasks << mainTrigger;
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -21,59 +26,18 @@ void Tasks::init()
 
 
     // mainTrigger
-    // we have to use an AO for the main trigger because this board has only 2
-    // counters and they are both used for the SampMode_FiniteSamps in task
-    // shutterPulse
     mainTrigger->createTask();
-    mainTrigger->createAOVoltageChan(mainTrigPhysChan.toLatin1(),
-                                     nullptr,
-                                     0, 5, // range
-                                     NITask::VoltUnits_Volts, nullptr);
+    mainTrigger->createCOPulseChanFreq(mainTrigPhysChan.toLatin1(),
+                                       nullptr,
+                                       NITask::FreqUnits_Hz,
+                                       NITask::IdleState_Low,
+                                       0, 2 * LEDFreq, 0.5);
 
-    // because there are 2 samples, the sampling rate is twice the wanted
-    // square wave frequency
-    mainTrigger->cfgSampClkTiming(nullptr,
-                                  2 * mainTrigFreq,
-                                  NITask::Edge_Rising,
-                                  NITask::SampMode_ContSamps, 2);
-    const float64 data[] = {5, 0};
-    int32 sampsPerChanWritten;
-    mainTrigger->writeAnalogF64(2,      // number of samples
-                                false,  // autostart
-                                .2,     // timeout
-                                NITask::DataLayout_GroupByChannel,
-                                data,
-                                &sampsPerChanWritten);
-#ifdef WITH_HARDWARE
-    if (sampsPerChanWritten != 2)
-        throw std::runtime_error("invalid number of samples written");
-#endif
-
-    const char startTriggerSource[] = "ao/StartTrigger";
-
+    mainTrigger->cfgImplicitTiming(NITask::SampMode_FiniteSamps, getMainTrigNPulses());
+    mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
 
     // behavior camera trigger
     behavCamTrigger->createTask();
-    behavCamTrigger->createAOVoltageChan(behavCamTrigPhysChan.toLatin1(),
-                                         nullptr, 0, 5,
-                                         NITask::VoltUnits_Volts, nullptr);
-    behavCamTrigger->cfgSampClkTiming(nullptr,
-                                      2 * behavCamTrigFreq,
-                                      NITask::Edge_Rising,
-                                      NITask::SampMode_ContSamps, 2);
-    behavCamTrigger->writeAnalogF64(2,      // number of samples
-                                    false,  // autostart
-                                    .2,     // timeout
-                                    NITask::DataLayout_GroupByChannel,
-                                    data,
-                                    &sampsPerChanWritten);
-    behavCamTrigger->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
-
-#ifdef WITH_HARDWARE
-    if (sampsPerChanWritten != 2)
-        throw std::runtime_error("invalid number of samples written");
-#endif
-
 
 
     // shutterPulse
@@ -89,8 +53,28 @@ void Tasks::init()
     shutterPulse->setCOPulseTerm(nullptr, shutterPulseTerm.toLatin1());
     shutterPulse->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                     shutterPulseNPulses);
-    shutterPulse->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
 
+
+    // LED1
+    LED1->createTask();
+    LED1->createCOPulseChanFreq(LED1PhysChan.toLatin1(),
+                                nullptr,
+                                NITask::FreqUnits_Hz,
+                                NITask::IdleState_Low,
+                                0, LEDFreq, 0.5);
+    LED1->setCOPulseTerm(nullptr, LED1Term.toLatin1());
+    LED1->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
+
+
+    // LED2
+    LED2->createTask();
+    LED2->createCOPulseChanFreq(LED2PhysChan.toLatin1(),
+                                nullptr,
+                                NITask::FreqUnits_Hz,
+                                NITask::IdleState_Low,
+                                1 / (2 * LEDFreq), LEDFreq, 0.5);
+    LED2->setCOPulseTerm(nullptr, LED2Term.toLatin1());
+    LED2->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
 
 
     // electrodeReadout
@@ -113,13 +97,22 @@ void Tasks::init()
     }
 
     elReadout->cfgSampClkTiming(
-        "OnboardClock",
+        nullptr,
         electrodeReadoutRate,
         NITask::Edge_Rising,
         sampleMode,
         sBuffer * electrodeReadoutRate);
-    elReadout->cfgDigEdgeStartTrig(startTriggerSource, NITask::Edge_Rising);
     elReadout->setReadReadAllAvailSamp(true);
+
+
+    // configure triggering
+
+    const char *startTriggerSource = mainTrigTerm.toStdString().c_str();
+
+    for (NITask *task : triggeredTasks) {
+        task->cfgDigEdgeStartTrig(startTriggerSource,
+                                  NITask::Edge_Rising);
+    }
 }
 
 NITask *Tasks::electrodeReadout()
@@ -130,12 +123,15 @@ NITask *Tasks::electrodeReadout()
 void Tasks::start()
 {
     init();
-    if (!isFreeRunEnabled())
+    if (!isFreeRunEnabled()) {
         shutterPulse->startTask();
+        LED1->startTask();
+        LED2->startTask();
+    }
     elReadout->startTask();
-    behavCamTrigger->startTask();
+//    behavCamTrigger->startTask();
 
-    // last to be started because it will trigger the other three tasks
+    // last to be started because it will trigger the other tasks
     mainTrigger->startTask();
 }
 
@@ -143,8 +139,70 @@ void Tasks::stop()
 {
     mainTrigger->stopTask();
     shutterPulse->stopTask();
+    LED1->stopTask();
+    LED2->stopTask();
     elReadout->stopTask();
-    behavCamTrigger->stopTask();
+//    behavCamTrigger->stopTask();
+}
+
+QString Tasks::getMainTrigTerm() const
+{
+    return mainTrigTerm;
+}
+
+void Tasks::setMainTrigTerm(const QString &value)
+{
+    mainTrigTerm = value;
+}
+
+QString Tasks::getLED2Term() const
+{
+    return LED2Term;
+}
+
+void Tasks::setLED2Term(const QString &value)
+{
+    LED2Term = value;
+}
+
+QString Tasks::getLED1Term() const
+{
+    return LED1Term;
+}
+
+void Tasks::setLED1Term(const QString &value)
+{
+    LED1Term = value;
+}
+
+QString Tasks::getLED2PhysChan() const
+{
+    return LED2PhysChan;
+}
+
+void Tasks::setLED2PhysChan(const QString &value)
+{
+    LED2PhysChan = value;
+}
+
+QString Tasks::getLED1PhysChan() const
+{
+    return LED1PhysChan;
+}
+
+void Tasks::setLED1PhysChan(const QString &value)
+{
+    LED1PhysChan = value;
+}
+
+double Tasks::getLEDFreq() const
+{
+    return LEDFreq;
+}
+
+void Tasks::setLEDFreq(double value)
+{
+    LEDFreq = value;
 }
 
 QString Tasks::getBehavCamTrigPhysChan() const
@@ -226,12 +284,12 @@ void Tasks::setMainTrigPhysChan(const QString &value)
 
 double Tasks::getMainTrigFreq() const
 {
-    return mainTrigFreq;
+    return 2 * getLEDFreq();
 }
 
-void Tasks::setMainTrigFreq(double value)
+double Tasks::getMainTrigNPulses() const
 {
-    mainTrigFreq = value;
+    return totalDuration * getMainTrigFreq();
 }
 
 QString Tasks::getShutterPulseCounter() const

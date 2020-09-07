@@ -18,7 +18,7 @@ public:
     void setMainTrigPhysChan(const QString &value);
 
     double getMainTrigFreq() const;
-    void setMainTrigFreq(double value);
+    double getMainTrigNPulses() const;
 
     QString getShutterPulseCounter() const;
     void setShutterPulseCounter(const QString &value);
@@ -60,6 +60,24 @@ public:
     QString getBehavCamTrigPhysChan() const;
     void setBehavCamTrigPhysChan(const QString &value);
 
+    double getLEDFreq() const;
+    void setLEDFreq(double value);
+
+    QString getLED1PhysChan() const;
+    void setLED1PhysChan(const QString &value);
+
+    QString getLED2PhysChan() const;
+    void setLED2PhysChan(const QString &value);
+
+    QString getLED1Term() const;
+    void setLED1Term(const QString &value);
+
+    QString getLED2Term() const;
+    void setLED2Term(const QString &value);
+
+    QString getMainTrigTerm() const;
+    void setMainTrigTerm(const QString &value);
+
 signals:
     void started();
     void stopped();
@@ -73,10 +91,11 @@ private:
     NITask *behavCamTrigger;
     NITask *shutterPulse;
     NITask *elReadout;
+    NITask *LED1, *LED2;
 
-    QString mainTrigPhysChan;
+    QString mainTrigPhysChan, mainTrigTerm;
     QString behavCamTrigPhysChan;
-    double mainTrigFreq;
+    double LEDFreq;
     double behavCamTrigFreq;
 
     QString shutterPulseCounter;
@@ -85,6 +104,9 @@ private:
     double shutterPulseFrequency = 20;
     double shutterPulseDuty = 0.5;
     uInt64 shutterPulseNPulses = 20;
+
+    QString LED1PhysChan, LED2PhysChan;
+    QString LED1Term, LED2Term;
 
     QString electrodeReadoutPhysChan;
     double electrodeReadoutRate = 10000;

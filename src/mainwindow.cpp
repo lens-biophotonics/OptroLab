@@ -103,9 +103,15 @@ void MainWindow::saveSettings() const
 
     Tasks *t = optrode().NITasks();
     s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN, t->getMainTrigPhysChan());
-    s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_FREQ, t->getMainTrigFreq());
+    s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_TERM, t->getMainTrigTerm());
     s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN, t->getBehavCamTrigPhysChan());
     s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ, t->getBehavCamTrigFreq());
+
+    s.setValue(SETTINGSGROUP_LED1, SETTING_FREQ, t->getLEDFreq());
+    s.setValue(SETTINGSGROUP_LED1, SETTING_PHYSCHAN, t->getLED1PhysChan());
+    s.setValue(SETTINGSGROUP_LED1, SETTING_TERM, t->getLED1Term());
+    s.setValue(SETTINGSGROUP_LED2, SETTING_PHYSCHAN, t->getLED2PhysChan());
+    s.setValue(SETTINGSGROUP_LED2, SETTING_TERM, t->getLED2Term());
 
     s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
     s.setValue(SETTINGSGROUP_ELREADOUT, SETTING_FREQ, t->getElectrodeReadoutRate());
@@ -138,9 +144,15 @@ void MainWindow::loadSettings()
 
     Tasks *t = optrode().NITasks();
     t->setMainTrigPhysChan(s.value(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN).toString());
-    t->setMainTrigFreq(s.value(SETTINGSGROUP_MAINTRIG, SETTING_FREQ).toDouble());
+    t->setMainTrigTerm(s.value(SETTINGSGROUP_MAINTRIG, SETTING_TERM).toString());
     t->setBehavCamTrigPhysChan(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN).toString());
     t->setBehavCamTrigFreq(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ).toDouble());
+
+    t->setLEDFreq(s.value(SETTINGSGROUP_LED1, SETTING_FREQ).toDouble());
+    t->setLED1PhysChan(s.value(SETTINGSGROUP_LED1, SETTING_PHYSCHAN).toString());
+    t->setLED1Term(s.value(SETTINGSGROUP_LED1, SETTING_TERM).toString());
+    t->setLED2PhysChan(s.value(SETTINGSGROUP_LED2, SETTING_PHYSCHAN).toString());
+    t->setLED2Term(s.value(SETTINGSGROUP_LED2, SETTING_TERM).toString());
 
     t->setElectrodeReadoutPhysChan(s.value(SETTINGSGROUP_ELREADOUT, SETTING_PHYSCHAN).toString());
     t->setElectrodeReadoutRate(s.value(SETTINGSGROUP_ELREADOUT, SETTING_FREQ).toDouble());

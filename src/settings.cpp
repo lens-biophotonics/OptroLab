@@ -58,8 +58,27 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_MAINTRIG;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ao0");
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr0");
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI0");
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_LED1;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr1");
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI1");
     SET_VALUE(groupName, SETTING_FREQ, 50);
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_LED2;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr2");
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI2");
 
     settings.endGroup();
 
@@ -85,8 +104,8 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_SHUTTER;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr0");
-    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI0");
+    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr3");
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI3");
     SET_VALUE(groupName, SETTING_FREQ, 50);
     SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
     SET_VALUE(groupName, SETTING_DUTY, 0.5);
