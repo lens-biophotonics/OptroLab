@@ -10,6 +10,7 @@
 #define SETTINGSGROUP_LED1 "LED1"
 #define SETTINGSGROUP_LED2 "LED2"
 #define SETTINGSGROUP_BEHAVCAMTRIG "BehavCamTrigger"
+#define SETTINGSGROUP_BEHAVCAMROI "BehavCamROI"
 #define SETTINGSGROUP_ELREADOUT "ElectrodeReadout"
 #define SETTINGSGROUP_SHUTTER "ShutterPulse"
 #define SETTINGSGROUP_TIMING "Timing"
@@ -33,6 +34,8 @@
 
 #define SETTING_OUTPUTPATH "outputPath"
 #define SETTING_RUNNAME "runName"
+
+#define SETTING_ROI "ROI"
 
 typedef QMap<QString, QVariant> SettingsMap;
 

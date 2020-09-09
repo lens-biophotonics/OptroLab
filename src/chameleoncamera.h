@@ -5,6 +5,7 @@
 #include <SpinGenApi/SpinnakerGenApi.h>
 
 #include <QObject>
+#include <QRect>
 
 class ChameleonCamera : public QObject
 {
@@ -18,6 +19,9 @@ public:
     Spinnaker::ImagePtr getNextImage(uint64_t timeout);
     QSize imageSize();
 
+    QRect getROI() const;
+    void setROI(const QRect &value);
+
 public slots:
     void startAcquisition();
     void stopAcquisition();
@@ -28,6 +32,7 @@ signals:
 private:
     Spinnaker::CameraPtr pCam;
     bool capturing;
+    QRect roi;
 
     void setupAcquisitionMode();
 };

@@ -34,7 +34,6 @@ void ChameleonCamera::open(uint index)
     pCam = camList.GetByIndex(index);
     camList.Clear();
     pCam->Init();
-    setupAcquisitionMode();
 }
 
 void ChameleonCamera::logDeviceInfo()
@@ -69,6 +68,7 @@ QSize ChameleonCamera::imageSize()
 
 void ChameleonCamera::startAcquisition()
 {
+    setupAcquisitionMode();
     pCam->BeginAcquisition();
     capturing = true;
     emit acquisitionStarted();
@@ -79,6 +79,16 @@ void ChameleonCamera::stopAcquisition()
     pCam->EndAcquisition();
     capturing = false;
     emit acquisitionStopped();
+}
+
+QRect ChameleonCamera::getROI() const
+{
+    return roi;
+}
+
+void ChameleonCamera::setROI(const QRect &value)
+{
+    roi = value;
 }
 
 void ChameleonCamera::setupAcquisitionMode()
@@ -93,4 +103,12 @@ void ChameleonCamera::setupAcquisitionMode()
     pCam->TriggerActivation.SetValue(TriggerActivation_RisingEdge);
     pCam->TriggerMode.SetValue(TriggerMode_On);
 #endif
+
+    pCam->OffsetX.SetValue(0);
+    pCam->OffsetY.SetValue(0);
+
+    pCam->Width.SetValue(roi.width());
+    pCam->Height.SetValue(roi.height());
+    pCam->OffsetX.SetValue(roi.x());
+    pCam->OffsetY.SetValue(roi.y());
 }

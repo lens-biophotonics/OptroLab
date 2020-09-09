@@ -15,6 +15,7 @@
 #include "tasks.h"
 
 #include "version.h"
+#include "chameleoncamera.h"
 
 using namespace Spinnaker;
 
@@ -107,6 +108,8 @@ void MainWindow::saveSettings() const
     s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN, t->getBehavCamTrigPhysChan());
     s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ, t->getBehavCamTrigFreq());
 
+    s.setValue(SETTINGSGROUP_BEHAVCAMROI, SETTING_ROI, optrode().getBehaviorCamera()->getROI());
+
     s.setValue(SETTINGSGROUP_LED1, SETTING_FREQ, t->getLEDFreq());
     s.setValue(SETTINGSGROUP_LED1, SETTING_PHYSCHAN, t->getLED1PhysChan());
     s.setValue(SETTINGSGROUP_LED1, SETTING_TERM, t->getLED1Term());
@@ -168,6 +171,8 @@ void MainWindow::loadSettings()
 
     optrode().setOutputDir(s.value(SETTINGSGROUP_ACQUISITION, SETTING_OUTPUTPATH).toString());
     optrode().setRunName(s.value(SETTINGSGROUP_ACQUISITION, SETTING_RUNNAME).toString());
+
+    optrode().getBehaviorCamera()->setROI(s.value(SETTINGSGROUP_BEHAVCAMROI, SETTING_ROI).toRect());
 
     QSettings settings;
 

@@ -2,6 +2,7 @@
 
 #include <QSettings>
 #include <QDir>
+#include <QRect>
 
 #include "optrode.h"
 
@@ -88,6 +89,14 @@ void Settings::loadSettings()
 
     SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ao1");
     SET_VALUE(groupName, SETTING_FREQ, 25);
+
+    settings.endGroup();
+
+
+    groupName = SETTINGSGROUP_BEHAVCAMROI;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_ROI, QRect(0, 0, 1280, 1024));
 
     settings.endGroup();
 

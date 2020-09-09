@@ -19,6 +19,7 @@
 #include "controlswidget.h"
 #include "elreadoutworker.h"
 #include "tasks.h"
+#include "chameleoncamera.h"
 
 ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
 {
@@ -226,6 +227,36 @@ void ControlsWidget::setupUi()
     controlsGb->setLayout(vLayout);
 
 
+    // ROI
+
+    QRect roi = optrode().getBehaviorCamera()->getROI();
+    QSpinBox *ROIxSpinBox = new QSpinBox();
+    ROIxSpinBox->setRange(0, 1280 - 1);
+    ROIxSpinBox->setValue(roi.x());
+    QSpinBox *ROIySpinBox = new QSpinBox();
+    ROIySpinBox->setRange(0, 1024 - 1);
+    ROIySpinBox->setValue(roi.y());
+    QSpinBox *ROIWidthSpinBox = new QSpinBox();
+    ROIWidthSpinBox->setRange(0, 1280);
+    ROIWidthSpinBox->setValue(roi.width());
+    QSpinBox *ROIHeightSpinBox = new QSpinBox();
+    ROIHeightSpinBox->setRange(0, 1024);
+    ROIHeightSpinBox->setValue(roi.height());
+
+    row = 0;
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("X"), row, 0);
+    grid->addWidget(ROIxSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Y"), row, 0);
+    grid->addWidget(ROIySpinBox, row++, 1);
+    grid->addWidget(new QLabel("Width"), row, 0);
+    grid->addWidget(ROIWidthSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Height"), row, 0);
+    grid->addWidget(ROIHeightSpinBox, row++, 1);
+
+    QGroupBox *ROIGb = new QGroupBox("BehavCam ROI");
+    ROIGb->setLayout(grid);
+
     // output files
     row = 0;
     int col = 0;
@@ -253,6 +284,7 @@ void ControlsWidget::setupUi()
 
     QVBoxLayout *vLayout2 = new QVBoxLayout();
     vLayout2->addWidget(timingGb);
+    vLayout2->addWidget(ROIGb);
     vLayout2->addWidget(controlsGb);
 
     QHBoxLayout *hLayout = new QHBoxLayout();
@@ -308,6 +340,7 @@ void ControlsWidget::setupUi()
         startButton,
         trigGb,
         LEDGb,
+        ROIGb,
         electrodeGb,
         shutterGb,
         outputGb,
@@ -346,6 +379,13 @@ void ControlsWidget::setupUi()
 
         optrode().setOutputDir(outputPathLineEdit->text());
         optrode().setRunName(runNameLineEdit->text());
+
+        QRect roi;
+        roi.setX(ROIxSpinBox->value());
+        roi.setY(ROIySpinBox->value());
+        roi.setWidth(ROIWidthSpinBox->value());
+        roi.setHeight(ROIHeightSpinBox->value());
+        optrode().getBehaviorCamera()->setROI(roi);
     };
 
     auto clicked = &QPushButton::clicked;
