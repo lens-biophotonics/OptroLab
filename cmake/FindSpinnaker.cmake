@@ -16,7 +16,8 @@ find_library(Spinnaker_LIBRARY
 )
 
 find_library(SpinVideo_LIBRARY
-    NAMES SpinVideo
+    NAMES SpinVideo SpinVideo_v140
+	PATH_SUFFIXES vs2015
     PATHS
     /usr/lib/x86_64-linux-gnu
     /usr/lib
