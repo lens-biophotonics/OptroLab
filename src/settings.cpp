@@ -69,7 +69,7 @@ void Settings::loadSettings()
 
     SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr1");
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI1");
-    SET_VALUE(groupName, SETTING_FREQ, 50);
+    SET_VALUE(groupName, SETTING_FREQ, 45);
 
     settings.endGroup();
 

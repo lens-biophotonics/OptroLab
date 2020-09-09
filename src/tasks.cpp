@@ -33,7 +33,11 @@ void Tasks::init()
                                        NITask::IdleState_Low,
                                        0, 2 * LEDFreq, 0.5);
 
-    mainTrigger->cfgImplicitTiming(NITask::SampMode_FiniteSamps, getMainTrigNPulses());
+    if (freeRunEnabled) {
+        mainTrigger->cfgImplicitTiming(NITask::SampMode_ContSamps, 10);
+    } else {
+        mainTrigger->cfgImplicitTiming(NITask::SampMode_FiniteSamps, getMainTrigNPulses());
+    }
     mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
 
     // behavior camera trigger
@@ -105,12 +109,9 @@ void Tasks::init()
     elReadout->setReadReadAllAvailSamp(true);
 
 
-    // configure triggering
-
-    const char *startTriggerSource = mainTrigTerm.toStdString().c_str();
-
+    // configure start triggers
     for (NITask *task : triggeredTasks) {
-        task->cfgDigEdgeStartTrig(startTriggerSource,
+        task->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
                                   NITask::Edge_Rising);
     }
 }

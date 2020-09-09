@@ -68,7 +68,7 @@ void ControlsWidget::setupUi()
     // LEDs
     QSpinBox *LEDFreqSpinBox = new QSpinBox();
     LEDFreqSpinBox->setSuffix("Hz");
-    LEDFreqSpinBox->setRange(1, 90);
+    LEDFreqSpinBox->setRange(1, 45);
     LEDFreqSpinBox->setValue(t->getLEDFreq());
 
     QComboBox *LED1PhysChanComboBox = new QComboBox();
@@ -329,7 +329,7 @@ void ControlsWidget::setupUi()
         t->setLEDFreq(LEDFreqSpinBox->value());
         t->setLED1PhysChan(LED1PhysChanComboBox->currentText());
         t->setLED1Term(LED1TermComboBox->currentText());
-        t->setLED2PhysChan(LED1PhysChanComboBox->currentText());
+        t->setLED2PhysChan(LED2PhysChanComboBox->currentText());
         t->setLED2Term(LED2TermComboBox->currentText());
 
         t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
