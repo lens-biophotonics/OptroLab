@@ -1,4 +1,9 @@
+#include <qtlab/core/logmanager.h>
+
 #include "tasks.h"
+
+static Logger *logger = logManager().getLogger("BehavDispWorker");
+
 
 Tasks::Tasks(QObject *parent) : QObject(parent)
 {
@@ -37,6 +42,7 @@ void Tasks::init()
         mainTrigger->cfgImplicitTiming(NITask::SampMode_ContSamps, 10);
     } else {
         mainTrigger->cfgImplicitTiming(NITask::SampMode_FiniteSamps, getMainTrigNPulses());
+        logger->info(QString("Total number of trigger pulses: %1").arg(getMainTrigNPulses()));
     }
     mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
 

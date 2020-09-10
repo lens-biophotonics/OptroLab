@@ -39,7 +39,7 @@ void BehavWorker::run()
 
     if (saveToFileEnabled) {
         Video::H264Option option;
-        option.frameRate = frameRate;
+        option.frameRate = 25;
         option.bitrate = 1000000;
         option.width = static_cast<unsigned int>(qimg.width());
         option.height = static_cast<unsigned int>(qimg.height());
@@ -77,7 +77,6 @@ void BehavWorker::run()
 
         if (timer.elapsed() >= 40) {  // no more than 25 fps
             memcpy(qimg.bits(), img->GetData(), img->GetBufferSize());
-            logger->info(QString("%1").arg(img->GetBufferSize()));
             emit newImage(QPixmap::fromImage(qimg));
             timer.restart();
         }
@@ -87,6 +86,7 @@ void BehavWorker::run()
     if (saveToFileEnabled) {
         try {
             video.Close();
+            logger->info(QString("Saved %1 frames").arg(i));
         }
         catch (Spinnaker::Exception e) {
             logger->warning(e.what());

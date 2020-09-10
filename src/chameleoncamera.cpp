@@ -102,6 +102,7 @@ void ChameleonCamera::setupAcquisitionMode()
     pCam->TriggerSource.SetValue(TriggerSource_Line2);
     pCam->TriggerActivation.SetValue(TriggerActivation_RisingEdge);
     pCam->TriggerMode.SetValue(TriggerMode_On);
+    pCam->ExposureMode.SetValue(ExposureMode_TriggerWidth);
 #endif
 
     pCam->OffsetX.SetValue(0);

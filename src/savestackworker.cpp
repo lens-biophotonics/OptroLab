@@ -14,10 +14,6 @@ SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
     : QThread(parent), orca(orca)
 {
     frameCount = 0;
-
-    connect(orca, &OrcaFlash::captureStarted, this, [ = ](){
-        start();
-    });
 }
 
 void SaveStackWorker::run()
@@ -26,6 +22,10 @@ void SaveStackWorker::run()
     void *buf;
     size_t width = 512;
     size_t height = 512;
+
+    triggerCompleted = false;
+
+    logger->info(QString("Total number of frames: %1").arg(frameCount));
 
 #ifdef WITH_HARDWARE
     const int32_t nFramesInBuffer = orca->nFramesInBuffer();
@@ -52,12 +52,15 @@ void SaveStackWorker::run()
         DCAM_TIMESTAMP timeStamp;
 
         qint32 mask = DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED;
-        qint32 event;
-        try {
-            event = orca->wait(1000, mask);
-        }
-        catch (std::runtime_error e) {
-            continue;
+        qint32 event = DCAMWAIT_CAPEVENT_FRAMEREADY;
+
+        if (!triggerCompleted) {
+            try {
+                event = orca->wait(1000, mask);
+            }
+            catch (std::runtime_error e) {
+                continue;
+            }
         }
 
         switch (event) {
@@ -105,7 +108,12 @@ void SaveStackWorker::run()
 #endif
 
     emit captureCompleted();
-    logger->info(QString("Saved %1 frames").arg(i));
+    QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
+    if (i != frameCount) {
+        logger->warning(msg);
+    } else {
+        logger->info(msg);
+    }
 }
 
 QString SaveStackWorker::timeoutString(double delta, int i)
@@ -125,6 +133,11 @@ void SaveStackWorker::setOutputFile(const QString &fname)
 {
     outputFile1 = fname + "_led1.tiff";
     outputFile2 = fname + "_led2.tiff";
+}
+
+void SaveStackWorker::signalTriggerCompletion()
+{
+    triggerCompleted = true;
 }
 
 double SaveStackWorker::getTimeout() const

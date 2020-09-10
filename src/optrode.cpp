@@ -35,8 +35,6 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
 
     connect(this, &Optrode::started, elReadoutWorker, &ElReadoutWorker::start);
     connect(this, &Optrode::stopped, elReadoutWorker, &ElReadoutWorker::stop);
-    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
-            this, &Optrode::stop);
 
     postStimulation = 0;
 
@@ -165,6 +163,7 @@ void Optrode::startFreeRun()
     tasks->setFreeRunEnabled(true);
     behavWorker->setSaveToFileEnabled(false);
     _startAcquisition();
+    tasks->start();
 }
 
 void Optrode::start()
@@ -183,10 +182,15 @@ void Optrode::start()
     connect(worker, &QThread::finished,
             worker, &QThread::deleteLater);
     worker->setOutputFile(outputFileFullPath());
-    worker->setFrameCount(tasks->getMainTrigFreq() * totalDuration());
 
     connect(worker, &SaveStackWorker::error,
             this, &Optrode::onError);
+    connect(worker, &SaveStackWorker::captureCompleted,
+            this, &Optrode::stop);
+    connect(worker, &SaveStackWorker::started,
+            tasks, &Tasks::start);
+    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
+            worker, &SaveStackWorker::signalTriggerCompletion);
 
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
@@ -197,8 +201,10 @@ void Optrode::start()
     behavWorker->setOutputFile(outputFileFullPath());
 
     _startAcquisition();
+    worker->setFrameCount(tasks->getMainTrigFreq() * totalDuration());
     worker->setTimeout(2e6 / tasks->getMainTrigFreq());
     behavWorker->setFrameRate(tasks->getBehavCamTrigFreq());
+    worker->start();
     writeRunParams();
 }
 
@@ -209,9 +215,9 @@ void Optrode::stop()
     running = false;
     emit stopped();
     try {
-        tasks->stop();
         behaviorCamera->stopAcquisition();
         orca->cap_stop();
+        tasks->stop();
     } catch (std::runtime_error e) {
         onError(e.what());
     } catch (Spinnaker::Exception e) {
@@ -250,6 +256,7 @@ void Optrode::writeRunParams(QString fileName)
     };
 
     QTextStream out(&outFile);
+    out << "camera_rate: " << tasks->getMainTrigFreq() << "\n";
     out << "led_rate: " << tasks->getLEDFreq() << "\n";
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
     out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
@@ -328,7 +335,6 @@ void Optrode::_startAcquisition()
         orca->cap_start();
 
         tasks->setLEDFreq(frameRate / 2);
-        tasks->start();
     } catch (std::runtime_error e) {
         onError(e.what());
         return;
