@@ -18,7 +18,7 @@ SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
 
 void SaveStackWorker::run()
 {
-    int i = 0;
+    size_t i = 0;
     void *buf;
     size_t width = 512;
     size_t height = 512;
@@ -124,7 +124,7 @@ QString SaveStackWorker::timeoutString(double delta, int i)
            .arg(timeout);
 }
 
-void SaveStackWorker::setFrameCount(int32_t count)
+void SaveStackWorker::setFrameCount(size_t count)
 {
     frameCount = count;
 }

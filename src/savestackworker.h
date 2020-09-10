@@ -14,7 +14,7 @@ public:
 
     double getTimeout() const; // ms
     void setTimeout(double value); // ms
-    void setFrameCount(int32_t count);
+    void setFrameCount(size_t count);
     void setOutputFile(const QString &fname);
     void signalTriggerCompletion();
 
@@ -29,7 +29,7 @@ private:
     bool stopped, triggerCompleted;
     double timeout;
     QString outputFile1, outputFile2;
-    int32_t frameCount;
+    size_t frameCount;
     OrcaFlash *orca;
 
     QString timeoutString(double delta, int i);

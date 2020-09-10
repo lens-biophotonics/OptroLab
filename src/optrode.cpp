@@ -168,6 +168,7 @@ void Optrode::startFreeRun()
 
 void Optrode::start()
 {
+    completedJobs = 0;
     logger->info("Start acquisition");
     logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
                  .arg(tasks->getShutterInitialDelay())
@@ -176,21 +177,27 @@ void Optrode::start()
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
+    std::function<void()> incrementCompleted = [ = ](){
+        if (++completedJobs == 3) {
+            logger->info("All jobs completed");
+            stop();
+        }
+        logger->info(QString("Completed %1 jobs").arg(completedJobs));
+    };
+
     // setup worker thread
     SaveStackWorker *worker = new SaveStackWorker(orca);
 
-    connect(worker, &QThread::finished,
-            worker, &QThread::deleteLater);
+    connect(worker, &QThread::finished, worker, &QThread::deleteLater);
     worker->setOutputFile(outputFileFullPath());
 
-    connect(worker, &SaveStackWorker::error,
-            this, &Optrode::onError);
-    connect(worker, &SaveStackWorker::captureCompleted,
-            this, &Optrode::stop);
-    connect(worker, &SaveStackWorker::started,
-            tasks, &Tasks::start);
-    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
-            worker, &SaveStackWorker::signalTriggerCompletion);
+    connect(worker, &SaveStackWorker::error, this, &Optrode::onError);
+    connect(worker, &SaveStackWorker::captureCompleted, incrementCompleted);
+    connect(worker, &SaveStackWorker::started, tasks, &Tasks::start);
+    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted, [ = ] {
+        worker->signalTriggerCompletion();
+        incrementCompleted();
+    });
 
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
@@ -200,9 +207,13 @@ void Optrode::start()
     behavWorker->setSaveToFileEnabled(true);
     behavWorker->setOutputFile(outputFileFullPath());
 
+    connect(behavWorker, &BehavWorker::captureCompleted, incrementCompleted);
+
     _startAcquisition();
-    worker->setFrameCount(tasks->getMainTrigFreq() * totalDuration());
+    size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
+    worker->setFrameCount(frameCount);
     worker->setTimeout(2e6 / tasks->getMainTrigFreq());
+    behavWorker->setFrameCount(frameCount);
     behavWorker->setFrameRate(tasks->getBehavCamTrigFreq());
     worker->start();
     writeRunParams();

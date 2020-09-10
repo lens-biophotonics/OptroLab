@@ -19,17 +19,21 @@ public:
 
     void setFrameRate(double value);
 
+    void setFrameCount(int value);
+
 protected:
     virtual void run();
 
 signals:
     void newImage(const QPixmap &pm);
+    void captureCompleted();
 
 private:
     ChameleonCamera *camera;
     QString outputFile;
     bool stop, saveToFileEnabled = false;
     double frameRate;
+    size_t frameCount;
 };
 
 #endif // BEHAVWORKER_H

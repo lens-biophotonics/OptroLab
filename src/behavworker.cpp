@@ -52,10 +52,7 @@ void BehavWorker::run()
 
     size_t i = 0;
 
-    while (true) {
-        if (stop) {
-            break;
-        }
+    while (!stop && i < frameCount) {
         ImagePtr img;
         try {
             img = camera->getNextImage(5000);
@@ -83,15 +80,29 @@ void BehavWorker::run()
         img->Release();
     }
 
+    if (i == frameCount) {
+        emit captureCompleted();
+    }
+
     if (saveToFileEnabled) {
+        QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
+        if (i != frameCount) {
+            logger->warning(msg);
+        } else {
+            logger->info(msg);
+        }
         try {
             video.Close();
-            logger->info(QString("Saved %1 frames").arg(i));
         }
         catch (Spinnaker::Exception e) {
             logger->warning(e.what());
         }
     }
+}
+
+void BehavWorker::setFrameCount(int value)
+{
+    frameCount = value;
 }
 
 void BehavWorker::setFrameRate(double value)

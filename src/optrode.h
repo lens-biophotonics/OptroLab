@@ -78,6 +78,7 @@ private:
     QStateMachine *sm = nullptr;
     bool running = false;
     double postStimulation;
+    int completedJobs;
 
     void setupStateMachine();
     void onError(const QString &errMsg);
