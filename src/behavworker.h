@@ -17,8 +17,6 @@ public:
 
     void setOutputFile(const QString &value);
 
-    void setFrameRate(double value);
-
     void setFrameCount(int value);
 
 protected:
@@ -32,7 +30,6 @@ private:
     ChameleonCamera *camera;
     QString outputFile;
     bool stop, saveToFileEnabled = false;
-    double frameRate;
     size_t frameCount;
 };
 

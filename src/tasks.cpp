@@ -120,6 +120,8 @@ void Tasks::init()
         task->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
                                   NITask::Edge_Rising);
     }
+
+    initialized = true;
 }
 
 NITask *Tasks::electrodeReadout()
@@ -129,7 +131,9 @@ NITask *Tasks::electrodeReadout()
 
 void Tasks::start()
 {
-    init();
+    if (!initialized) {
+        init();
+    }
     if (!isFreeRunEnabled()) {
         shutterPulse->startTask();
         LED1->startTask();
@@ -144,6 +148,7 @@ void Tasks::start()
 
 void Tasks::stop()
 {
+    initialized = false;
     mainTrigger->stopTask();
     shutterPulse->stopTask();
     LED1->stopTask();

@@ -35,6 +35,10 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
 
     connect(this, &Optrode::started, elReadoutWorker, &ElReadoutWorker::start);
     connect(this, &Optrode::stopped, elReadoutWorker, &ElReadoutWorker::stop);
+    connect(behavWorker, &BehavWorker::captureCompleted,
+            this, &Optrode::incrementCompleted);
+    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
+            this, &Optrode::incrementCompleted);
 
     postStimulation = 0;
 
@@ -164,6 +168,7 @@ void Optrode::startFreeRun()
     behavWorker->setSaveToFileEnabled(false);
     _startAcquisition();
     tasks->start();
+    emit started(true);
 }
 
 void Optrode::start()
@@ -177,14 +182,6 @@ void Optrode::start()
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
-    std::function<void()> incrementCompleted = [ = ](){
-        if (++completedJobs == 3) {
-            logger->info("All jobs completed");
-            stop();
-        }
-        logger->info(QString("Completed %1 jobs").arg(completedJobs));
-    };
-
     // setup worker thread
     SaveStackWorker *worker = new SaveStackWorker(orca);
 
@@ -192,12 +189,11 @@ void Optrode::start()
     worker->setOutputFile(outputFileFullPath());
 
     connect(worker, &SaveStackWorker::error, this, &Optrode::onError);
-    connect(worker, &SaveStackWorker::captureCompleted, incrementCompleted);
+    connect(worker, &SaveStackWorker::captureCompleted,
+            this, &Optrode::incrementCompleted);
     connect(worker, &SaveStackWorker::started, tasks, &Tasks::start);
-    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted, [ = ] {
-        worker->signalTriggerCompletion();
-        incrementCompleted();
-    });
+    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
+            worker, &SaveStackWorker::signalTriggerCompletion);
 
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
@@ -207,16 +203,16 @@ void Optrode::start()
     behavWorker->setSaveToFileEnabled(true);
     behavWorker->setOutputFile(outputFileFullPath());
 
-    connect(behavWorker, &BehavWorker::captureCompleted, incrementCompleted);
-
-    _startAcquisition();
+    tasks->init();
     size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
     worker->setFrameCount(frameCount);
     worker->setTimeout(2e6 / tasks->getMainTrigFreq());
     behavWorker->setFrameCount(frameCount);
-    behavWorker->setFrameRate(tasks->getBehavCamTrigFreq());
+
+    _startAcquisition();
     worker->start();
     writeRunParams();
+    emit started(false);
 }
 
 void Optrode::stop()
@@ -342,10 +338,10 @@ void Optrode::_startAcquisition()
         elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
         elReadoutWorker->setFreeRun(isFreeRunEnabled());
 
+        tasks->setLEDFreq(frameRate / 2);
+
         behaviorCamera->startAcquisition();
         orca->cap_start();
-
-        tasks->setLEDFreq(frameRate / 2);
     } catch (std::runtime_error e) {
         onError(e.what());
         return;
@@ -353,7 +349,6 @@ void Optrode::_startAcquisition()
         onError(e.what());
         return;
     }
-    emit started(tasks->isFreeRunEnabled());
 }
 
 Optrode &optrode()
@@ -368,3 +363,12 @@ void Optrode::onError(const QString &errMsg)
     emit error(errMsg);
     logger->critical(errMsg);
 }
+
+void Optrode::incrementCompleted()
+{
+    if (++completedJobs == 3) {
+        logger->info("All jobs completed");
+        stop();
+    }
+    logger->info(QString("Completed %1 jobs").arg(completedJobs));
+};

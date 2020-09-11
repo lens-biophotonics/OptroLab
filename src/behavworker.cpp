@@ -46,6 +46,9 @@ void BehavWorker::run()
 
         video.Open(outputFile.toStdString().c_str(), option);
     }
+    else {
+        frameCount = -1;
+    }
 
     QElapsedTimer timer;
     timer.start();
@@ -103,11 +106,6 @@ void BehavWorker::run()
 void BehavWorker::setFrameCount(int value)
 {
     frameCount = value;
-}
-
-void BehavWorker::setFrameRate(double value)
-{
-    frameRate = value;
 }
 
 void BehavWorker::setOutputFile(const QString &value)

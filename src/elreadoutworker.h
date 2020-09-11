@@ -47,6 +47,8 @@ private:
     size_t totToBeRead;
     size_t totEmitted;
 
+    double readoutRate;
+
     NITask *task;
 };
 

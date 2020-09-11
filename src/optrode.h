@@ -53,7 +53,7 @@ public:
 signals:
     void initializing() const;
     void initialized() const;
-    void started(bool) const;
+    void started(bool freeRun) const;
     void stopped() const;
     void error(const QString) const;
     void temp(double prova) const;
@@ -83,6 +83,7 @@ private:
     void setupStateMachine();
     void onError(const QString &errMsg);
     void _startAcquisition();
+    void incrementCompleted();
 };
 
 Optrode& optrode();

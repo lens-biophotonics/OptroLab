@@ -9,6 +9,8 @@
 
 #define INTERVALMSEC 100
 
+static Logger *logger = logManager().getLogger("ElReadoutWorker");
+
 ElReadoutWorker::ElReadoutWorker(NITask *elReadoutTask, QObject *parent)
     : QObject(parent), task(elReadoutTask)
 {
@@ -24,6 +26,13 @@ void ElReadoutWorker::start()
     mainBuffer.clear();
     if (!freeRun) {
         mainBuffer.reserve(totToBeRead);
+    }
+
+    try {
+        readoutRate = task->getSampClkRate();
+    } catch (std::runtime_error e) {
+        logger->critical(e.what());
+        return;
     }
 
     timer->start(INTERVALMSEC);
@@ -57,10 +66,9 @@ void ElReadoutWorker::saveToFile(QString fullPath)
 void ElReadoutWorker::readOut()
 {
     int32 sampsPerChanRead;
-    double Hz = task->getSampClkRate();
 
 #ifdef WITH_HARDWARE
-    buf.resize(Hz * INTERVALMSEC / 1000. * 3);
+    buf.resize(readoutRate * INTERVALMSEC / 1000. * 3);
     try {
         quint32 avail = task->getReadAvailSampPerChan();
         if (!avail)
@@ -69,11 +77,11 @@ void ElReadoutWorker::readOut()
                             DAQmx_Val_GroupByChannel,
                             buf.data(), buf.size(), &sampsPerChanRead);
     } catch (std::runtime_error e) {
-        logManager().getLogger("ElReadoutWorker")->critical(e.what());
+        logger->critical(e.what());
     }
 #else
     Hz = 40;
-    sampsPerChanRead = Hz * INTERVALMSEC / 1000.;
+    sampsPerChanRead = readoutRate * INTERVALMSEC / 1000.;
     buf = QVector<double>(sampsPerChanRead, rand());
 #endif
     if (!sampsPerChanRead) {
@@ -104,11 +112,11 @@ void ElReadoutWorker::readOut()
     if (timer->isActive())
         elapsed = et.elapsed() / 1000.;
     else
-        elapsed = totToBeRead / Hz;
+        elapsed = totToBeRead / readoutRate;
     tempSize = elapsed * emissionRate - totEmitted;
     temp.resize(tempSize);
 
-    size_t stride = Hz / emissionRate;
+    size_t stride = readoutRate / emissionRate;
     auto it = temp.begin();
     auto buf_it = buf.begin();
     while (it < temp.end()) {

@@ -114,6 +114,7 @@ private:
     double totalDuration = 10;
 
     bool freeRunEnabled;
+    bool initialized = false;
 };
 
 #endif // ELECTRODEREADOUT_H
