@@ -33,6 +33,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
 void MainWindow::setupUi()
 {
+    setWindowIcon(QIcon(":/res/lemmling-Simple-cartoon-mouse.svg"));
     connect(&optrode(), &Optrode::error, this, [ = ](QString s) {
         QMessageBox::critical(nullptr, "Error", s);
     });

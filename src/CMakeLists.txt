@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 # Make this a GUI application on Windows
 if(WIN32)
   set(CMAKE_WIN32_EXECUTABLE ON)
+  set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_CURRENT_SOURCE_DIR}/icon.rc")
 endif()
 
 find_package(Qt5 5.8 REQUIRED COMPONENTS
@@ -48,7 +49,7 @@ set(SOURCE_FILES
     chameleoncamera.cpp
 )
 
-add_executable(OptroLab ${SOURCE_FILES})
+add_executable(OptroLab ${SOURCE_FILES} ${APP_ICON_RESOURCE_WINDOWS})
 target_include_directories(OptroLab PUBLIC ${Spinnaker_INCLUDE_DIR})
 
 target_link_libraries(OptroLab
