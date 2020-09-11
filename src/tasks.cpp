@@ -8,7 +8,6 @@ static Logger *logger = logManager().getLogger("BehavDispWorker");
 Tasks::Tasks(QObject *parent) : QObject(parent)
 {
     mainTrigger = new NITask("mainTrigger", this);
-    behavCamTrigger = new NITask("behavCamTrigger", this);
     shutterPulse = new NITask("shutterPulse", this);
     LED1 = new NITask("LED1", this);
     LED2 = new NITask("LED2", this);
@@ -20,7 +19,7 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << behavCamTrigger << shutterPulse << elReadout << LED1 << LED2;
+    triggeredTasks << shutterPulse << elReadout << LED1 << LED2;
 
     taskList << triggeredTasks << mainTrigger;
 
@@ -45,9 +44,6 @@ void Tasks::init()
         logger->info(QString("Total number of trigger pulses: %1").arg(getMainTrigNPulses()));
     }
     mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
-
-    // behavior camera trigger
-    behavCamTrigger->createTask();
 
 
     // shutterPulse
@@ -140,7 +136,6 @@ void Tasks::start()
         LED2->startTask();
     }
     elReadout->startTask();
-//    behavCamTrigger->startTask();
 
     // last to be started because it will trigger the other tasks
     mainTrigger->startTask();
@@ -154,7 +149,6 @@ void Tasks::stop()
     LED1->stopTask();
     LED2->stopTask();
     elReadout->stopTask();
-//    behavCamTrigger->stopTask();
 }
 
 QString Tasks::getMainTrigTerm() const
@@ -215,26 +209,6 @@ double Tasks::getLEDFreq() const
 void Tasks::setLEDFreq(double value)
 {
     LEDFreq = value;
-}
-
-QString Tasks::getBehavCamTrigPhysChan() const
-{
-    return behavCamTrigPhysChan;
-}
-
-void Tasks::setBehavCamTrigPhysChan(const QString &value)
-{
-    behavCamTrigPhysChan = value;
-}
-
-double Tasks::getBehavCamTrigFreq() const
-{
-    return behavCamTrigFreq;
-}
-
-void Tasks::setBehavCamTrigFreq(double value)
-{
-    behavCamTrigFreq = value;
 }
 
 void Tasks::setTotalDuration(double value)

@@ -39,29 +39,13 @@ void ControlsWidget::setupUi()
     mainTrigTermComboBox->addItems(NI::getTerminals());
     mainTrigTermComboBox->setCurrentText(t->getMainTrigTerm());
 
-    QComboBox *behavCamTrigPhysChanComboBox = new QComboBox();
-    behavCamTrigPhysChanComboBox->addItems(NI::getAOPhysicalChans());
-    behavCamTrigPhysChanComboBox->setCurrentText(t->getBehavCamTrigPhysChan());
-    QSpinBox *behavCamTrigFreqSpinBox = new QSpinBox();
-    behavCamTrigFreqSpinBox->setSuffix("Hz");
-    behavCamTrigFreqSpinBox->setRange(1, 50);
-    behavCamTrigFreqSpinBox->setValue(t->getBehavCamTrigFreq());
-
     int row = 0;
 
     QGridLayout *grid = new QGridLayout();
-//    grid->addWidget(new QLabel("Main trigger"), row++, 0);
     grid->addWidget(new QLabel("Physical channel"), row, 0);
     grid->addWidget(mainTrigPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(mainTrigTermComboBox, row++, 1);
-//    grid->addWidget(new QLabel("Frequency"), row, 0);
-//    grid->addWidget(mainTrigFreqSpinBox, row++, 1);
-//    grid->addWidget(new QLabel("Behavior camera"), row++, 0);
-//    grid->addWidget(new QLabel("Physical channel"), row, 0);
-//    grid->addWidget(behavCamTrigPhysChanComboBox, row++, 1);
-//    grid->addWidget(new QLabel("Frequency"), row, 0);
-//    grid->addWidget(behavCamTrigFreqSpinBox, row++, 1);
     QGroupBox *trigGb = new QGroupBox("Trigger");
     trigGb->setLayout(grid);
 
@@ -368,8 +352,6 @@ void ControlsWidget::setupUi()
         Tasks *t = optrode().NITasks();
         t->setMainTrigPhysChan(mainTrigPhysChanComboBox->currentText());
         t->setMainTrigTerm(mainTrigTermComboBox->currentText());
-//        t->setBehavCamTrigPhysChan(behavCamTrigPhysChanComboBox->currentText());
-//        t->setBehavCamTrigFreq(behavCamTrigFreqSpinBox->value());
 
         t->setLEDFreq(LEDFreqSpinBox->value());
         t->setLED1PhysChan(LED1PhysChanComboBox->currentText());

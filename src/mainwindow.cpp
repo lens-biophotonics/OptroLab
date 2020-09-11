@@ -106,8 +106,6 @@ void MainWindow::saveSettings() const
     Tasks *t = optrode().NITasks();
     s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN, t->getMainTrigPhysChan());
     s.setValue(SETTINGSGROUP_MAINTRIG, SETTING_TERM, t->getMainTrigTerm());
-    s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN, t->getBehavCamTrigPhysChan());
-    s.setValue(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ, t->getBehavCamTrigFreq());
 
     s.setValue(SETTINGSGROUP_BEHAVCAMROI, SETTING_ROI, optrode().getBehaviorCamera()->getROI());
 
@@ -149,8 +147,6 @@ void MainWindow::loadSettings()
     Tasks *t = optrode().NITasks();
     t->setMainTrigPhysChan(s.value(SETTINGSGROUP_MAINTRIG, SETTING_PHYSCHAN).toString());
     t->setMainTrigTerm(s.value(SETTINGSGROUP_MAINTRIG, SETTING_TERM).toString());
-    t->setBehavCamTrigPhysChan(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_PHYSCHAN).toString());
-    t->setBehavCamTrigFreq(s.value(SETTINGSGROUP_BEHAVCAMTRIG, SETTING_FREQ).toDouble());
 
     t->setLEDFreq(s.value(SETTINGSGROUP_LED1, SETTING_FREQ).toDouble());
     t->setLED1PhysChan(s.value(SETTINGSGROUP_LED1, SETTING_PHYSCHAN).toString());
