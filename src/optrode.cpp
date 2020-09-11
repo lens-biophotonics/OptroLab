@@ -173,7 +173,7 @@ void Optrode::startFreeRun()
 
 void Optrode::start()
 {
-    completedJobs = 0;
+    completedJobs = successJobs = 0;
     logger->info("Start acquisition");
     logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
                  .arg(tasks->getShutterInitialDelay())
@@ -236,6 +236,12 @@ void Optrode::stop()
 BehavWorker *Optrode::getBehavWorker() const
 {
     return behavWorker;
+}
+
+bool Optrode::isSuccess()
+{
+    logger->info(QString("%1").arg(successJobs));
+    return successJobs == 3;
 }
 
 ElReadoutWorker *Optrode::getElReadoutWorker() const
@@ -364,11 +370,14 @@ void Optrode::onError(const QString &errMsg)
     logger->critical(errMsg);
 }
 
-void Optrode::incrementCompleted()
+void Optrode::incrementCompleted(bool ok)
 {
+    if (ok) {
+        ++successJobs;
+    }
     if (++completedJobs == 3) {
         logger->info("All jobs completed");
         stop();
     }
-    logger->info(QString("Completed %1 jobs").arg(completedJobs));
+    logger->info(QString("Completed %1 jobs (%2)").arg(completedJobs).arg(ok));
 };

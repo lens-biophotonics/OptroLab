@@ -93,7 +93,7 @@ void ElReadoutWorker::readOut()
         buf.resize(totToBeRead - totRead);
         mainBuffer.append(buf);
         timer->stop();
-        emit acquisitionCompleted();
+        emit acquisitionCompleted(true);
     }
     else {
         mainBuffer.append(buf);

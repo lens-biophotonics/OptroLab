@@ -20,7 +20,7 @@ public:
 
 signals:
     void error(QString msg = "");
-    void captureCompleted();
+    void captureCompleted(bool ok);
 
 protected:
     virtual void run();

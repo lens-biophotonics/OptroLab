@@ -193,11 +193,14 @@ void ControlsWidget::setupUi()
     QPushButton *startFreeRunButton = new QPushButton("Start free run");
     QPushButton *startButton = new QPushButton("Start");
     QPushButton *stopButton = new QPushButton("Stop");
+    QLabel *successLabel = new QLabel();
+
     QProgressBar *progressBar = new QProgressBar();
     progressBar->setFormat("%p%");
 
     QTimer *timer = new QTimer();
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun) {
+        successLabel->clear();
         if (freeRun)
             return;
         progressBar->reset();
@@ -208,8 +211,16 @@ void ControlsWidget::setupUi()
     });
     connect(&optrode(), &Optrode::stopped, this, [ = ](){
         timer->stop();
-        if (!optrode().isFreeRunEnabled())
+        if (!optrode().isFreeRunEnabled()) {
             progressBar->setValue(progressBar->maximum());
+            if (optrode().isSuccess()) {
+                successLabel->setText("SUCCESS");
+                successLabel->setStyleSheet("QLabel {color: green};");
+            } else {
+                successLabel->setText("ERRORS");
+                successLabel->setStyleSheet("QLabel {color: red};");
+            }
+        }
     });
     connect(timer, &QTimer::timeout, this, [ = ](){
         progressBar->setValue(optrode().getElReadoutWorker()->getTotRead());
@@ -221,6 +232,7 @@ void ControlsWidget::setupUi()
     vLayout->addWidget(startButton);
     vLayout->addWidget(stopButton);
     vLayout->addStretch();
+    vLayout->addWidget(successLabel);
     vLayout->addWidget(progressBar);
 
     QGroupBox *controlsGb = new QGroupBox("Controls");

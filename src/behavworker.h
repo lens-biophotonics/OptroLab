@@ -24,7 +24,7 @@ protected:
 
 signals:
     void newImage(const QPixmap &pm);
-    void captureCompleted();
+    void captureCompleted(bool ok);
 
 private:
     ChameleonCamera *camera;

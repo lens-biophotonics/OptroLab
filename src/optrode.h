@@ -50,6 +50,8 @@ public:
     ElReadoutWorker *getElReadoutWorker() const;
     BehavWorker *getBehavWorker() const;
 
+    bool isSuccess();
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -79,11 +81,12 @@ private:
     bool running = false;
     double postStimulation;
     int completedJobs;
+    int successJobs;
 
     void setupStateMachine();
     void onError(const QString &errMsg);
     void _startAcquisition();
-    void incrementCompleted();
+    void incrementCompleted(bool ok);
 };
 
 Optrode& optrode();

@@ -107,7 +107,7 @@ void SaveStackWorker::run()
     free(buf);
 #endif
 
-    emit captureCompleted();
+    emit captureCompleted(i == frameCount);
     QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
     if (i != frameCount) {
         logger->warning(msg);

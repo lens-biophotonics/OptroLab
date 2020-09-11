@@ -83,12 +83,9 @@ void BehavWorker::run()
         img->Release();
     }
 
-    if (i == frameCount) {
-        emit captureCompleted();
-    }
-
     if (saveToFileEnabled) {
         QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
+        emit captureCompleted(i == frameCount);
         if (i != frameCount) {
             logger->warning(msg);
         } else {

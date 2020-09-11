@@ -30,7 +30,7 @@ public slots:
 
 signals:
     void newData(const QVector<double> &buf);
-    void acquisitionCompleted();
+    void acquisitionCompleted(bool ok);
 
 private:
     void readOut();
