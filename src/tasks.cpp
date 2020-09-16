@@ -136,8 +136,12 @@ void Tasks::start()
         if (shutterPulseEnabled) {
             shutterPulse->startTask();
         }
-        LED1->startTask();
-        LED2->startTask();
+        if (LED1Enabled) {
+            LED1->startTask();
+        }
+        if (LED2Enabled) {
+            LED2->startTask();
+        }
     }
     elReadout->startTask();
 
@@ -153,6 +157,26 @@ void Tasks::stop()
     LED1->stopTask();
     LED2->stopTask();
     elReadout->stopTask();
+}
+
+bool Tasks::getLED2Enabled() const
+{
+    return LED2Enabled;
+}
+
+void Tasks::setLED2Enabled(bool value)
+{
+    LED2Enabled = value;
+}
+
+bool Tasks::getLED1Enabled() const
+{
+    return LED1Enabled;
+}
+
+void Tasks::setLED1Enabled(bool value)
+{
+    LED1Enabled = value;
 }
 
 QString Tasks::getMainTrigTerm() const

@@ -75,6 +75,12 @@ public:
     QString getMainTrigTerm() const;
     void setMainTrigTerm(const QString &value);
 
+    bool getLED1Enabled() const;
+    void setLED1Enabled(bool value);
+
+    bool getLED2Enabled() const;
+    void setLED2Enabled(bool value);
+
 signals:
     void started();
     void stopped();
@@ -91,6 +97,7 @@ private:
 
     QString mainTrigPhysChan, mainTrigTerm;
     double LEDFreq;
+    bool LED1Enabled = true, LED2Enabled = true;
 
     QString shutterPulseCounter;
     QString shutterPulseTerm;

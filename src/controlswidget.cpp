@@ -71,6 +71,12 @@ void ControlsWidget::setupUi()
     LED2TermComboBox->addItems(NI::getTerminals());
     LED2TermComboBox->setCurrentText(t->getLED2Term());
 
+    QCheckBox *LED1CheckBox = new QCheckBox("LED 1");
+    QCheckBox *LED2CheckBox = new QCheckBox("LED 2");
+
+    LED1CheckBox->setChecked(t->getLED1Enabled());
+    LED2CheckBox->setChecked(t->getLED2Enabled());
+
     grid = new QGridLayout();
     grid->addWidget(new QLabel("LED 1 Phys chan"), row, 0);
     grid->addWidget(LED1PhysChanComboBox, row++, 1);
@@ -82,6 +88,8 @@ void ControlsWidget::setupUi()
     grid->addWidget(LED2TermComboBox, row++, 1);
     grid->addWidget(new QLabel("Frequency"), row, 0);
     grid->addWidget(LEDFreqSpinBox, row++, 1);
+    grid->addWidget(LED1CheckBox, row, 0);
+    grid->addWidget(LED2CheckBox, row, 1);
     QGroupBox *LEDGb = new QGroupBox("LEDs");
     LEDGb->setLayout(grid);
 
@@ -368,6 +376,9 @@ void ControlsWidget::setupUi()
         t->setLED1Term(LED1TermComboBox->currentText());
         t->setLED2PhysChan(LED2PhysChanComboBox->currentText());
         t->setLED2Term(LED2TermComboBox->currentText());
+
+        t->setLED1Enabled(LED1CheckBox->isChecked());
+        t->setLED2Enabled(LED2CheckBox->isChecked());
 
         t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
         t->setShutterPulseTerm(shutterTermComboBox->currentText());
