@@ -80,7 +80,6 @@ void ElReadoutWorker::readOut()
         logger->critical(e.what());
     }
 #else
-    Hz = 40;
     sampsPerChanRead = readoutRate * INTERVALMSEC / 1000.;
     buf = QVector<double>(sampsPerChanRead, rand());
 #endif
