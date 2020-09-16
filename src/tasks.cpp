@@ -2,7 +2,7 @@
 
 #include "tasks.h"
 
-static Logger *logger = logManager().getLogger("BehavDispWorker");
+static Logger *logger = logManager().getLogger("Tasks");
 
 
 Tasks::Tasks(QObject *parent) : QObject(parent)
@@ -57,8 +57,10 @@ void Tasks::init()
         shutterPulseFrequency,
         shutterPulseDuty);
     shutterPulse->setCOPulseTerm(nullptr, shutterPulseTerm.toLatin1());
-    shutterPulse->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
-                                    shutterPulseNPulses);
+    if (shutterPulseEnabled) {
+        shutterPulse->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
+                                        shutterPulseNPulses);
+    }
 
 
     // LED1
@@ -131,7 +133,9 @@ void Tasks::start()
         init();
     }
     if (!isFreeRunEnabled()) {
-        shutterPulse->startTask();
+        if (shutterPulseEnabled) {
+            shutterPulse->startTask();
+        }
         LED1->startTask();
         LED2->startTask();
     }
@@ -326,6 +330,16 @@ uInt64 Tasks::getShutterPulseNPulses() const
 void Tasks::setShutterPulseNPulses(const uInt64 &value)
 {
     shutterPulseNPulses = value;
+}
+
+bool Tasks::getShutterPulseEnabled() const
+{
+    return shutterPulseEnabled;
+}
+
+void Tasks::setShutterPulseEnabled(bool value)
+{
+    shutterPulseEnabled = value;
 }
 
 QString Tasks::getElectrodeReadoutPhysChan() const

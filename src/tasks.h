@@ -38,6 +38,9 @@ public:
     uInt64 getShutterPulseNPulses() const;
     void setShutterPulseNPulses(const uInt64 &value);
 
+    bool getShutterPulseEnabled() const;
+    void setShutterPulseEnabled(bool value);
+
     QString getElectrodeReadoutPhysChan() const;
     void setElectrodeReadoutPhysChan(const QString &value);
 
@@ -95,6 +98,7 @@ private:
     double shutterPulseFrequency = 20;
     double shutterPulseDuty = 0.5;
     uInt64 shutterPulseNPulses = 20;
+    bool shutterPulseEnabled = true;
 
     QString LED1PhysChan, LED2PhysChan;
     QString LED1Term, LED2Term;

@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QGroupBox>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QDoubleSpinBox>
 #include <QLabel>
 #include <QListView>
@@ -158,14 +159,23 @@ void ControlsWidget::setupUi()
     stimulationSpinBox->setSuffix("s");
     stimulationSpinBox->setValue(t->stimulationDuration());
 
+    QCheckBox *stimulationCheckBox = new QCheckBox("Stimulation");
+
+    connect(stimulationCheckBox, &QCheckBox::toggled, stimulationSpinBox, [ = ](bool checked) {
+        stimulationSpinBox->setEnabled(checked);
+        postStimulationSpinBox->setEnabled(checked);
+    });
+
+    stimulationCheckBox->setChecked(t->getShutterPulseEnabled());
+
     row = 0;
     grid = new QGridLayout();
-    grid->addWidget(new QLabel("Baseline"), row, 0);
-    grid->addWidget(shutterDelaySpinBox, row++, 1);
-    grid->addWidget(new QLabel("Stimulation"), row, 0);
-    grid->addWidget(stimulationSpinBox, row++, 1);
-    grid->addWidget(new QLabel("Post stimul."), row, 0);
-    grid->addWidget(postStimulationSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Baseline"), row, 1);
+    grid->addWidget(shutterDelaySpinBox, row++, 2);
+    grid->addWidget(stimulationCheckBox, row, 1);
+    grid->addWidget(stimulationSpinBox, row++, 2);
+    grid->addWidget(new QLabel("Post stimul."), row, 1);
+    grid->addWidget(postStimulationSpinBox, row++, 2);
 
     QGroupBox *timingGb = new QGroupBox("Timing");
     timingGb->setLayout(grid);
@@ -364,6 +374,7 @@ void ControlsWidget::setupUi()
         t->setShutterPulseCounter(shutterPhysChanComboBox->currentText());
         t->setShutterPulseFrequency(shutterFreqSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
+        t->setShutterPulseEnabled(stimulationCheckBox->isChecked());
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());

@@ -122,6 +122,7 @@ void MainWindow::saveSettings() const
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_DUTY, t->getShutterPulseDuty());
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_FREQ, t->getShutterPulseFrequency());
     s.setValue(SETTINGSGROUP_SHUTTER, SETTING_TERM, t->getShutterPulseTerm());
+    s.setValue(SETTINGSGROUP_SHUTTER, SETTING_ENABLED, t->getShutterPulseEnabled());
 
     s.setValue(SETTINGSGROUP_TIMING, SETTING_INITIALDELAY, t->getShutterInitialDelay());
     s.setValue(SETTINGSGROUP_TIMING, SETTING_STIMDURATION, t->stimulationDuration());
@@ -161,6 +162,7 @@ void MainWindow::loadSettings()
     t->setShutterPulseDuty(s.value(SETTINGSGROUP_SHUTTER, SETTING_DUTY).toDouble());
     t->setShutterPulseFrequency(s.value(SETTINGSGROUP_SHUTTER, SETTING_FREQ).toDouble());
     t->setShutterPulseTerm(s.value(SETTINGSGROUP_SHUTTER, SETTING_TERM).toString());
+    t->setShutterPulseEnabled(s.value(SETTINGSGROUP_SHUTTER, SETTING_ENABLED).toBool());
 
     t->setShutterInitialDelay(s.value(SETTINGSGROUP_TIMING, SETTING_INITIALDELAY).toDouble());
     t->setStimulationDuration(s.value(SETTINGSGROUP_TIMING, SETTING_STIMDURATION).toDouble());

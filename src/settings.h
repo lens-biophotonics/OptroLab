@@ -21,6 +21,7 @@
 #define SETTING_TERM "terminal"
 #define SETTING_DUTY "dutyCycle"
 #define SETTING_STIMDURATION "stimDuration"
+#define SETTING_ENABLED "enabled"
 
 #define SETTING_INITIALDELAY "initialDelay"
 #define SETTING_POSTSTIMULATION "postStimulation"

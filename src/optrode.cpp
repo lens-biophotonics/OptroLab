@@ -121,8 +121,10 @@ void Optrode::setPostStimulation(double s)
 double Optrode::totalDuration() const
 {
     double d = tasks->getShutterInitialDelay();
-    d += tasks->stimulationDuration();
-    d += postStimulation;
+    if (tasks->getShutterPulseEnabled()) {
+        d += tasks->stimulationDuration();
+        d += postStimulation;
+    }
 
     return d;
 }

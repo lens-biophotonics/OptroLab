@@ -108,6 +108,7 @@ void Settings::loadSettings()
     SET_VALUE(groupName, SETTING_FREQ, 50);
     SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
     SET_VALUE(groupName, SETTING_DUTY, 0.5);
+    SET_VALUE(groupName, SETTING_ENABLED, true);
 
     settings.endGroup();
 
