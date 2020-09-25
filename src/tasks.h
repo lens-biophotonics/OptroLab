@@ -81,6 +81,8 @@ public:
     bool getLED2Enabled() const;
     void setLED2Enabled(bool value);
 
+    void setLEDdelay(double value);
+
 signals:
     void started();
     void stopped();
@@ -97,6 +99,7 @@ private:
 
     QString mainTrigPhysChan, mainTrigTerm;
     double LEDFreq;
+    double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;
 
     QString shutterPulseCounter;

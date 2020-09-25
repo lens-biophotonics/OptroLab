@@ -205,13 +205,13 @@ void Optrode::start()
     behavWorker->setSaveToFileEnabled(true);
     behavWorker->setOutputFile(outputFileFullPath());
 
-    tasks->init();
     size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
     worker->setFrameCount(frameCount);
     worker->setTimeout(2e6 / tasks->getMainTrigFreq());
     behavWorker->setFrameCount(frameCount);
 
     _startAcquisition();
+    tasks->init();
     worker->start();
     writeRunParams();
     emit started(false);
@@ -330,23 +330,25 @@ void Optrode::_startAcquisition()
 {
     running = true;
     try {
-        int Vn = 2048;
+        double Vn = 2048;
         double lineInterval = orca->getLineInterval();
+        double mainTrigFreq = tasks->getMainTrigFreq();
+
+        // time during which LEDs are switching on/off
+        // (camera should not be recording during this time)
+        double blankTime = 0.002;
 
         // inverse formula to obtain exposure time
-        double temp = 1. / (1.01 * tasks->getMainTrigFreq()) - (Vn / 2 + 10) * lineInterval;
-        double expTime = orca->setGetExposureTime(temp);
-
-        double frameRate = qFloor(1. / (expTime + (Vn / 2 + 10) * lineInterval));
-
-        if (tasks->getMainTrigFreq() != frameRate) {
-            throw std::runtime_error("frame rate mismatch");
-        }
+        double expTime = 1. / tasks->getMainTrigFreq() - (Vn / 2 + 10) * lineInterval;
+        expTime -= blankTime;
+        orca->setGetExposureTime(expTime);
 
         elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
         elReadoutWorker->setFreeRun(isFreeRunEnabled());
 
-        tasks->setLEDFreq(frameRate / 2);
+        double LEDFreq = mainTrigFreq / 2;
+        tasks->setLEDFreq(LEDFreq);
+        tasks->setLEDdelay(blankTime / 2);
 
         behaviorCamera->startAcquisition();
         orca->cap_start();
