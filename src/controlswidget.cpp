@@ -54,7 +54,7 @@ void ControlsWidget::setupUi()
     // LEDs
     QSpinBox *LEDFreqSpinBox = new QSpinBox();
     LEDFreqSpinBox->setSuffix("Hz");
-    LEDFreqSpinBox->setRange(1, 45);
+    LEDFreqSpinBox->setRange(1, 43);
     LEDFreqSpinBox->setValue(t->getLEDFreq());
 
     QComboBox *LED1PhysChanComboBox = new QComboBox();
@@ -223,6 +223,12 @@ void ControlsWidget::setupUi()
                 successLabel->setStyleSheet("QLabel {color: red};");
             }
         }
+    });
+
+    connect(&optrode(), &Optrode::pleaseWait, this, [ = ](){
+        timer->stop();
+        successLabel->setText("PLEASE WAIT");
+        successLabel->setStyleSheet("QLabel {color: DarkOrange};");
     });
     connect(timer, &QTimer::timeout, this, [ = ](){
         progressBar->setValue(optrode().getElReadoutWorker()->getTotRead());

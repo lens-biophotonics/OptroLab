@@ -379,6 +379,10 @@ void Optrode::incrementCompleted(bool ok)
     if (ok) {
         ++successJobs;
     }
+    if (successJobs == 1) {
+        tasks->stopLEDs();
+        emit pleaseWait();
+    }
     if (++completedJobs == 3) {
         logger->info("All jobs completed");
         stop();

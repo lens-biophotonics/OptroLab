@@ -59,6 +59,7 @@ signals:
     void stopped() const;
     void error(const QString) const;
     void temp(double prova) const;
+    void pleaseWait() const;
 
 public slots:
     void initialize();

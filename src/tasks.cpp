@@ -155,9 +155,15 @@ void Tasks::stop()
     initialized = false;
     mainTrigger->stopTask();
     shutterPulse->stopTask();
+    stopLEDs();
+    elReadout->stopTask();
+}
+
+void Tasks::stopLEDs()
+{
     LED1->stopTask();
     LED2->stopTask();
-    elReadout->stopTask();
+}
 
 void Tasks::setLEDdelay(double value)
 {
