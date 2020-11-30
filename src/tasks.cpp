@@ -19,9 +19,9 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << shutterPulse << elReadout << LED1 << LED2;
+    triggeredTasks << shutterPulse << LED1 << LED2;
 
-    taskList << triggeredTasks << mainTrigger;
+    taskList << triggeredTasks << elReadout << mainTrigger;
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -112,6 +112,8 @@ void Tasks::init()
         sampleMode,
         sBuffer * electrodeReadoutRate);
     elReadout->setReadReadAllAvailSamp(true);
+    elReadout->cfgDigEdgeStartTrig(elReadoutTriggerTerm.toStdString().c_str(),
+                                   NITask::Edge_Rising);
 
 
     // configure start triggers
@@ -163,6 +165,16 @@ void Tasks::stopLEDs()
 {
     LED1->stopTask();
     LED2->stopTask();
+}
+
+QString Tasks::getElectrodeReadoutTriggerTerm() const
+{
+    return elReadoutTriggerTerm;
+}
+
+void Tasks::setElectrodeReadoutTriggerTerm(const QString &value)
+{
+    elReadoutTriggerTerm = value;
 }
 
 void Tasks::setLEDdelay(double value)

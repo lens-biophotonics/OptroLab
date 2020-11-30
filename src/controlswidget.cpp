@@ -98,6 +98,9 @@ void ControlsWidget::setupUi()
     QComboBox *electrodePhysChanComboBox = new QComboBox();
     electrodePhysChanComboBox->addItems(NI::getAIPhysicalChans());
     electrodePhysChanComboBox->setCurrentText(t->getElectrodeReadoutPhysChan());
+    QComboBox *electrodeTriggerTerm = new QComboBox();
+    electrodeTriggerTerm->addItems(NI::getTerminals());
+    electrodeTriggerTerm->setCurrentText(t->getElectrodeReadoutTriggerTerm());
     QDoubleSpinBox *electrodeSampRateSpinBox = new QDoubleSpinBox();
     electrodeSampRateSpinBox->setSuffix("Hz");
     electrodeSampRateSpinBox->setRange(25, 50000);
@@ -107,6 +110,8 @@ void ControlsWidget::setupUi()
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Physical channel"), row, 0);
     grid->addWidget(electrodePhysChanComboBox, row++, 1);
+    grid->addWidget(new QLabel("Trigger"), row, 0);
+    grid->addWidget(electrodeTriggerTerm, row++, 1);
     grid->addWidget(new QLabel("Sampling rate"), row, 0);
     grid->addWidget(electrodeSampRateSpinBox, row++, 1);
     QGroupBox *electrodeGb = new QGroupBox("Electrode readout");

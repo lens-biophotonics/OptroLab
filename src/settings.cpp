@@ -97,6 +97,7 @@ void Settings::loadSettings()
     settings.beginGroup(groupName);
 
     SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ai0");
+    SET_VALUE(groupName, SETTING_TERM, "Dev1/PFI0");
     SET_VALUE(groupName, SETTING_FREQ, 50);
 
     settings.endGroup();

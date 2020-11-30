@@ -20,6 +20,9 @@ public:
     double getMainTrigFreq() const;
     double getMainTrigNPulses() const;
 
+    QString getElectrodeReadoutTriggerTerm() const;
+    void setElectrodeReadoutTriggerTerm(const QString &value);
+
     QString getShutterPulseCounter() const;
     void setShutterPulseCounter(const QString &value);
 
@@ -98,7 +101,7 @@ private:
     NITask *elReadout;
     NITask *LED1, *LED2;
 
-    QString mainTrigPhysChan, mainTrigTerm;
+    QString mainTrigPhysChan, mainTrigTerm, elReadoutTriggerTerm;
     double LEDFreq;
     double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;
