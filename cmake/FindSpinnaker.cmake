@@ -10,6 +10,7 @@ find_library(Spinnaker_LIBRARY
     /usr/lib/x86_64-linux-gnu
     /usr/lib
     /usr/local/lib
+    /opt/spinnaker/lib
     "$ENV{LIB_DIR}/lib"
     "$ENV{LIB}"
     "${WIN_Spinnaker_DIR}/lib64"
@@ -22,6 +23,7 @@ find_library(SpinVideo_LIBRARY
     /usr/lib/x86_64-linux-gnu
     /usr/lib
     /usr/local/lib
+    /opt/spinnaker/lib
     "$ENV{LIB_DIR}/lib"
     "$ENV{LIB}"
     "${WIN_Spinnaker_DIR}/lib64"
@@ -32,6 +34,7 @@ find_path(Spinnaker_INCLUDE_DIR NAMES Spinnaker.h PATHS
     /usr/include
     /usr/include/spinnaker
     /usr/local/include
+    /opt/spinnaker/include
     "$ENV{LIB_DIR}/include"
     "$ENV{INCLUDE}"
     "${WIN_Spinnaker_DIR}/include"
