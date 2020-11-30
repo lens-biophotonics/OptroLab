@@ -131,6 +131,8 @@ void Settings::loadSettings()
 
     SET_VALUE(groupName, SETTING_EXPTIME, 0.15);
     SET_VALUE(groupName, SETTING_RUNNAME, "myexperiment");
+    SET_VALUE(groupName, SETTING_SAVEELECTRODE, true);
+    SET_VALUE(groupName, SETTING_SAVEBEHAVIOR, true);
     SET_VALUE(groupName, SETTING_OUTPUTPATH,
               QDir::toNativeSeparators(QDir::homePath()));
 

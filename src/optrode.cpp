@@ -168,6 +168,7 @@ void Optrode::startFreeRun()
     logger->info("Start acquisition (free run)");
     tasks->setFreeRunEnabled(true);
     behavWorker->setSaveToFileEnabled(false);
+    elReadoutWorker->setSaveToFileEnabled(false);
     _startAcquisition();
     tasks->start();
     emit started(true);
@@ -201,8 +202,9 @@ void Optrode::start()
     tasks->setTotalDuration(totalDuration());
 
     elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
+    elReadoutWorker->setSaveToFileEnabled(saveElectrodeEnabled);
 
-    behavWorker->setSaveToFileEnabled(true);
+    behavWorker->setSaveToFileEnabled(saveBehaviorEnabled);
     behavWorker->setOutputFile(outputFileFullPath());
 
     size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
@@ -233,6 +235,26 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+bool Optrode::isSaveBehaviorEnabled() const
+{
+    return saveBehaviorEnabled;
+}
+
+void Optrode::setSaveBehaviorEnabled(bool enable)
+{
+    saveBehaviorEnabled = enable;
+}
+
+bool Optrode::isSaveElectrodeEnabled() const
+{
+    return saveElectrodeEnabled;
+}
+
+void Optrode::setSaveElectrodeEnabled(bool enable)
+{
+    saveElectrodeEnabled = enable;
 }
 
 BehavWorker *Optrode::getBehavWorker() const

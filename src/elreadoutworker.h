@@ -23,6 +23,8 @@ public:
 
     void setEmissionRate(double Hz);
 
+    void setSaveToFileEnabled(bool value);
+
 public slots:
     void start();
     void stop();
@@ -43,6 +45,7 @@ private:
     double emissionRate = -1;
 
     bool freeRun = true;
+    bool saveToFileEnabled = false;
     size_t totRead;
     size_t totToBeRead;
     size_t totEmitted;

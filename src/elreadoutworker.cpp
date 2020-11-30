@@ -42,7 +42,7 @@ void ElReadoutWorker::start()
 void ElReadoutWorker::stop()
 {
     timer->stop();
-    if (!freeRun) {
+    if (saveToFileEnabled) {
         saveToFile(outputFile);
     }
 }
@@ -126,6 +126,11 @@ void ElReadoutWorker::readOut()
 
     totEmitted += temp.size();
     emit newData(temp);
+}
+
+void ElReadoutWorker::setSaveToFileEnabled(bool value)
+{
+    saveToFileEnabled = value;
 }
 
 /**

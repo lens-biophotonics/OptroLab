@@ -52,6 +52,12 @@ public:
 
     bool isSuccess();
 
+    bool isSaveElectrodeEnabled() const;
+    void setSaveElectrodeEnabled(bool enable);
+
+    bool isSaveBehaviorEnabled() const;
+    void setSaveBehaviorEnabled(bool enable);
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -76,6 +82,8 @@ private:
     QString runName;
     ElReadoutWorker *elReadoutWorker;
     BehavWorker *behavWorker;
+
+    bool saveElectrodeEnabled = true, saveBehaviorEnabled = true;
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;

@@ -298,6 +298,18 @@ void ControlsWidget::setupUi()
     runNameLineEdit->setText(optrode().getRunName());
     grid->addWidget(runNameLineEdit, row++, col++);
 
+    QCheckBox *saveElReadoutCheckBox = new QCheckBox("Electrode");
+    saveElReadoutCheckBox->setChecked(optrode().isSaveElectrodeEnabled());
+    QCheckBox *saveBehavCheckBox = new QCheckBox("Behavior");
+    saveBehavCheckBox->setChecked(optrode().isSaveBehaviorEnabled());
+
+    QHBoxLayout *saveLayout = new QHBoxLayout();
+    saveLayout->addWidget(saveElReadoutCheckBox);
+    saveLayout->addWidget(saveBehavCheckBox);
+
+    grid->addWidget(new QLabel("Save"), ++row, 0);
+    grid->addLayout(saveLayout, row, 1);
+
     QGroupBox *outputGb = new QGroupBox("Output");
     outputGb->setLayout(grid);
 
@@ -399,6 +411,7 @@ void ControlsWidget::setupUi()
         t->setShutterPulseEnabled(stimulationCheckBox->isChecked());
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
+        t->setElectrodeReadoutTriggerTerm(electrodeTriggerTerm->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
 
         t->setShutterInitialDelay(shutterDelaySpinBox->value());
@@ -406,6 +419,9 @@ void ControlsWidget::setupUi()
 
         optrode().setOutputDir(outputPathLineEdit->text());
         optrode().setRunName(runNameLineEdit->text());
+
+        optrode().setSaveElectrodeEnabled(saveElReadoutCheckBox->isChecked());
+        optrode().setSaveBehaviorEnabled(saveBehavCheckBox->isChecked());
 
         QRect roi;
         roi.setX(ROIxSpinBox->value());

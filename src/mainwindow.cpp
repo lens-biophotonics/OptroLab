@@ -143,6 +143,8 @@ void MainWindow::saveSettings() const
     g = SETTINGSGROUP_ACQUISITION;
     s.setValue(g, SETTING_OUTPUTPATH, optrode().getOutputDir());
     s.setValue(g, SETTING_RUNNAME, optrode().getRunName());
+    s.setValue(g, SETTING_SAVEELECTRODE, optrode().isSaveElectrodeEnabled());
+    s.setValue(g, SETTING_SAVEBEHAVIOR, optrode().isSaveBehaviorEnabled());
 
     s.saveSettings();
 
@@ -194,6 +196,8 @@ void MainWindow::loadSettings()
     g = SETTINGSGROUP_ACQUISITION;
     optrode().setOutputDir(s.value(g, SETTING_OUTPUTPATH).toString());
     optrode().setRunName(s.value(g, SETTING_RUNNAME).toString());
+    optrode().setSaveElectrodeEnabled(s.value(g, SETTING_SAVEELECTRODE).toBool());
+    optrode().setSaveBehaviorEnabled(s.value(g, SETTING_SAVEBEHAVIOR).toBool());
 
     g = SETTINGSGROUP_BEHAVCAMROI;
     optrode().getBehaviorCamera()->setROI(s.value(g, SETTING_ROI).toRect());

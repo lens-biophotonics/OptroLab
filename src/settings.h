@@ -32,6 +32,8 @@
 
 #define SETTING_OUTPUTPATH "outputPath"
 #define SETTING_RUNNAME "runName"
+#define SETTING_SAVEELECTRODE "saveElectrode"
+#define SETTING_SAVEBEHAVIOR "saveBehavior"
 
 #define SETTING_ROI "ROI"
 
