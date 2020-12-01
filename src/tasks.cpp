@@ -105,16 +105,18 @@ void Tasks::init()
         sampleMode = NITask::SampMode_FiniteSamps;
     }
 
-    elReadout->cfgSampClkTiming(
-        nullptr,
-        electrodeReadoutRate,
-        NITask::Edge_Rising,
-        sampleMode,
-        sBuffer * electrodeReadoutRate);
-    elReadout->setReadReadAllAvailSamp(true);
-    elReadout->cfgDigEdgeStartTrig(elReadoutTriggerTerm.toStdString().c_str(),
-                                   NITask::Edge_Rising);
-
+    if (electrodeReadoutEnabled) {
+        elReadout->cfgSampClkTiming(
+            nullptr,
+            electrodeReadoutRate,
+            NITask::Edge_Rising,
+            sampleMode,
+            sBuffer * electrodeReadoutRate);
+        elReadout->setReadReadAllAvailSamp(true);
+        elReadout->cfgDigEdgeStartTrig(
+            elReadoutTriggerTerm.toStdString().c_str(),
+            NITask::Edge_Rising);
+    }
 
     // configure start triggers
     for (NITask *task : triggeredTasks) {
@@ -146,7 +148,10 @@ void Tasks::start()
             LED2->startTask();
         }
     }
-    elReadout->startTask();
+    if (electrodeReadoutEnabled) {
+        elReadout->startTask();
+        emit elReadoutStarted();
+    }
 
     // last to be started because it will trigger the other tasks
     mainTrigger->startTask();
@@ -165,6 +170,16 @@ void Tasks::stopLEDs()
 {
     LED1->stopTask();
     LED2->stopTask();
+}
+
+bool Tasks::getElectrodeReadoutEnabled() const
+{
+    return electrodeReadoutEnabled;
+}
+
+void Tasks::setElectrodeReadoutEnabled(bool value)
+{
+    electrodeReadoutEnabled = value;
 }
 
 QString Tasks::getElectrodeReadoutTriggerTerm() const

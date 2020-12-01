@@ -115,6 +115,8 @@ void ControlsWidget::setupUi()
     grid->addWidget(new QLabel("Sampling rate"), row, 0);
     grid->addWidget(electrodeSampRateSpinBox, row++, 1);
     QGroupBox *electrodeGb = new QGroupBox("Electrode readout");
+    electrodeGb->setCheckable(true);
+    electrodeGb->setChecked(t->getElectrodeReadoutEnabled());
     electrodeGb->setLayout(grid);
 
 
@@ -413,6 +415,7 @@ void ControlsWidget::setupUi()
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutTriggerTerm(electrodeTriggerTerm->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
+        t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
 
         t->setShutterInitialDelay(shutterDelaySpinBox->value());
         optrode().setPostStimulation(postStimulationSpinBox->value());

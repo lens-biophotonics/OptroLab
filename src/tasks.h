@@ -86,9 +86,13 @@ public:
 
     void setLEDdelay(double value);
 
+    bool getElectrodeReadoutEnabled() const;
+    void setElectrodeReadoutEnabled(bool value);
+
 signals:
     void started();
     void stopped();
+    void elReadoutStarted();
 
 public slots:
     void start();
@@ -105,6 +109,7 @@ private:
     double LEDFreq;
     double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;
+    bool electrodeReadoutEnabled = true;
 
     QString shutterPulseCounter;
     QString shutterPulseTerm;

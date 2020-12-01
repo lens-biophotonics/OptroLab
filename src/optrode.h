@@ -91,6 +91,7 @@ private:
     double postStimulation;
     int completedJobs;
     int successJobs;
+    int nJobs;
 
     void setupStateMachine();
     void onError(const QString &errMsg);

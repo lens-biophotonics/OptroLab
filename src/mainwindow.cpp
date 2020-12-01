@@ -127,6 +127,7 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
     s.setValue(g, SETTING_FREQ, t->getElectrodeReadoutRate());
     s.setValue(g, SETTING_TERM, t->getElectrodeReadoutTriggerTerm());
+    s.setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
 
     g = SETTINGSGROUP_SHUTTER;
     s.setValue(g, SETTING_PHYSCHAN, t->getShutterPulseCounter());
@@ -180,6 +181,7 @@ void MainWindow::loadSettings()
     t->setElectrodeReadoutPhysChan(s.value(g, SETTING_PHYSCHAN).toString());
     t->setElectrodeReadoutRate(s.value(g, SETTING_FREQ).toDouble());
     t->setElectrodeReadoutTriggerTerm(s.value(g, SETTING_TERM).toString());
+    t->setElectrodeReadoutEnabled(s.value(g, SETTING_ENABLED).toBool());
 
     g = SETTINGSGROUP_SHUTTER;
     t->setShutterPulseCounter(s.value(g, SETTING_PHYSCHAN).toString());

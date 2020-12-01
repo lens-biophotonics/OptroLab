@@ -33,7 +33,7 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     behavWorker = new BehavWorker(behaviorCamera);
     thread->start();
 
-    connect(this, &Optrode::started, elReadoutWorker, &ElReadoutWorker::start);
+    connect(tasks, &Tasks::elReadoutStarted, elReadoutWorker, &ElReadoutWorker::start);
     connect(this, &Optrode::stopped, elReadoutWorker, &ElReadoutWorker::stop);
     connect(behavWorker, &BehavWorker::captureCompleted,
             this, &Optrode::incrementCompleted);
@@ -182,6 +182,12 @@ void Optrode::startFreeRun()
 void Optrode::start()
 {
     completedJobs = successJobs = 0;
+    if (tasks->getElectrodeReadoutEnabled()) {
+        nJobs = 3;
+    } else {
+        nJobs = 2;
+    }
+
     logger->info("Start acquisition");
     logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
                  .arg(tasks->getShutterInitialDelay())
@@ -207,7 +213,8 @@ void Optrode::start()
     tasks->setTotalDuration(totalDuration());
 
     elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
-    elReadoutWorker->setSaveToFileEnabled(saveElectrodeEnabled);
+    elReadoutWorker->setSaveToFileEnabled(
+        saveElectrodeEnabled && tasks->getElectrodeReadoutEnabled());
 
     behavWorker->setSaveToFileEnabled(saveBehaviorEnabled);
     behavWorker->setOutputFile(outputFileFullPath());
@@ -274,8 +281,7 @@ BehavWorker *Optrode::getBehavWorker() const
 
 bool Optrode::isSuccess()
 {
-    logger->info(QString("%1").arg(successJobs));
-    return successJobs == 3;
+    return successJobs == nJobs;
 }
 
 ElReadoutWorker *Optrode::getElReadoutWorker() const
@@ -415,7 +421,7 @@ void Optrode::incrementCompleted(bool ok)
         tasks->stopLEDs();
         emit pleaseWait();
     }
-    if (++completedJobs == 3) {
+    if (++completedJobs == nJobs) {
         logger->info("All jobs completed");
         stop();
     }
