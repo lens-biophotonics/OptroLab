@@ -11,14 +11,20 @@ static Logger *logger = getLogger("SaveStackWorker");
 using namespace DCAM;
 
 SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
-    : QThread(parent), orca(orca)
+    : QObject(parent), orca(orca)
 {
     frameCount = 0;
+    connect(this, &SaveStackWorker::startRequested, this, &SaveStackWorker::start);
+
+    connect(orca, &OrcaFlash::stopped, this, [ = ] () {
+        stopped = true;
+    });
 }
 
-void SaveStackWorker::run()
+void SaveStackWorker::start()
 {
-    size_t i = 0;
+    emit started();
+    readFrames = 0;
     void *buf;
     size_t width = 512;
     size_t height = 512;
@@ -37,16 +43,12 @@ void SaveStackWorker::run()
 
     stopped = false;
 
-    connect(orca, &OrcaFlash::stopped, this, [ = ] () {
-        stopped = true;
-    });
-
     TIFFWriter writer1(outputFile1, true);
     TIFFWriter writer2(outputFile2, true);
 
-    while (!stopped && i < frameCount) {
+    while (!stopped && readFrames < frameCount) {
 #ifdef WITH_HARDWARE
-        int32_t frame = i % nFramesInBuffer;
+        int32_t frame = readFrames % nFramesInBuffer;
         int32_t frameStamp = -1;
 
         DCAM_TIMESTAMP timeStamp;
@@ -67,14 +69,14 @@ void SaveStackWorker::run()
         case DCAMWAIT_CAPEVENT_FRAMEREADY:
             try {
                 orca->lockFrame(frame, &buf, &frameStamp, &timeStamp);
-                timeStamps[i] = timeStamp.sec * 1e6 + timeStamp.microsec;
-                if (i != 0) {
-                    double delta = double(timeStamps[i]) - double(timeStamps[i - 1]);
+                timeStamps[readFrames] = timeStamp.sec * 1e6 + timeStamp.microsec;
+                if (readFrames != 0) {
+                    double delta = double(timeStamps[readFrames]) - double(timeStamps[readFrames - 1]);
                     if (abs(delta) > timeout) {
-                        logger->critical(timeoutString(delta, i));
+                        logger->critical(timeoutString(delta, readFrames));
                     }
                     else if (abs(delta) > timeout * 0.75 || abs(delta) < timeout * 0.25) {
-                        logger->warning(timeoutString(delta, i));
+                        logger->warning(timeoutString(delta, readFrames));
                     }
                 }
             }
@@ -85,12 +87,12 @@ void SaveStackWorker::run()
             orca->copyLastFrame(buf, n);
             msleep(20);
 #endif
-            if (i % 2 == 0) {
+            if (readFrames % 2 == 0) {
                 writer1.write((quint16 *)buf, width, height, 1);
             } else {
                 writer2.write((quint16 *)buf, width, height, 1);
             }
-            i++;
+            readFrames++;
 #ifdef WITH_HARDWARE
             break;
         case DCAMERR_TIMEOUT:
@@ -107,13 +109,28 @@ void SaveStackWorker::run()
     free(buf);
 #endif
 
-    emit captureCompleted(i == frameCount);
-    QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
-    if (i != frameCount) {
+    emit captureCompleted(readFrames == frameCount);
+    QString msg = QString("Saved %1/%2 frames").arg(readFrames).arg(frameCount);
+    if (readFrames != frameCount) {
         logger->warning(msg);
     } else {
         logger->info(msg);
     }
+}
+
+size_t SaveStackWorker::getReadFrames() const
+{
+    return readFrames;
+}
+
+void SaveStackWorker::requestStart()
+{
+    emit startRequested();
+}
+
+size_t SaveStackWorker::getFrameCount() const
+{
+    return frameCount;
 }
 
 QString SaveStackWorker::timeoutString(double delta, int i)

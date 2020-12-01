@@ -21,6 +21,7 @@
 #include "elreadoutworker.h"
 #include "tasks.h"
 #include "chameleoncamera.h"
+#include "savestackworker.h"
 
 ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
 {
@@ -213,9 +214,7 @@ void ControlsWidget::setupUi()
         if (freeRun)
             return;
         progressBar->reset();
-        int maximum = optrode().totalDuration()
-                      * optrode().NITasks()->getElectrodeReadoutRate();
-        progressBar->setRange(0, maximum);
+        progressBar->setRange(0, optrode().getSSWorker()->getFrameCount());
         timer->start(1000);
     });
     connect(&optrode(), &Optrode::stopped, this, [ = ](){
@@ -238,7 +237,7 @@ void ControlsWidget::setupUi()
         successLabel->setStyleSheet("QLabel {color: DarkOrange};");
     });
     connect(timer, &QTimer::timeout, this, [ = ](){
-        progressBar->setValue(optrode().getElReadoutWorker()->getTotRead());
+        progressBar->setValue(optrode().getSSWorker()->getReadFrames());
     });
 
     QVBoxLayout *vLayout = new QVBoxLayout();

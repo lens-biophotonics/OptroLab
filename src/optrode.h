@@ -11,6 +11,7 @@ class ChameleonCamera;
 class Tasks;
 class ElReadoutWorker;
 class BehavWorker;
+class SaveStackWorker;
 
 class Optrode : public QObject
 {
@@ -58,6 +59,8 @@ public:
     bool isSaveBehaviorEnabled() const;
     void setSaveBehaviorEnabled(bool enable);
 
+    SaveStackWorker *getSSWorker() const;
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -82,6 +85,7 @@ private:
     QString runName;
     ElReadoutWorker *elReadoutWorker;
     BehavWorker *behavWorker;
+    SaveStackWorker *ssWorker;
 
     bool saveElectrodeEnabled = true, saveBehaviorEnabled = true;
 

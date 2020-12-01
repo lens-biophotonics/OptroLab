@@ -46,9 +46,6 @@ void BehavWorker::run()
 
         video.Open(outputFile.toStdString().c_str(), option);
     }
-    else {
-        frameCount = -1;
-    }
 
     QElapsedTimer timer;
     timer.start();
@@ -64,16 +61,14 @@ void BehavWorker::run()
             logger->warning(e.what());
             continue;
         }
-        if (!img)
+        if (!img || !img.IsValid())
             continue;
 
         if (saveToFileEnabled) {
             video.Append(img);
-            i++;
         }
 
-        if (!img.IsValid())
-            continue;
+        i++;
 
         if (timer.elapsed() >= 40) {  // no more than 25 fps
             memcpy(qimg.bits(), img->GetData(), img->GetBufferSize());
@@ -83,9 +78,10 @@ void BehavWorker::run()
         img->Release();
     }
 
+    emit captureCompleted(i == frameCount);
+
     if (saveToFileEnabled) {
         QString msg = QString("Saved %1/%2 frames").arg(i).arg(frameCount);
-        emit captureCompleted(i == frameCount);
         if (i != frameCount) {
             logger->warning(msg);
         } else {

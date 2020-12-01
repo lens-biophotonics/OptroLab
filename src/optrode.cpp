@@ -33,6 +33,26 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     behavWorker = new BehavWorker(behaviorCamera);
     thread->start();
 
+    ssWorker = new SaveStackWorker(orca);
+    thread = new QThread();
+    thread->setObjectName("SaveStackWorker_thread");
+    ssWorker->moveToThread(thread);
+    thread->start();
+
+    connect(ssWorker, &SaveStackWorker::error, this, &Optrode::onError);
+    connect(ssWorker, &SaveStackWorker::captureCompleted,
+            this, &Optrode::incrementCompleted);
+
+    connect(ssWorker, &SaveStackWorker::started, this, [ = ]() {
+        try {
+            tasks->start();
+        } catch (std::runtime_error e) {
+            onError(e.what());
+            return;
+        }
+        emit started(false);
+    });
+
     connect(tasks, &Tasks::elReadoutStarted, elReadoutWorker, &ElReadoutWorker::start);
     connect(this, &Optrode::stopped, elReadoutWorker, &ElReadoutWorker::stop);
     connect(behavWorker, &BehavWorker::captureCompleted,
@@ -168,6 +188,7 @@ void Optrode::startFreeRun()
     logger->info("Start acquisition (free run)");
     tasks->setFreeRunEnabled(true);
     behavWorker->setSaveToFileEnabled(false);
+    behavWorker->setFrameCount(-1);
     elReadoutWorker->setSaveToFileEnabled(false);
     _startAcquisition();
     try {
@@ -197,17 +218,7 @@ void Optrode::start()
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
     // setup worker thread
-    SaveStackWorker *worker = new SaveStackWorker(orca);
 
-    connect(worker, &QThread::finished, worker, &QThread::deleteLater);
-    worker->setOutputFile(outputFileFullPath());
-
-    connect(worker, &SaveStackWorker::error, this, &Optrode::onError);
-    connect(worker, &SaveStackWorker::captureCompleted,
-            this, &Optrode::incrementCompleted);
-    connect(worker, &SaveStackWorker::started, tasks, &Tasks::start);
-    connect(elReadoutWorker, &ElReadoutWorker::acquisitionCompleted,
-            worker, &SaveStackWorker::signalTriggerCompletion);
 
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
@@ -220,20 +231,21 @@ void Optrode::start()
     behavWorker->setOutputFile(outputFileFullPath());
 
     size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
-    worker->setFrameCount(frameCount);
-    worker->setTimeout(2e6 / tasks->getMainTrigFreq());
+    ssWorker->setFrameCount(frameCount);
+    ssWorker->setTimeout(2e6 / tasks->getMainTrigFreq());
+    ssWorker->setOutputFile(outputFileFullPath());
     behavWorker->setFrameCount(frameCount);
 
     _startAcquisition();
+
     try {
         tasks->init();
     } catch (std::runtime_error e) {
         emit error(e.what());
         return;
     }
-    worker->start();
+    ssWorker->requestStart();
     writeRunParams();
-    emit started(false);
 }
 
 void Optrode::stop()
@@ -252,6 +264,11 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+SaveStackWorker *Optrode::getSSWorker() const
+{
+    return ssWorker;
 }
 
 bool Optrode::isSaveBehaviorEnabled() const
@@ -419,6 +436,7 @@ void Optrode::incrementCompleted(bool ok)
     }
     if (successJobs == 1) {
         tasks->stopLEDs();
+        ssWorker->signalTriggerCompletion();
         emit pleaseWait();
     }
     if (++completedJobs == nJobs) {
