@@ -170,7 +170,12 @@ void Optrode::startFreeRun()
     behavWorker->setSaveToFileEnabled(false);
     elReadoutWorker->setSaveToFileEnabled(false);
     _startAcquisition();
-    tasks->start();
+    try {
+        tasks->start();
+    } catch (std::runtime_error e) {
+        emit error(e.what());
+        return;
+    }
     emit started(true);
 }
 
@@ -213,7 +218,12 @@ void Optrode::start()
     behavWorker->setFrameCount(frameCount);
 
     _startAcquisition();
-    tasks->init();
+    try {
+        tasks->init();
+    } catch (std::runtime_error e) {
+        emit error(e.what());
+        return;
+    }
     worker->start();
     writeRunParams();
     emit started(false);
