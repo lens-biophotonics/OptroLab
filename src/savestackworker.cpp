@@ -1,3 +1,7 @@
+#ifndef WITH_HARDWARE
+#include <unistd.h>
+#endif
+
 #include <QDir>
 
 #include <qtlab/io/tiffwriter.h>
@@ -85,7 +89,7 @@ void SaveStackWorker::start()
             }
 #else
             orca->copyLastFrame(buf, n);
-            msleep(20);
+            usleep(20000);
 #endif
             if (readFrames % 2 == 0) {
                 writer1.write((quint16 *)buf, width, height, 1);
