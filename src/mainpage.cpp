@@ -97,7 +97,7 @@ void MainPage::setupUi()
     DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca());
 
     CameraDisplay *camDisplay = new CameraDisplay(this);
-    camDisplay->setPlotSize(QSize(512, 512));
+    camDisplay->setPlotSize(QSize(256, 256));
 
     camDisplay->setLUTPath(
         settings().value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH)

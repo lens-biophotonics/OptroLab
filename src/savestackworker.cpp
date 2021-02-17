@@ -30,8 +30,8 @@ void SaveStackWorker::start()
     emit started();
     readFrames = 0;
     void *buf;
-    size_t width = 512;
-    size_t height = 512;
+    size_t width = 256;
+    size_t height = 256;
 
     triggerCompleted = false;
 

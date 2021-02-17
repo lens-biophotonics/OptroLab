@@ -89,6 +89,12 @@ void Optrode::initialize()
         orca->setSensorMode(OrcaFlash::SENSOR_MODE_AREA);
         orca->setTriggerSource(OrcaFlash::TRIGGERSOURCE_EXTERNAL);
         orca->setTriggerPolarity(OrcaFlash::POL_POSITIVE);
+
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_SUBARRAYHPOS, 512);
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_SUBARRAYHSIZE, 1024);
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_SUBARRAYVPOS, 512);
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_SUBARRAYVSIZE, 1024);
+        orca->setPropertyValue(DCAM::DCAM_IDPROP_SUBARRAYMODE, DCAM::DCAMPROP_MODE__ON);
         orca->setPropertyValue(DCAM::DCAM_IDPROP_BINNING, DCAM::DCAMPROP_BINNING__4);
         orca->buf_alloc(3000);
 
@@ -389,7 +395,7 @@ void Optrode::_startAcquisition()
 {
     running = true;
     try {
-        double Vn = 2048;
+        double Vn = 1024;
         double lineInterval = orca->getLineInterval();
         double mainTrigFreq = tasks->getMainTrigFreq();
 
