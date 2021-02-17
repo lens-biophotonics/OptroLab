@@ -1,13 +1,12 @@
 #ifndef BEHAVWORKER_H
 #define BEHAVWORKER_H
 
-#include <QThread>
 #include <QPixmap>
 
 class ChameleonCamera;
 
 
-class BehavWorker : public QThread
+class BehavWorker : public QObject
 {
     Q_OBJECT
 public:
@@ -19,14 +18,12 @@ public:
 
     void setFrameCount(int value);
 
-protected:
-    virtual void run();
-
 signals:
     void newImage(const QPixmap &pm);
     void captureCompleted(bool ok);
 
 private:
+    void start();
     ChameleonCamera *camera;
     QString outputFile;
     bool stop, saveToFileEnabled = false;

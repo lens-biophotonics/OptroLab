@@ -22,7 +22,7 @@ SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
 
     connect(orca, &OrcaFlash::stopped, this, [ = ] () {
         stopped = true;
-    });
+    }, Qt::DirectConnection);
 }
 
 void SaveStackWorker::start()

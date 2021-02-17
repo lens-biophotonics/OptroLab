@@ -15,21 +15,19 @@ static Logger *logger = logManager().getLogger("BehavDispWorker");
 
 
 BehavWorker::BehavWorker(ChameleonCamera *camera,
-                         QObject *parent) : QThread(parent)
+                         QObject *parent) : QObject(parent)
 {
     this->camera = camera;
 
-    connect(camera, &ChameleonCamera::acquisitionStarted, this, [ = ](){
-        stop = false;
-        start();
-    });
+    connect(camera, &ChameleonCamera::acquisitionStarted, this, &BehavWorker::start);
     connect(camera, &ChameleonCamera::acquisitionStopped, this, [ = ](){
         stop = true;
     }, Qt::DirectConnection);
 }
 
-void BehavWorker::run()
+void BehavWorker::start()
 {
+    stop = false;
     QImage qimg(camera->imageSize(), QImage::Format_Indexed8);
     for (int i = 0; i < 256; ++i)  // populate index
         qimg.setColor(i, qRgb(i, i, i));

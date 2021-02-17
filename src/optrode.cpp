@@ -3,6 +3,7 @@
 
 #include <QHistoryState>
 #include <QDir>
+#include <QThread>
 #include <QTextStream>
 #include <QtMath>
 
@@ -30,12 +31,17 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     QThread *thread = new QThread();
     thread->setObjectName("ElReadoutWorker_thread");
     elReadoutWorker->moveToThread(thread);
-    behavWorker = new BehavWorker(behaviorCamera);
     thread->start();
 
-    ssWorker = new SaveStackWorker(orca);
+    thread = new QThread();
+    thread->setObjectName("BehavWorker_thread");
+    behavWorker = new BehavWorker(behaviorCamera);
+    behavWorker->moveToThread(thread);
+    thread->start();
+
     thread = new QThread();
     thread->setObjectName("SaveStackWorker_thread");
+    ssWorker = new SaveStackWorker(orca);
     ssWorker->moveToThread(thread);
     thread->start();
 
