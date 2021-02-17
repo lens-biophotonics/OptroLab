@@ -327,7 +327,11 @@ void Optrode::writeRunParams(QString fileName)
 
     QTextStream out(&outFile);
     out << "camera_rate: " << tasks->getMainTrigFreq() << "\n";
-    out << "led_rate: " << tasks->getLEDFreq() << "\n";
+    if (!tasks->getLED1Enabled() || !tasks->getLED2Enabled()) {
+        out << "led_rate: " << 0 << "\n";
+    } else {
+        out << "led_rate: " << tasks->getLEDFreq() << "\n";
+    }
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
     out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
     out << "stimul_frequency: " << tasks->getShutterPulseFrequency() << "\n";
@@ -404,6 +408,16 @@ void Optrode::_startAcquisition()
         double LEDFreq = mainTrigFreq / 2;
         tasks->setLEDFreq(LEDFreq);
         tasks->setLEDdelay(blankTime / 2);
+
+        uint enabledWriters = 0;
+        if (tasks->getLED1Enabled()) {
+            enabledWriters += 0b01;
+        }
+        if (tasks->getLED2Enabled()) {
+            enabledWriters += 0b10;
+        }
+
+        ssWorker->setEnabledWriters(enabledWriters);
 
         behaviorCamera->startAcquisition();
         orca->cap_start();

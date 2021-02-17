@@ -65,12 +65,25 @@ void Tasks::init()
 
     // LED1
     double LEDPeriod = 1 / LEDFreq;
+    double initDelay1, initDelay2, tempLEDFreq;
+
+    if (LED1Enabled && LED2Enabled) {
+        initDelay1 = LEDPeriod - LEDdelay;
+        initDelay2 = 0.5 * LEDPeriod - LEDdelay;
+        tempLEDFreq = LEDFreq;
+    }
+    else {
+        initDelay1 = 0;
+        initDelay2 = 0;
+        tempLEDFreq = 1 / totalDuration / 2;  // always on
+    }
+
     LED1->createTask();
     LED1->createCOPulseChanFreq(LED1PhysChan.toLatin1(),
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
-                                LEDPeriod - LEDdelay, LEDFreq, 0.5);
+                                initDelay1, tempLEDFreq, 0.5);
     LED1->setCOPulseTerm(nullptr, LED1Term.toLatin1());
     LED1->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
 
@@ -81,7 +94,7 @@ void Tasks::init()
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
-                                0.5 * LEDPeriod - LEDdelay, LEDFreq, 0.5);
+                                initDelay2, tempLEDFreq, 0.5);
     LED2->setCOPulseTerm(nullptr, LED2Term.toLatin1());
     LED2->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
 

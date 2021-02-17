@@ -23,6 +23,8 @@ public:
 
     void requestStart();
 
+    void setEnabledWriters(const uint &value);
+
 signals:
     void error(QString msg = "");
     void captureCompleted(bool ok);
@@ -42,6 +44,7 @@ private:
     QString outputFile1, outputFile2;
     size_t frameCount, readFrames;
     OrcaFlash *orca;
+    uint enabledWriters = 0b11;
 
     QString timeoutString(double delta, int i);
 };

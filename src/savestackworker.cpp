@@ -47,8 +47,24 @@ void SaveStackWorker::start()
 
     stopped = false;
 
-    TIFFWriter writer1(outputFile1, true);
-    TIFFWriter writer2(outputFile2, true);
+    TIFFWriter *writers[2];
+
+    if(enabledWriters == 0b11) {
+        writers[0] = new TIFFWriter(outputFile1, true);
+        writers[1] = new TIFFWriter(outputFile2, true);
+    }
+    else if (enabledWriters == 0b01) {
+        writers[0] = new TIFFWriter(outputFile1, true);
+        writers[1] = writers[0];
+    }
+    else if (enabledWriters == 0b10) {
+        writers[0] = new TIFFWriter(outputFile2, true);
+        writers[1] = writers[0];
+    } else {
+        writers[0] = new TIFFWriter(outputFile1.chopped(10).append(".tiff"), true);
+        writers[1] = writers[0];
+    }
+
 
     while (!stopped && readFrames < frameCount) {
 #ifdef WITH_HARDWARE
@@ -91,11 +107,8 @@ void SaveStackWorker::start()
             orca->copyLastFrame(buf, n);
             usleep(20000);
 #endif
-            if (readFrames % 2 == 0) {
-                writer1.write((quint16 *)buf, width, height, 1);
-            } else {
-                writer2.write((quint16 *)buf, width, height, 1);
-            }
+
+            writers[readFrames % 2]->write((quint16 *)buf, width, height, 1);
             readFrames++;
 #ifdef WITH_HARDWARE
             break;
@@ -113,6 +126,11 @@ void SaveStackWorker::start()
     free(buf);
 #endif
 
+    delete writers[0];
+    if(enabledWriters == 0b11) {
+        delete writers[1];
+    }
+
     emit captureCompleted(readFrames == frameCount);
     QString msg = QString("Saved %1/%2 frames").arg(readFrames).arg(frameCount);
     if (readFrames != frameCount) {
@@ -120,6 +138,11 @@ void SaveStackWorker::start()
     } else {
         logger->info(msg);
     }
+}
+
+void SaveStackWorker::setEnabledWriters(const uint &value)
+{
+    enabledWriters = value;
 }
 
 size_t SaveStackWorker::getReadFrames() const
