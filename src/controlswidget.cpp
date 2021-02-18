@@ -137,7 +137,7 @@ void ControlsWidget::setupUi()
     QComboBox *shutterTermComboBox = new QComboBox();
     QListView *view = new QListView();
     view->setFixedWidth(350);
-    shutterTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLength);
+    shutterTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
     shutterTermComboBox->setView(view);
     shutterTermComboBox->addItems(NI::getTerminals());
     shutterTermComboBox->setMinimumContentsLength(15);
