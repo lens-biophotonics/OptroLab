@@ -1,6 +1,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QSettings>
+#include <QRadioButton>
 #include <QtSvg/QSvgRenderer>
 
 #include <qwt_plot_marker.h>
@@ -108,8 +109,24 @@ void MainPage::setupUi()
 
     AspectRatioWidget *arw = new AspectRatioWidget(camDisplay, 1);
 
+    QVBoxLayout *leftVLayout = new QVBoxLayout();
     QHBoxLayout *hLayout = new QHBoxLayout();
-    hLayout->addWidget(arw, 3);
+
+    QRadioButton *allRadioButton = new QRadioButton("All");
+    QRadioButton *led1RadioButton = new QRadioButton("LED 1");
+    QRadioButton *led2RadioButton = new QRadioButton("LED 2");
+
+    hLayout->addStretch();
+    hLayout->addWidget(allRadioButton);
+    hLayout->addWidget(led1RadioButton);
+    hLayout->addWidget(led2RadioButton);
+    hLayout->addStretch();
+
+    leftVLayout->addWidget(arw);
+    leftVLayout->addLayout(hLayout);
+
+    hLayout = new QHBoxLayout();
+    hLayout->addLayout(leftVLayout, 3);
     hLayout->addWidget(pmw, 4);
     hLayout->addWidget(new ControlsWidget());
 
@@ -118,6 +135,24 @@ void MainPage::setupUi()
     vLayout->addWidget(timePlot, 3);
 
     setLayout(vLayout);
+
+    connect(allRadioButton, &QRadioButton::clicked, [ = ](bool checked){
+        if (checked) {
+            dispWorker->setDisplayWhat(DisplayWorker::DISPLAY_ALL);
+        }
+    });
+
+    connect(led1RadioButton, &QRadioButton::clicked, [ = ](bool checked){
+        if (checked) {
+            dispWorker->setDisplayWhat(DisplayWorker::DISPLAY_LED1);
+        }
+    });
+
+    connect(led2RadioButton, &QRadioButton::clicked, [ = ](bool checked){
+        if (checked) {
+            dispWorker->setDisplayWhat(DisplayWorker::DISPLAY_LED2);
+        }
+    });
 }
 
 void MainPage::saveSettings()
