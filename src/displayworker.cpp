@@ -4,7 +4,7 @@
 #include <qtlab/widgets/cameradisplay.h>
 #include <qtlab/widgets/cameraplot.h>
 
-#define BUFSIZE (256 * 256)
+#define BUFSIZE (512 * 512)
 
 DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
     : QThread(parent)
