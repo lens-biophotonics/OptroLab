@@ -117,6 +117,15 @@ void Settings::loadSettings()
     settings.endGroup();
 
 
+    groupName = SETTINGSGROUP_ZAXIS;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_BAUD, 38400);
+    SET_VALUE(groupName, SETTING_DEVICENUMBER, 1);
+
+    settings.endGroup();
+
+
     groupName = SETTINGSGROUP_TIMING;
     settings.beginGroup(groupName);
 

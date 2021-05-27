@@ -9,6 +9,7 @@
 
 #include <qtlab/core/logger.h>
 #include <qtlab/hw/ni/nitask.h>
+#include <qtlab/hw/pi/pidevice.h>
 
 #include <Spinnaker.h>
 
@@ -27,6 +28,7 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
     behaviorCamera = new ChameleonCamera(this);
     tasks = new Tasks(this);
     orca  = new OrcaFlash(this);
+    zAxis = new PIDevice("Z Axis", this);
     elReadoutWorker = new ElReadoutWorker(tasks->getElReadout());
     QThread *thread = new QThread();
     thread->setObjectName("ElReadoutWorker_thread");
@@ -270,6 +272,11 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+PIDevice *Optrode::getZAxis() const
+{
+    return zAxis;
 }
 
 SaveStackWorker *Optrode::getSSWorker() const

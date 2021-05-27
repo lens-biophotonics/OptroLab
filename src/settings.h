@@ -13,6 +13,12 @@
 #define SETTINGSGROUP_ELREADOUT "ElectrodeReadout"
 #define SETTINGSGROUP_SHUTTER "ShutterPulse"
 #define SETTINGSGROUP_TIMING "Timing"
+#define SETTINGSGROUP_ZAXIS "zAxis"
+
+#define SETTING_BAUD "baud"
+#define SETTING_DEVICENUMBER "deviceNumber"
+#define SETTING_SERIALNUMBER "serialNumber"
+#define SETTING_PORTNAME "portName"
 
 #define SETTING_LUTPATH "LUTPath"
 

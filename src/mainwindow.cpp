@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QCloseEvent>
 #include <QThread>
+#include <QSerialPortInfo>
 
 #include <Spinnaker.h>
 #include "mainwindow.h"
@@ -147,6 +148,11 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_SAVEELECTRODE, optrode().isSaveElectrodeEnabled());
     s.setValue(g, SETTING_SAVEBEHAVIOR, optrode().isSaveBehaviorEnabled());
 
+    g = SETTINGSGROUP_ZAXIS;
+    PIDevice *dev = optrode().getZAxis();
+    s.setValue(g, SETTING_BAUD, dev->getBaud());
+    s.setValue(g, SETTING_DEVICENUMBER, dev->getDeviceNumber());
+
     s.saveSettings();
 
     QSettings settings;
@@ -203,6 +209,17 @@ void MainWindow::loadSettings()
 
     g = SETTINGSGROUP_BEHAVCAMROI;
     optrode().getBehaviorCamera()->setROI(s.value(g, SETTING_ROI).toRect());
+
+    g = SETTINGSGROUP_ZAXIS;
+    PIDevice *dev = optrode().getZAxis();
+    dev->setBaud(s.value(g, SETTING_BAUD).toUInt());
+    dev->setDeviceNumber(s.value(g, SETTING_DEVICENUMBER).toUInt());
+    for (const QSerialPortInfo &info : QSerialPortInfo::availablePorts()) {
+        if (info.manufacturer() == "PI" || info.description().startsWith("PI")) {
+            dev->setPortName(info.portName());
+            break;
+        }
+    }
 
     QSettings settings;
 

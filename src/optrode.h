@@ -6,6 +6,7 @@
 #include <QTimer>
 
 #include <qtlab/hw/hamamatsu/orcaflash.h>
+#include <qtlab/hw/pi/pidevice.h>
 
 class ChameleonCamera;
 class Tasks;
@@ -37,6 +38,7 @@ public:
     double getPostStimulation() const;
     double totalDuration() const;
     OrcaFlash *getOrca() const;
+    PIDevice *getZAxis() const;
 
     QString getOutputDir() const;
     void setOutputDir(const QString &value);
@@ -81,6 +83,7 @@ private:
     ChameleonCamera *behaviorCamera;
     Tasks *tasks;
     OrcaFlash *orca;
+    PIDevice *zAxis;
     QString outputPath;
     QString runName;
     ElReadoutWorker *elReadoutWorker;

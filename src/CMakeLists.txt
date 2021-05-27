@@ -13,7 +13,7 @@ endif()
 find_package(Qt5 5.8 REQUIRED COMPONENTS
     Widgets Svg SerialPort
 )
-find_package(QtLab REQUIRED Core IO Widgets Hamamatsu NI)
+find_package(QtLab REQUIRED Core IO Widgets Hamamatsu NI PI)
 find_package(Spinnaker REQUIRED)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
@@ -43,6 +43,7 @@ set(SOURCE_FILES
     displayworker.cpp
     savestackworker.cpp
     mainpage.cpp
+    settingspage.cpp
 
     optrode.cpp
     tasks.cpp
@@ -60,6 +61,7 @@ target_link_libraries(OptroLab
     QtLab::IO
     QtLab::Widgets
     QtLab::NI
+    QtLab::PI
     QtLab::Hamamatsu
     ${Spinnaker_LIBRARY}
     ${SpinVideo_LIBRARY}
