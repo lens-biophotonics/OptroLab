@@ -11,6 +11,7 @@
 #include <qtlab/widgets/timeplot.h>
 #include <qtlab/widgets/cameradisplay.h>
 #include <qtlab/widgets/cameraplot.h>
+#include <qtlab/widgets/pipositioncontrolwidget.h>
 
 #include "controlswidget.h"
 
@@ -122,7 +123,11 @@ void MainPage::setupUi()
     hLayout->addWidget(led2RadioButton);
     hLayout->addStretch();
 
+    PIPositionControlWidget *posCW = new PIPositionControlWidget(this);
+    posCW->appendRow(optrode().getZAxis(), "1", "Z");
+
     leftVLayout->addWidget(arw);
+    leftVLayout->addWidget(posCW);
     leftVLayout->addLayout(hLayout);
 
     hLayout = new QHBoxLayout();
