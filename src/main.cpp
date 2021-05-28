@@ -16,6 +16,8 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
+    QLocale::setDefault(QLocale::C);
+
 #ifdef FORCE_FUSION_STYLE
     a.setStyle(QStyleFactory::create("fusion"));
 #endif
