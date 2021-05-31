@@ -11,7 +11,7 @@
 #include <qtlab/widgets/timeplot.h>
 #include <qtlab/widgets/cameradisplay.h>
 #include <qtlab/widgets/cameraplot.h>
-#include <qtlab/widgets/pipositioncontrolwidget.h>
+#include <qtlab/widgets/customspinbox.h>
 
 #include "controlswidget.h"
 
@@ -43,6 +43,7 @@ MainPage::~MainPage()
 void MainPage::setupUi()
 {
     QSettings sett;
+    const Settings s = settings();
 
     pmw = new PixmapWidget();
     QSvgRenderer renderer(QString(":/res/lemmling-Simple-cartoon-mouse.svg"));
@@ -101,9 +102,7 @@ void MainPage::setupUi()
     CameraDisplay *camDisplay = new CameraDisplay(this);
     camDisplay->setPlotSize(QSize(512, 512));
 
-    camDisplay->setLUTPath(
-        settings().value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH)
-        .toString());
+    camDisplay->setLUTPath(s.value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH).toString());
 
     void (CameraPlot::*fp)(const double*, const size_t) = &CameraPlot::setData;
     connect(dispWorker, &DisplayWorker::newImage, camDisplay->getPlot(), fp);
@@ -123,8 +122,13 @@ void MainPage::setupUi()
     hLayout->addWidget(led2RadioButton);
     hLayout->addStretch();
 
-    PIPositionControlWidget *posCW = new PIPositionControlWidget(this);
+    posCW = new PIPositionControlWidget(this);
     posCW->appendRow(optrode().getZAxis(), "1", "Z");
+
+    QString g = SETTINGSGROUP_ZAXIS;
+    posCW->getPositionSpinbox(0)->setValue(s.value(g, SETTING_POS).toDouble());
+    posCW->getVelocitySpinBox(0)->setValue(s.value(g, SETTING_VELOCITY).toDouble());
+    posCW->getStepSpinBox(0)->setValue(s.value(g, SETTING_STEPSIZE).toDouble());
 
     leftVLayout->addWidget(arw);
     leftVLayout->addWidget(posCW);
@@ -162,8 +166,14 @@ void MainPage::setupUi()
 
 void MainPage::saveSettings()
 {
-    QSettings settings;
-    settings.setValue(SETTING_BEHAVCAM_FLIPLR, pmw->isFlippedlr());
-    settings.setValue(SETTING_BEHAVCAM_FLIPUD, pmw->isFlippedud());
-    settings.setValue(SETTING_BEHAVCAM_ROTSTEP, pmw->getRotationStep());
+    QSettings sett;
+    sett.setValue(SETTING_BEHAVCAM_FLIPLR, pmw->isFlippedlr());
+    sett.setValue(SETTING_BEHAVCAM_FLIPUD, pmw->isFlippedud());
+    sett.setValue(SETTING_BEHAVCAM_ROTSTEP, pmw->getRotationStep());
+
+    Settings s = settings();
+    QString g = SETTINGSGROUP_ZAXIS;
+    s.setValue(g, SETTING_POS, posCW->getPositionSpinbox(0)->value());
+    s.setValue(g, SETTING_VELOCITY, posCW->getVelocitySpinBox(0)->value());
+    s.setValue(g, SETTING_STEPSIZE, posCW->getStepSpinBox(0)->value());
 }

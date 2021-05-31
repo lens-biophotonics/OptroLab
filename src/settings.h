@@ -15,6 +15,10 @@
 #define SETTINGSGROUP_TIMING "Timing"
 #define SETTINGSGROUP_ZAXIS "zAxis"
 
+#define SETTING_POS "pos"
+#define SETTING_VELOCITY "velocity"
+#define SETTING_STEPSIZE "stepsize"
+
 #define SETTING_BAUD "baud"
 #define SETTING_DEVICENUMBER "deviceNumber"
 #define SETTING_SERIALNUMBER "serialNumber"

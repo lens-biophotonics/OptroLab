@@ -122,6 +122,9 @@ void Settings::loadSettings()
 
     SET_VALUE(groupName, SETTING_BAUD, 38400);
     SET_VALUE(groupName, SETTING_DEVICENUMBER, 1);
+    SET_VALUE(groupName, SETTING_VELOCITY, 1);
+    SET_VALUE(groupName, SETTING_POS, 0);
+    SET_VALUE(groupName, SETTING_STEPSIZE, 1);
 
     settings.endGroup();
 

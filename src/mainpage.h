@@ -2,6 +2,8 @@
 #define MAINPAGE_H
 
 #include <QWidget>
+#include <qtlab/widgets/pipositioncontrolwidget.h>
+
 
 class PixmapWidget;
 
@@ -18,6 +20,7 @@ private:
     void setupUi();
     void saveSettings();
     PixmapWidget *pmw;
+    PIPositionControlWidget *posCW;
 };
 
 #endif // MAINPAGE_H

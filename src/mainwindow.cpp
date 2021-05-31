@@ -243,6 +243,10 @@ void MainWindow::closeEvent(QCloseEvent *e)
     }
 #endif
 
+    /* This will trigger saveSettings() in the relevant widgets (e.g. MainPage). This must happen
+     * before MainWindow::saveSettings() is called. */
+    delete centralWidget();
+
     saveSettings();
 
     /* uninitialize() is called in the receiver's thread (i.e. optrod's).
