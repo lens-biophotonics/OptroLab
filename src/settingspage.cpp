@@ -1,12 +1,20 @@
 #include <QHBoxLayout>
+#include <QPushButton>
+#include <QSpinBox>
 
 #include <qtlab/widgets/picontrollersettingswidget.h>
 
 #include "settingspage.h"
 #include "optrode.h"
 
+#include "dds.h"
+
+DDS *dds;
+
 SettingsPage::SettingsPage(QWidget *parent) : QWidget(parent)
 {
+    dds = new DDS();
+
     setupUi();
 }
 

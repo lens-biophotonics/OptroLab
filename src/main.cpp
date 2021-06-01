@@ -35,7 +35,6 @@ int main(int argc, char *argv[])
         logger->info(descr);
     }
 
-
     MainWindow w;
     w.show();
 

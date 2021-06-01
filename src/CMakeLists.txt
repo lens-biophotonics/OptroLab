@@ -48,6 +48,7 @@ set(SOURCE_FILES
     optrode.cpp
     tasks.cpp
     chameleoncamera.cpp
+    ddsbox.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES} ${APP_ICON_RESOURCE_WINDOWS})
