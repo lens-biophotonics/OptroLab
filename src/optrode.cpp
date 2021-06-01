@@ -104,10 +104,33 @@ void Optrode::initialize()
         behaviorCamera->logDeviceInfo();
     } catch (std::runtime_error e) {
         onError(e.what());
+        return;
     }
     catch (Spinnaker::Exception e) {
         onError(QString("Cannot open behavior camera.\n\n%1").arg(e.what()));
+        return;
     }
+
+    for (int i = 0; i < 6; i++) {
+        try {
+            zAxis->connectDevice();
+            break;
+        } catch (std::runtime_error e) {
+            logger->warning(QString("Cannot connect PI, attempt %1 / 6").arg(i + 1));
+#ifdef Q_OS_WIN
+            Sleep(1000);
+#else
+            int ms = 500;
+            struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
+            nanosleep(&ts, NULL);
+#endif
+        }
+    }
+
+    if (!zAxis->isConnected()) {
+        logger->critical("Cannot connect PI. (Probably busy in PI MikroMove?)");
+    }
+
     emit initialized();
 }
 
