@@ -123,6 +123,7 @@ void MainPage::setupUi()
     hLayout->addStretch();
 
     posCW = new PIPositionControlWidget(this);
+    posCW->setTitle("PI stages");
     posCW->appendRow(optrode().getZAxis(), "1", "Z");
 
     QString g = SETTINGSGROUP_ZAXIS;
@@ -131,8 +132,8 @@ void MainPage::setupUi()
     posCW->getStepSpinBox(0)->setValue(s.value(g, SETTING_STEPSIZE).toDouble());
 
     leftVLayout->addWidget(arw);
-    leftVLayout->addWidget(posCW);
     leftVLayout->addLayout(hLayout);
+    leftVLayout->addWidget(posCW);
 
     hLayout = new QHBoxLayout();
     hLayout->addLayout(leftVLayout, 3);
