@@ -154,7 +154,7 @@ void ControlsWidget::setupUi()
     grid->addWidget(new QLabel("Duty cycle"), row, 0);
     grid->addWidget(shutterDutySpinBox, row++, 1);
 
-    QGroupBox *shutterGb = new QGroupBox("Shutter pulse");
+    QGroupBox *shutterGb = new QGroupBox("Stimulation");
     shutterGb->setLayout(grid);
 
 
