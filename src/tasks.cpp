@@ -7,11 +7,11 @@ static Logger *logger = logManager().getLogger("Tasks");
 
 Tasks::Tasks(QObject *parent) : QObject(parent)
 {
-    mainTrigger = new NITask("mainTrigger", this);
-    shutterPulse = new NITask("shutterPulse", this);
-    LED1 = new NITask("LED1", this);
-    LED2 = new NITask("LED2", this);
-    elReadout = new NITask("electrodeReadout", this);
+    mainTrigger = new NITask(this);
+    shutterPulse = new NITask(this);
+    LED1 = new NITask(this);
+    LED2 = new NITask(this);
+    elReadout = new NITask(this);
 }
 
 void Tasks::init()
@@ -30,7 +30,7 @@ void Tasks::init()
 
 
     // mainTrigger
-    mainTrigger->createTask();
+    mainTrigger->createTask("mainTrigger");
     mainTrigger->createCOPulseChanFreq(mainTrigPhysChan.toLatin1(),
                                        nullptr,
                                        NITask::FreqUnits_Hz,
@@ -47,7 +47,7 @@ void Tasks::init()
 
 
     // shutterPulse
-    shutterPulse->createTask();
+    shutterPulse->createTask("shutterPulse");
     shutterPulse->createCOPulseChanFreq(
         shutterPulseCounter.toLatin1(),
         nullptr,
@@ -78,7 +78,7 @@ void Tasks::init()
         tempLEDFreq = 1 / totalDuration / 2;  // always on
     }
 
-    LED1->createTask();
+    LED1->createTask("LED1");
     LED1->createCOPulseChanFreq(LED1PhysChan.toLatin1(),
                                 nullptr,
                                 NITask::FreqUnits_Hz,
@@ -89,7 +89,7 @@ void Tasks::init()
 
 
     // LED2
-    LED2->createTask();
+    LED2->createTask("LED2");
     LED2->createCOPulseChanFreq(LED2PhysChan.toLatin1(),
                                 nullptr,
                                 NITask::FreqUnits_Hz,
@@ -100,7 +100,7 @@ void Tasks::init()
 
 
     // electrodeReadout
-    elReadout->createTask();
+    elReadout->createTask("electrodeReadout");
     elReadout->createAIVoltageChan(electrodeReadoutPhysChan.toLatin1(),
                                    nullptr,
                                    NITask::TermConf_Default,
