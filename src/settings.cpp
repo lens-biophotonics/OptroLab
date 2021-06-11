@@ -104,7 +104,7 @@ void Settings::loadSettings()
     settings.endGroup();
 
 
-    groupName = SETTINGSGROUP_SHUTTER;
+    groupName = SETTINGSGROUP_STIMULATION;
     settings.beginGroup(groupName);
 
     SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr3");

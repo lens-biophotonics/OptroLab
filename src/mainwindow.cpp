@@ -140,15 +140,15 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_TERM, t->getElectrodeReadoutTriggerTerm());
     s.setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
 
-    g = SETTINGSGROUP_SHUTTER;
-    s.setValue(g, SETTING_PHYSCHAN, t->getShutterPulseCounter());
-    s.setValue(g, SETTING_DUTY, t->getShutterPulseDuty());
-    s.setValue(g, SETTING_FREQ, t->getShutterPulseFrequency());
-    s.setValue(g, SETTING_TERM, t->getShutterPulseTerm());
-    s.setValue(g, SETTING_ENABLED, t->getShutterPulseEnabled());
+    g = SETTINGSGROUP_STIMULATION;
+    s.setValue(g, SETTING_PHYSCHAN, t->getStimulationCounter());
+    s.setValue(g, SETTING_DUTY, t->getStimulationDuty());
+    s.setValue(g, SETTING_FREQ, t->getStimulationFrequency());
+    s.setValue(g, SETTING_TERM, t->getStimulationTerm());
+    s.setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
 
     g = SETTINGSGROUP_TIMING;
-    s.setValue(g, SETTING_INITIALDELAY, t->getShutterInitialDelay());
+    s.setValue(g, SETTING_INITIALDELAY, t->getStimulationInitialDelay());
     s.setValue(g, SETTING_STIMDURATION, t->stimulationDuration());
     s.setValue(g, SETTING_POSTSTIMULATION, optrode().getPostStimulation());
 
@@ -199,15 +199,15 @@ void MainWindow::loadSettings()
     t->setElectrodeReadoutTriggerTerm(s.value(g, SETTING_TERM).toString());
     t->setElectrodeReadoutEnabled(s.value(g, SETTING_ENABLED).toBool());
 
-    g = SETTINGSGROUP_SHUTTER;
-    t->setShutterPulseCounter(s.value(g, SETTING_PHYSCHAN).toString());
-    t->setShutterPulseDuty(s.value(g, SETTING_DUTY).toDouble());
-    t->setShutterPulseFrequency(s.value(g, SETTING_FREQ).toDouble());
-    t->setShutterPulseTerm(s.value(g, SETTING_TERM).toString());
-    t->setShutterPulseEnabled(s.value(g, SETTING_ENABLED).toBool());
+    g = SETTINGSGROUP_STIMULATION;
+    t->setStimulationCounter(s.value(g, SETTING_PHYSCHAN).toString());
+    t->setStimulationDuty(s.value(g, SETTING_DUTY).toDouble());
+    t->setStimulationFrequency(s.value(g, SETTING_FREQ).toDouble());
+    t->setStimulationTerm(s.value(g, SETTING_TERM).toString());
+    t->setStimulationEnabled(s.value(g, SETTING_ENABLED).toBool());
 
     g = SETTINGSGROUP_TIMING;
-    t->setShutterInitialDelay(s.value(g, SETTING_INITIALDELAY).toDouble());
+    t->setStimulationInitialDelay(s.value(g, SETTING_INITIALDELAY).toDouble());
     t->setStimulationDuration(s.value(g, SETTING_STIMDURATION).toDouble());
     optrode().setPostStimulation(s.value(g, SETTING_POSTSTIMULATION).toDouble());
 

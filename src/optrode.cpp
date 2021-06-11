@@ -176,8 +176,8 @@ void Optrode::setPostStimulation(double s)
 
 double Optrode::totalDuration() const
 {
-    double d = tasks->getShutterInitialDelay();
-    if (tasks->getShutterPulseEnabled()) {
+    double d = tasks->getStimulationInitialDelay();
+    if (tasks->getStimulationEnabled()) {
         d += tasks->stimulationDuration();
         d += postStimulation;
     }
@@ -247,9 +247,9 @@ void Optrode::start()
 
     logger->info("Start acquisition");
     logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
-                 .arg(tasks->getShutterInitialDelay())
+                 .arg(tasks->getStimulationInitialDelay())
                  .arg(tasks->stimulationDuration())
-                 .arg(tasks->getShutterPulseNPulses())
+                 .arg(tasks->getStimulationNPulses())
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
@@ -379,13 +379,13 @@ void Optrode::writeRunParams(QString fileName)
         out << "led_rate: " << tasks->getLEDFreq() << "\n";
     }
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
-    out << "stimul_duty: " << tasks->getShutterPulseDuty() << "\n";
-    out << "stimul_frequency: " << tasks->getShutterPulseFrequency() << "\n";
-    out << "stimul_n_pulses: " << tasks->getShutterPulseNPulses() << "\n";
+    out << "stimul_duty: " << tasks->getStimulationDuty() << "\n";
+    out << "stimul_frequency: " << tasks->getStimulationFrequency() << "\n";
+    out << "stimul_n_pulses: " << tasks->getStimulationNPulses() << "\n";
     out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
 
     out << "timing:" << "\n";
-    out << "  baseline: " <<  tasks->getShutterInitialDelay() << "\n";
+    out << "  baseline: " <<  tasks->getStimulationInitialDelay() << "\n";
     out << "  stimulation: " << tasks->stimulationDuration() << "\n";
     out << "  post: " << getPostStimulation() << "\n";
     out << "  total: " << totalDuration() << "\n";

@@ -23,26 +23,26 @@ public:
     QString getElectrodeReadoutTriggerTerm() const;
     void setElectrodeReadoutTriggerTerm(const QString &value);
 
-    QString getShutterPulseCounter() const;
-    void setShutterPulseCounter(const QString &value);
+    QString getStimulationCounter() const;
+    void setStimulationCounter(const QString &value);
 
-    QString getShutterPulseTerm() const;
-    void setShutterPulseTerm(const QString &value);
+    QString getStimulationTerm() const;
+    void setStimulationTerm(const QString &value);
 
-    double getShutterInitialDelay() const;
-    void setShutterInitialDelay(double value);
+    double getStimulationInitialDelay() const;
+    void setStimulationInitialDelay(double value);
 
-    double getShutterPulseFrequency() const;
-    void setShutterPulseFrequency(double value);
+    double getStimulationFrequency() const;
+    void setStimulationFrequency(double value);
 
-    double getShutterPulseDuty() const;
-    void setShutterPulseDuty(double value);
+    double getStimulationDuty() const;
+    void setStimulationDuty(double value);
 
-    uInt64 getShutterPulseNPulses() const;
-    void setShutterPulseNPulses(const uInt64 &value);
+    uInt64 getStimulationNPulses() const;
+    void setStimulationNPulses(const uInt64 &value);
 
-    bool getShutterPulseEnabled() const;
-    void setShutterPulseEnabled(bool value);
+    bool getStimulationEnabled() const;
+    void setStimulationEnabled(bool value);
 
     QString getElectrodeReadoutPhysChan() const;
     void setElectrodeReadoutPhysChan(const QString &value);
@@ -101,7 +101,7 @@ public slots:
 
 private:
     NITask *mainTrigger;
-    NITask *shutterPulse;
+    NITask *stimulation;
     NITask *elReadout;
     NITask *LED1, *LED2;
 
@@ -111,13 +111,13 @@ private:
     bool LED1Enabled = true, LED2Enabled = true;
     bool electrodeReadoutEnabled = true;
 
-    QString shutterPulseCounter;
-    QString shutterPulseTerm;
-    double shutterInitialDelay = 10;
-    double shutterPulseFrequency = 20;
-    double shutterPulseDuty = 0.5;
-    uInt64 shutterPulseNPulses = 20;
-    bool shutterPulseEnabled = true;
+    QString stimulationCounter;
+    QString stimulationTerm;
+    double stimulationDelay = 10;
+    double stimulationFrequency = 20;
+    double stimulationDuty = 0.5;
+    uInt64 stimulationNPulses = 20;
+    bool stimulationEnabled = true;
 
     QString LED1PhysChan, LED2PhysChan;
     QString LED1Term, LED2Term;

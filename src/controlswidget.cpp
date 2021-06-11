@@ -121,49 +121,49 @@ void ControlsWidget::setupUi()
     electrodeGb->setLayout(grid);
 
 
-    // shutter pulse
+    // stimulation
 
-    QComboBox *shutterPhysChanComboBox = new QComboBox();
-    shutterPhysChanComboBox->addItems(NI::getCOPhysicalChans());
-    shutterPhysChanComboBox->setCurrentText(t->getShutterPulseCounter());
-    QSpinBox *shutterDutySpinBox = new QSpinBox();
-    shutterDutySpinBox->setSuffix("%");
-    shutterDutySpinBox->setRange(0, 100);
-    shutterDutySpinBox->setValue(t->getShutterPulseDuty() * 100);
-    QDoubleSpinBox *shutterFreqSpinBox = new QDoubleSpinBox();
-    shutterFreqSpinBox->setSuffix("Hz");
-    shutterFreqSpinBox->setRange(0, 100e6);
-    shutterFreqSpinBox->setValue(t->getShutterPulseFrequency());
-    QComboBox *shutterTermComboBox = new QComboBox();
+    QComboBox *stimulationPhysChanComboBox = new QComboBox();
+    stimulationPhysChanComboBox->addItems(NI::getCOPhysicalChans());
+    stimulationPhysChanComboBox->setCurrentText(t->getStimulationCounter());
+    QSpinBox *stimulationDutySpinBox = new QSpinBox();
+    stimulationDutySpinBox->setSuffix("%");
+    stimulationDutySpinBox->setRange(0, 100);
+    stimulationDutySpinBox->setValue(t->getStimulationDuty() * 100);
+    QDoubleSpinBox *stimulationFreqSpinBox = new QDoubleSpinBox();
+    stimulationFreqSpinBox->setSuffix("Hz");
+    stimulationFreqSpinBox->setRange(0, 100e6);
+    stimulationFreqSpinBox->setValue(t->getStimulationFrequency());
+    QComboBox *stimulationTermComboBox = new QComboBox();
     QListView *view = new QListView();
     view->setFixedWidth(350);
-    shutterTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
-    shutterTermComboBox->setView(view);
-    shutterTermComboBox->addItems(NI::getTerminals());
-    shutterTermComboBox->setMinimumContentsLength(15);
-    shutterTermComboBox->setCurrentText(t->getShutterPulseTerm());
+    stimulationTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+    stimulationTermComboBox->setView(view);
+    stimulationTermComboBox->addItems(NI::getTerminals());
+    stimulationTermComboBox->setMinimumContentsLength(15);
+    stimulationTermComboBox->setCurrentText(t->getStimulationTerm());
 
     row = 0;
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Physical channel"), row, 0);
-    grid->addWidget(shutterPhysChanComboBox, row++, 1);
+    grid->addWidget(stimulationPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
-    grid->addWidget(shutterTermComboBox, row++, 1);
+    grid->addWidget(stimulationTermComboBox, row++, 1);
     grid->addWidget(new QLabel("Frequency"), row, 0);
-    grid->addWidget(shutterFreqSpinBox, row++, 1);
+    grid->addWidget(stimulationFreqSpinBox, row++, 1);
     grid->addWidget(new QLabel("Duty cycle"), row, 0);
-    grid->addWidget(shutterDutySpinBox, row++, 1);
+    grid->addWidget(stimulationDutySpinBox, row++, 1);
 
-    QGroupBox *shutterGb = new QGroupBox("Stimulation");
-    shutterGb->setLayout(grid);
+    QGroupBox *stimulationGb = new QGroupBox("Stimulation");
+    stimulationGb->setLayout(grid);
 
 
     // Timing
 
-    QDoubleSpinBox *shutterDelaySpinBox = new QDoubleSpinBox();
-    shutterDelaySpinBox->setSuffix("s");
-    shutterDelaySpinBox->setRange(0, 3600);
-    shutterDelaySpinBox->setValue(t->getShutterInitialDelay());
+    QDoubleSpinBox *stimulationDelaySpinBox = new QDoubleSpinBox();
+    stimulationDelaySpinBox->setSuffix("s");
+    stimulationDelaySpinBox->setRange(0, 3600);
+    stimulationDelaySpinBox->setValue(t->getStimulationInitialDelay());
 
     QSpinBox *postStimulationSpinBox = new QSpinBox();
     postStimulationSpinBox->setSuffix("s");
@@ -182,12 +182,12 @@ void ControlsWidget::setupUi()
         postStimulationSpinBox->setEnabled(checked);
     });
 
-    stimulationCheckBox->setChecked(t->getShutterPulseEnabled());
+    stimulationCheckBox->setChecked(t->getStimulationEnabled());
 
     row = 0;
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Baseline"), row, 1);
-    grid->addWidget(shutterDelaySpinBox, row++, 2);
+    grid->addWidget(stimulationDelaySpinBox, row++, 2);
     grid->addWidget(stimulationCheckBox, row, 1);
     grid->addWidget(stimulationSpinBox, row++, 2);
     grid->addWidget(new QLabel("Post stimul."), row, 1);
@@ -318,7 +318,7 @@ void ControlsWidget::setupUi()
     vLayout->addWidget(trigGb);
     vLayout->addWidget(LEDGb);
     vLayout->addWidget(electrodeGb);
-    vLayout->addWidget(shutterGb);
+    vLayout->addWidget(stimulationGb);
 
     QVBoxLayout *vLayout2 = new QVBoxLayout();
     vLayout2->addWidget(timingGb);
@@ -380,7 +380,7 @@ void ControlsWidget::setupUi()
         LEDGb,
         ROIGb,
         electrodeGb,
-        shutterGb,
+        stimulationGb,
         outputGb,
         timingGb,
     };
@@ -404,19 +404,19 @@ void ControlsWidget::setupUi()
         t->setLED1Enabled(LED1CheckBox->isChecked());
         t->setLED2Enabled(LED2CheckBox->isChecked());
 
-        t->setShutterPulseDuty(shutterDutySpinBox->value() / 100.);
-        t->setShutterPulseTerm(shutterTermComboBox->currentText());
-        t->setShutterPulseCounter(shutterPhysChanComboBox->currentText());
-        t->setShutterPulseFrequency(shutterFreqSpinBox->value());
+        t->setStimulationDuty(stimulationDutySpinBox->value() / 100.);
+        t->setStimulationTerm(stimulationTermComboBox->currentText());
+        t->setStimulationCounter(stimulationPhysChanComboBox->currentText());
+        t->setStimulationFrequency(stimulationFreqSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
-        t->setShutterPulseEnabled(stimulationCheckBox->isChecked());
+        t->setStimulationEnabled(stimulationCheckBox->isChecked());
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutTriggerTerm(electrodeTriggerTerm->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
         t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
 
-        t->setShutterInitialDelay(shutterDelaySpinBox->value());
+        t->setStimulationInitialDelay(stimulationDelaySpinBox->value());
         optrode().setPostStimulation(postStimulationSpinBox->value());
 
         optrode().setOutputDir(outputPathLineEdit->text());

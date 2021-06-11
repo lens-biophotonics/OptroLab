@@ -8,7 +8,7 @@ static Logger *logger = logManager().getLogger("Tasks");
 Tasks::Tasks(QObject *parent) : QObject(parent)
 {
     mainTrigger = new NITask(this);
-    shutterPulse = new NITask(this);
+    stimulation = new NITask(this);
     LED1 = new NITask(this);
     LED2 = new NITask(this);
     elReadout = new NITask(this);
@@ -19,7 +19,7 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << shutterPulse << LED1 << LED2;
+    triggeredTasks << stimulation << LED1 << LED2;
 
     taskList << triggeredTasks << elReadout << mainTrigger;
 
@@ -46,20 +46,20 @@ void Tasks::init()
     mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
 
 
-    // shutterPulse
-    shutterPulse->createTask("shutterPulse");
-    shutterPulse->createCOPulseChanFreq(
-        shutterPulseCounter.toLatin1(),
+    // stimulation
+    stimulation->createTask("stimulation");
+    stimulation->createCOPulseChanFreq(
+        stimulationCounter.toLatin1(),
         nullptr,
         DAQmx_Val_Hz,
         NITask::IdleState_Low,
-        shutterInitialDelay,
-        shutterPulseFrequency,
-        shutterPulseDuty);
-    shutterPulse->setCOPulseTerm(nullptr, shutterPulseTerm.toLatin1());
-    if (shutterPulseEnabled) {
-        shutterPulse->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
-                                        shutterPulseNPulses);
+        stimulationDelay,
+        stimulationFrequency,
+        stimulationDuty);
+    stimulation->setCOPulseTerm(nullptr, stimulationTerm.toLatin1());
+    if (stimulationEnabled) {
+        stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
+                                       stimulationNPulses);
     }
 
 
@@ -151,8 +151,8 @@ void Tasks::start()
         init();
     }
     if (!isFreeRunEnabled()) {
-        if (shutterPulseEnabled) {
-            shutterPulse->startTask();
+        if (stimulationEnabled) {
+            stimulation->startTask();
         }
         if (LED1Enabled) {
             LED1->startTask();
@@ -174,7 +174,7 @@ void Tasks::stop()
 {
     initialized = false;
     mainTrigger->stopTask();
-    shutterPulse->stopTask();
+    stimulation->stopTask();
     stopLEDs();
     elReadout->stopTask();
 }
@@ -301,14 +301,14 @@ NITask *Tasks::getElReadout() const
     return elReadout;
 }
 
-double Tasks::getShutterInitialDelay() const
+double Tasks::getStimulationInitialDelay() const
 {
-    return shutterInitialDelay;
+    return stimulationDelay;
 }
 
-void Tasks::setShutterInitialDelay(double value)
+void Tasks::setStimulationInitialDelay(double value)
 {
-    shutterInitialDelay = value;
+    stimulationDelay = value;
 }
 
 bool Tasks::isFreeRunEnabled() const
@@ -322,20 +322,20 @@ void Tasks::setFreeRunEnabled(bool value)
 }
 
 /**
- * @brief Set the duration of the stimulation (shutter pulse)
+ * @brief Set the duration of the stimulation
  * @param s Duration in seconds.
  *
- * \note Set shutter pulse frequency beforehand. This will call setShutterPulseNPulses().
+ * \note Set stimulation pulse frequency beforehand. This will call setStimulationNPulses().
  */
 
 void Tasks::setStimulationDuration(double s)
 {
-    setShutterPulseNPulses(s * shutterPulseFrequency);
+    setStimulationNPulses(s * stimulationFrequency);
 }
 
 double Tasks::stimulationDuration()
 {
-    return shutterPulseNPulses / shutterPulseFrequency;
+    return stimulationNPulses / stimulationFrequency;
 }
 
 QString Tasks::getMainTrigPhysChan() const
@@ -358,64 +358,64 @@ double Tasks::getMainTrigNPulses() const
     return totalDuration * getMainTrigFreq();
 }
 
-QString Tasks::getShutterPulseCounter() const
+QString Tasks::getStimulationCounter() const
 {
-    return shutterPulseCounter;
+    return stimulationCounter;
 }
 
-void Tasks::setShutterPulseCounter(const QString &value)
+void Tasks::setStimulationCounter(const QString &value)
 {
-    shutterPulseCounter = value;
+    stimulationCounter = value;
 }
 
-QString Tasks::getShutterPulseTerm() const
+QString Tasks::getStimulationTerm() const
 {
-    return shutterPulseTerm;
+    return stimulationTerm;
 }
 
-void Tasks::setShutterPulseTerm(const QString &value)
+void Tasks::setStimulationTerm(const QString &value)
 {
-    shutterPulseTerm = value;
+    stimulationTerm = value;
 }
 
-double Tasks::getShutterPulseFrequency() const
+double Tasks::getStimulationFrequency() const
 {
-    return shutterPulseFrequency;
+    return stimulationFrequency;
 }
 
-void Tasks::setShutterPulseFrequency(double value)
+void Tasks::setStimulationFrequency(double value)
 {
-    shutterPulseFrequency = value;
+    stimulationFrequency = value;
 }
 
-double Tasks::getShutterPulseDuty() const
+double Tasks::getStimulationDuty() const
 {
-    return shutterPulseDuty;
+    return stimulationDuty;
 }
 
-void Tasks::setShutterPulseDuty(double value)
+void Tasks::setStimulationDuty(double value)
 {
-    shutterPulseDuty = value;
+    stimulationDuty = value;
 }
 
-uInt64 Tasks::getShutterPulseNPulses() const
+uInt64 Tasks::getStimulationNPulses() const
 {
-    return shutterPulseNPulses;
+    return stimulationNPulses;
 }
 
-void Tasks::setShutterPulseNPulses(const uInt64 &value)
+void Tasks::setStimulationNPulses(const uInt64 &value)
 {
-    shutterPulseNPulses = value;
+    stimulationNPulses = value;
 }
 
-bool Tasks::getShutterPulseEnabled() const
+bool Tasks::getStimulationEnabled() const
 {
-    return shutterPulseEnabled;
+    return stimulationEnabled;
 }
 
-void Tasks::setShutterPulseEnabled(bool value)
+void Tasks::setStimulationEnabled(bool value)
 {
-    shutterPulseEnabled = value;
+    stimulationEnabled = value;
 }
 
 QString Tasks::getElectrodeReadoutPhysChan() const

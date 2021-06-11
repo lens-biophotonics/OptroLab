@@ -93,8 +93,8 @@ void MainPage::setupUi()
         startMarker->setVisible(!freeRun);
         endMarker->setVisible(!freeRun);
 
-        startMarker->setValue(sr * t->getShutterInitialDelay(), 0);
-        endMarker->setValue(sr * (t->getShutterInitialDelay() + t->stimulationDuration()), 0);
+        startMarker->setValue(sr * t->getStimulationInitialDelay(), 0);
+        endMarker->setValue(sr * (t->getStimulationInitialDelay() + t->stimulationDuration()), 0);
     });
 
     DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca());
