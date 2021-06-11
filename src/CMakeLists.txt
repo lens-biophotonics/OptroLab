@@ -45,6 +45,7 @@ set(SOURCE_FILES
     mainpage.cpp
     settingspage.cpp
     ddsdialog.cpp
+    camdisplay.cpp
 
     optrode.cpp
     tasks.cpp

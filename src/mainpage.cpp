@@ -9,7 +9,6 @@
 #include <qtlab/widgets/aspectratiowidget.h>
 #include <qtlab/widgets/pixmapwidget.h>
 #include <qtlab/widgets/timeplot.h>
-#include <qtlab/widgets/cameradisplay.h>
 #include <qtlab/widgets/cameraplot.h>
 #include <qtlab/widgets/customspinbox.h>
 
@@ -25,10 +24,12 @@
 #include "settings.h"
 
 #include "mainpage.h"
+#include "camdisplay.h"
 
 #define SETTING_BEHAVCAM_FLIPLR "behavCamFlipLr"
 #define SETTING_BEHAVCAM_FLIPUD "behavCamFlipUd"
 #define SETTING_BEHAVCAM_ROTSTEP "behavCamRotStep"
+
 
 MainPage::MainPage(QWidget *parent) : QWidget(parent)
 {
@@ -99,7 +100,7 @@ void MainPage::setupUi()
 
     DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca());
 
-    CameraDisplay *camDisplay = new CameraDisplay(this);
+    CamDisplay *camDisplay = new CamDisplay(this);
     camDisplay->setPlotSize(QSize(512, 512));
 
     camDisplay->setLUTPath(s.value(SETTINGSGROUP_OTHERSETTINGS, SETTING_LUTPATH).toString());
