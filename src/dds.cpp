@@ -296,11 +296,17 @@ int DDS::getRefClkMultiplier()
     return controlRegister[1] & 0x1f;
 }
 
+void DDS::setWriteMode(const WRITE_MODE &value)
+{
+    writeMode = value;
+}
+
 void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
 {
     const int sampsPerChan = 3;
-    uInt32 samps[3 * sampsPerChan];
-    memset(samps, 0, 3 * sampsPerChan * sizeof(uInt32));
+    const int nSamples = 3 * sampsPerChan;
+    uInt32 samps[nSamples];
+    memset(samps, 0, nSamples * sizeof(uInt32));
 
     // control
     samps[0] = (addr << 2) | CONTROL_PORT_NWRITE;
@@ -328,10 +334,21 @@ void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
         samps[i] = samps[i] << 24;
     }
 
-    task->stopTask();
-    task->cfgSampClkTiming(nullptr, 1e3, NITask::Edge_Rising, NITask::SampMode_FiniteSamps, 3);
-    task->writeDigitalU32(3, true, 0.5, NITask::DataLayout_GroupByChannel, samps, nullptr);
-    task->waitUntilTaskDone(10);
+    int oldSize = buffer.size();
+
+    switch (writeMode) {
+    case WRITE_MODE_DELAYED:
+        buffer.resize(buffer.size() + nSamples);
+        memcpy(buffer.data() + oldSize, samps, nSamples * sizeof(uInt32));
+        break;
+
+    case WRITE_MODE_IMMEDIATE:
+    default:
+        task->stopTask();
+        task->writeDigitalU32(3, true, 0.5, NITask::DataLayout_GroupByChannel, samps, nullptr);
+        task->waitUntilTaskDone(10);
+        break;
+    }
 }
 
 void DDS::write8(quint8 addr, quint8 value)
