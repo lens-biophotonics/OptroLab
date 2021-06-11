@@ -10,6 +10,7 @@
 #include <Spinnaker.h>
 #include "mainwindow.h"
 #include "centralwidget.h"
+#include "ddsdialog.h"
 
 #include "optrode.h"
 #include "settings.h"
@@ -59,9 +60,18 @@ void MainWindow::setupUi()
     QMenuBar *menuBar = new QMenuBar();
     setMenuBar(menuBar);
 
+    QAction *DDSDialogAction = new QAction("DDS...");
+    DDSDialog *ddsDialog = new DDSDialog(this);
+
+    connect(DDSDialogAction, &QAction::triggered, [ = ](){
+        ddsDialog->show();
+    });
+
     QMenu *fileMenu = menuBar->addMenu("&File");
     fileMenu->addAction(saveSettingsAction);
     fileMenu->addAction(quitAction);
+
+    menuBar->addAction(DDSDialogAction);
 
     QMenu *helpMenu = menuBar->addMenu("?");
     helpMenu->addAction(aboutAction);

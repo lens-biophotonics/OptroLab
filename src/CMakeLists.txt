@@ -44,11 +44,12 @@ set(SOURCE_FILES
     savestackworker.cpp
     mainpage.cpp
     settingspage.cpp
+    ddsdialog.cpp
 
     optrode.cpp
     tasks.cpp
     chameleoncamera.cpp
-    ddsbox.cpp
+    dds.cpp
 )
 
 add_executable(OptroLab ${SOURCE_FILES} ${APP_ICON_RESOURCE_WINDOWS})

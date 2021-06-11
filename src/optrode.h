@@ -10,6 +10,7 @@
 
 class ChameleonCamera;
 class Tasks;
+class DDS;
 class ElReadoutWorker;
 class BehavWorker;
 class SaveStackWorker;
@@ -63,6 +64,10 @@ public:
 
     SaveStackWorker *getSSWorker() const;
 
+    DDS *getDDS() const;
+
+    void ddsMasterReset();
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -84,6 +89,7 @@ private:
     Tasks *tasks;
     OrcaFlash *orca;
     PIDevice *zAxis;
+    DDS *dds;
     QString outputPath;
     QString runName;
     ElReadoutWorker *elReadoutWorker;

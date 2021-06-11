@@ -15,6 +15,7 @@
 
 #include "optrode.h"
 #include "tasks.h"
+#include "dds.h"
 #include "chameleoncamera.h"
 #include "savestackworker.h"
 #include "elreadoutworker.h"
@@ -70,6 +71,8 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
 
     postStimulation = 0;
 
+    dds = new DDS(this);
+
     setupStateMachine();
 }
 
@@ -102,6 +105,8 @@ void Optrode::initialize()
 
         behaviorCamera->open(0);
         behaviorCamera->logDeviceInfo();
+
+        dds->initTask();
     } catch (std::runtime_error e) {
         onError(e.what());
         return;
@@ -295,6 +300,11 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+DDS *Optrode::getDDS() const
+{
+    return dds;
 }
 
 PIDevice *Optrode::getZAxis() const
@@ -494,4 +504,14 @@ void Optrode::incrementCompleted(bool ok)
         stop();
     }
     logger->info(QString("Completed %1 jobs (%2)").arg(completedJobs).arg(ok));
+}
+
+void Optrode::ddsMasterReset()
+{
+    dds->masterReset();
+    dds->setPLL(false, false, 6);
+    dds->setOSK(true, false);
+    dds->setUpdateClock(2);
+    dds->setOSKI(3546, 3546);
+    dds->setFrequencyWord1(5312785ull << 24, 5312785ull << 24);
 };
