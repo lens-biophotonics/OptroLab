@@ -56,7 +56,7 @@ public:
     void setTriangle(bool on);
     void serSourceQDAC(bool on);
     void setOperatingMode(OPERATING_MODE mode);
-    void setIOUDCLK(bool internal);
+    void setIOUDCLKInternal(bool internal);
 
     void setDDS(bool inverseSincBypass, bool OSK, bool OSKInternal, bool serialLSBFirst,
                 bool serialSDO);

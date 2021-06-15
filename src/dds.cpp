@@ -218,7 +218,7 @@ void DDS::setOperatingMode(DDS::OPERATING_MODE mode)
     controlRegister[2] = b;
 }
 
-void DDS::setIOUDCLK(bool internal)
+void DDS::setIOUDCLKInternal(bool internal)
 {
     quint8 b = controlRegister[2];
     b |= (internal << 0);
