@@ -253,12 +253,11 @@ void Optrode::start()
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
-    // setup worker thread
-
-
+    // setup NI tasks
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
 
+    // setup worker threads
     elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
     elReadoutWorker->setSaveToFileEnabled(
         saveElectrodeEnabled && tasks->getElectrodeReadoutEnabled());
