@@ -160,10 +160,10 @@ void ControlsWidget::setupUi()
 
     // Timing
 
-    QDoubleSpinBox *stimulationDelaySpinBox = new QDoubleSpinBox();
-    stimulationDelaySpinBox->setSuffix("s");
-    stimulationDelaySpinBox->setRange(0, 3600);
-    stimulationDelaySpinBox->setValue(t->getStimulationInitialDelay());
+    QDoubleSpinBox *baselineSpinBox = new QDoubleSpinBox();
+    baselineSpinBox->setSuffix("s");
+    baselineSpinBox->setRange(0, 3600);
+    baselineSpinBox->setValue(t->getStimulationInitialDelay());
 
     QSpinBox *postStimulationSpinBox = new QSpinBox();
     postStimulationSpinBox->setSuffix("s");
@@ -187,7 +187,7 @@ void ControlsWidget::setupUi()
     row = 0;
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Baseline"), row, 1);
-    grid->addWidget(stimulationDelaySpinBox, row++, 2);
+    grid->addWidget(baselineSpinBox, row++, 2);
     grid->addWidget(stimulationCheckBox, row, 1);
     grid->addWidget(stimulationSpinBox, row++, 2);
     grid->addWidget(new QLabel("Post stimul."), row, 1);
@@ -416,7 +416,7 @@ void ControlsWidget::setupUi()
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
         t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
 
-        t->setStimulationInitialDelay(stimulationDelaySpinBox->value());
+        t->setStimulationInitialDelay(baselineSpinBox->value());
         optrode().setPostStimulation(postStimulationSpinBox->value());
 
         optrode().setOutputDir(outputPathLineEdit->text());
