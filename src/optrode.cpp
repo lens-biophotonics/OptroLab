@@ -147,44 +147,6 @@ void Optrode::uninitialize()
     behaviorCamera = nullptr;
 }
 
-ChameleonCamera *Optrode::getBehaviorCamera() const
-{
-    return behaviorCamera;
-}
-
-Tasks *Optrode::NITasks() const
-{
-    return tasks;
-}
-
-bool Optrode::isFreeRunEnabled() const
-{
-    return tasks->isFreeRunEnabled();
-}
-
-void Optrode::setPostStimulation(double s)
-{
-    postStimulation = s;
-}
-
-/**
- * @brief Return the total duration of a single run.
- * @return seconds
- *
- * Baseline + stimulation + post stimulation
- */
-
-double Optrode::totalDuration() const
-{
-    double d = tasks->getStimulationInitialDelay();
-    if (tasks->getStimulationEnabled()) {
-        d += tasks->stimulationDuration();
-        d += postStimulation;
-    }
-
-    return d;
-}
-
 void Optrode::setupStateMachine()
 {
     std::function<QState*(const MACHINE_STATE, QState *parent)> newState
@@ -301,6 +263,124 @@ void Optrode::stop()
     logger->info("Stopped");
 }
 
+void Optrode::writeRunParams(QString fileName)
+{
+    QFile outFile(fileName);
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        emit error(QString("Cannot open output file %1")
+                   .arg(outFile.fileName()));
+        return;
+    };
+
+    QTextStream out(&outFile);
+    out << "camera_rate: " << tasks->getMainTrigFreq() << "\n";
+    if (!tasks->getLED1Enabled() || !tasks->getLED2Enabled()) {
+        out << "led_rate: " << 0 << "\n";
+    } else {
+        out << "led_rate: " << tasks->getLEDFreq() << "\n";
+    }
+    out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
+    out << "stimul_duty: " << tasks->getStimulationDuty() << "\n";
+    out << "stimul_frequency: " << tasks->getStimulationFrequency() << "\n";
+    out << "stimul_n_pulses: " << tasks->getStimulationNPulses() << "\n";
+    out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
+
+    out << "timing:" << "\n";
+    out << "  baseline: " <<  tasks->getStimulationInitialDelay() << "\n";
+    out << "  stimulation: " << tasks->stimulationDuration() << "\n";
+    out << "  post: " << getPostStimulation() << "\n";
+    out << "  total: " << totalDuration() << "\n";
+
+    outFile.close();
+
+    logger->info("Saved run params to " + fileName);
+}
+
+void Optrode::_startAcquisition()
+{
+    running = true;
+    try {
+        double Vn = 2048;
+        double lineInterval = orca->getLineInterval();
+        double mainTrigFreq = tasks->getMainTrigFreq();
+
+        // time during which LEDs are switching on/off
+        // (camera should not be recording during this time)
+        double blankTime = 0.002;
+
+        // inverse formula to obtain exposure time
+        double expTime = 1. / tasks->getMainTrigFreq() - (Vn / 2 + 10) * lineInterval;
+        expTime -= blankTime;
+        orca->setGetExposureTime(expTime);
+
+        elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
+        elReadoutWorker->setFreeRun(isFreeRunEnabled());
+
+        double LEDFreq = mainTrigFreq / 2;
+        tasks->setLEDFreq(LEDFreq);
+        tasks->setLEDdelay(blankTime / 2);
+
+        uint enabledWriters = 0;
+        if (tasks->getLED1Enabled()) {
+            enabledWriters += 0b01;
+        }
+        if (tasks->getLED2Enabled()) {
+            enabledWriters += 0b10;
+        }
+
+        ssWorker->setEnabledWriters(enabledWriters);
+
+        behaviorCamera->startAcquisition();
+        orca->cap_start();
+    } catch (std::runtime_error e) {
+        onError(e.what());
+        return;
+    } catch (Spinnaker::Exception e) {
+        onError(e.what());
+        return;
+    }
+}
+
+void Optrode::onError(const QString &errMsg)
+{
+    stop();
+    emit error(errMsg);
+    logger->critical(errMsg);
+}
+
+void Optrode::incrementCompleted(bool ok)
+{
+    if (ok) {
+        ++successJobs;
+    }
+    if (successJobs == 1) {
+        tasks->stopLEDs();
+        ssWorker->signalTriggerCompletion();
+        emit pleaseWait();
+    }
+    if (++completedJobs == nJobs) {
+        logger->info("All jobs completed");
+        stop();
+    }
+    logger->info(QString("Completed %1 jobs (%2)").arg(completedJobs).arg(ok));
+}
+
+void Optrode::ddsMasterReset()
+{
+    dds->masterReset();
+    dds->setPLL(false, false, 6);
+    dds->setOSK(true, false);
+    dds->setUpdateClock(2);
+    dds->setOSKI(3546, 3546);
+    dds->setFrequencyWord1(5312785ull << 24, 5312785ull << 24);
+};
+
+void Optrode::writeRunParams()
+{
+    QString fname = outputFileFullPath() + ".yaml";
+    writeRunParams(fname);
+}
+
 DDS *Optrode::getDDS() const
 {
     return dds;
@@ -361,45 +441,6 @@ void Optrode::setRunName(const QString &value)
     runName = value;
 }
 
-void Optrode::writeRunParams(QString fileName)
-{
-    QFile outFile(fileName);
-    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        emit error(QString("Cannot open output file %1")
-                   .arg(outFile.fileName()));
-        return;
-    };
-
-    QTextStream out(&outFile);
-    out << "camera_rate: " << tasks->getMainTrigFreq() << "\n";
-    if (!tasks->getLED1Enabled() || !tasks->getLED2Enabled()) {
-        out << "led_rate: " << 0 << "\n";
-    } else {
-        out << "led_rate: " << tasks->getLEDFreq() << "\n";
-    }
-    out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
-    out << "stimul_duty: " << tasks->getStimulationDuty() << "\n";
-    out << "stimul_frequency: " << tasks->getStimulationFrequency() << "\n";
-    out << "stimul_n_pulses: " << tasks->getStimulationNPulses() << "\n";
-    out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
-
-    out << "timing:" << "\n";
-    out << "  baseline: " <<  tasks->getStimulationInitialDelay() << "\n";
-    out << "  stimulation: " << tasks->stimulationDuration() << "\n";
-    out << "  post: " << getPostStimulation() << "\n";
-    out << "  total: " << totalDuration() << "\n";
-
-    outFile.close();
-
-    logger->info("Saved run params to " + fileName);
-}
-
-void Optrode::writeRunParams()
-{
-    QString fname = outputFileFullPath() + ".yaml";
-    writeRunParams(fname);
-}
-
 QString Optrode::getOutputDir() const
 {
     return outputPath;
@@ -430,87 +471,52 @@ double Optrode::getPostStimulation() const
     return postStimulation;
 }
 
-void Optrode::_startAcquisition()
+ChameleonCamera *Optrode::getBehaviorCamera() const
 {
-    running = true;
-    try {
-        double Vn = 2048;
-        double lineInterval = orca->getLineInterval();
-        double mainTrigFreq = tasks->getMainTrigFreq();
-
-        // time during which LEDs are switching on/off
-        // (camera should not be recording during this time)
-        double blankTime = 0.002;
-
-        // inverse formula to obtain exposure time
-        double expTime = 1. / tasks->getMainTrigFreq() - (Vn / 2 + 10) * lineInterval;
-        expTime -= blankTime;
-        orca->setGetExposureTime(expTime);
-
-        elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
-        elReadoutWorker->setFreeRun(isFreeRunEnabled());
-
-        double LEDFreq = mainTrigFreq / 2;
-        tasks->setLEDFreq(LEDFreq);
-        tasks->setLEDdelay(blankTime / 2);
-
-        uint enabledWriters = 0;
-        if (tasks->getLED1Enabled()) {
-            enabledWriters += 0b01;
-        }
-        if (tasks->getLED2Enabled()) {
-            enabledWriters += 0b10;
-        }
-
-        ssWorker->setEnabledWriters(enabledWriters);
-
-        behaviorCamera->startAcquisition();
-        orca->cap_start();
-    } catch (std::runtime_error e) {
-        onError(e.what());
-        return;
-    } catch (Spinnaker::Exception e) {
-        onError(e.what());
-        return;
-    }
+    return behaviorCamera;
 }
+
+Tasks *Optrode::NITasks() const
+{
+    return tasks;
+}
+
+bool Optrode::isFreeRunEnabled() const
+{
+    return tasks->isFreeRunEnabled();
+}
+
+void Optrode::setPostStimulation(double s)
+{
+    postStimulation = s;
+}
+
+
+/**
+ * @brief Return the total duration of a single run.
+ * @return seconds
+ *
+ * Baseline + stimulation + post stimulation
+ */
+
+double Optrode::totalDuration() const
+{
+    double d = tasks->getStimulationInitialDelay();
+    if (tasks->getStimulationEnabled()) {
+        d += tasks->stimulationDuration();
+        d += postStimulation;
+    }
+
+    return d;
+}
+
+/**
+ * @brief The singleton Optrode instance.
+ * @return
+ */
 
 Optrode &optrode()
 {
     static auto instance = std::make_unique<Optrode>(nullptr);
     return *instance;
 }
-
-void Optrode::onError(const QString &errMsg)
-{
-    stop();
-    emit error(errMsg);
-    logger->critical(errMsg);
-}
-
-void Optrode::incrementCompleted(bool ok)
-{
-    if (ok) {
-        ++successJobs;
-    }
-    if (successJobs == 1) {
-        tasks->stopLEDs();
-        ssWorker->signalTriggerCompletion();
-        emit pleaseWait();
-    }
-    if (++completedJobs == nJobs) {
-        logger->info("All jobs completed");
-        stop();
-    }
-    logger->info(QString("Completed %1 jobs (%2)").arg(completedJobs).arg(ok));
-}
-
-void Optrode::ddsMasterReset()
-{
-    dds->masterReset();
-    dds->setPLL(false, false, 6);
-    dds->setOSK(true, false);
-    dds->setUpdateClock(2);
-    dds->setOSKI(3546, 3546);
-    dds->setFrequencyWord1(5312785ull << 24, 5312785ull << 24);
-};
