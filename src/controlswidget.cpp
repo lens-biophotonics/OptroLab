@@ -126,14 +126,16 @@ void ControlsWidget::setupUi()
     QComboBox *stimulationPhysChanComboBox = new QComboBox();
     stimulationPhysChanComboBox->addItems(NI::getCOPhysicalChans());
     stimulationPhysChanComboBox->setCurrentText(t->getStimulationCounter());
-    QSpinBox *stimulationDutySpinBox = new QSpinBox();
-    stimulationDutySpinBox->setSuffix("%");
-    stimulationDutySpinBox->setRange(0, 100);
-    stimulationDutySpinBox->setValue(t->getStimulationDuty() * 100);
-    QDoubleSpinBox *stimulationFreqSpinBox = new QDoubleSpinBox();
-    stimulationFreqSpinBox->setSuffix("Hz");
-    stimulationFreqSpinBox->setRange(0, 100e6);
-    stimulationFreqSpinBox->setValue(t->getStimulationFrequency());
+    QDoubleSpinBox *stimulationHighTimeSpinBox = new QDoubleSpinBox();
+    stimulationHighTimeSpinBox->setSuffix("s");
+    stimulationHighTimeSpinBox->setRange(0, 100);
+    stimulationHighTimeSpinBox->setDecimals(3);
+    stimulationHighTimeSpinBox->setValue(t->getStimulationHighTime());
+    QDoubleSpinBox *stimulationLowTimeSpinBox = new QDoubleSpinBox();
+    stimulationLowTimeSpinBox->setSuffix("s");
+    stimulationLowTimeSpinBox->setRange(0, 100);
+    stimulationLowTimeSpinBox->setDecimals(3);
+    stimulationLowTimeSpinBox->setValue(t->getStimulationLowTime());
     QComboBox *stimulationTermComboBox = new QComboBox();
     QListView *view = new QListView();
     view->setFixedWidth(350);
@@ -149,10 +151,10 @@ void ControlsWidget::setupUi()
     grid->addWidget(stimulationPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(stimulationTermComboBox, row++, 1);
-    grid->addWidget(new QLabel("Frequency"), row, 0);
-    grid->addWidget(stimulationFreqSpinBox, row++, 1);
-    grid->addWidget(new QLabel("Duty cycle"), row, 0);
-    grid->addWidget(stimulationDutySpinBox, row++, 1);
+    grid->addWidget(new QLabel("High time"), row, 0);
+    grid->addWidget(stimulationHighTimeSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Low time"), row, 0);
+    grid->addWidget(stimulationLowTimeSpinBox, row++, 1);
 
     QGroupBox *stimulationGb = new QGroupBox("Stimulation");
     stimulationGb->setLayout(grid);
@@ -404,10 +406,10 @@ void ControlsWidget::setupUi()
         t->setLED1Enabled(LED1CheckBox->isChecked());
         t->setLED2Enabled(LED2CheckBox->isChecked());
 
-        t->setStimulationDuty(stimulationDutySpinBox->value() / 100.);
+        t->setStimulationHighTime(stimulationHighTimeSpinBox->value());
         t->setStimulationTerm(stimulationTermComboBox->currentText());
         t->setStimulationCounter(stimulationPhysChanComboBox->currentText());
-        t->setStimulationFrequency(stimulationFreqSpinBox->value());
+        t->setStimulationLowTime(stimulationLowTimeSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
 

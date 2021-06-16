@@ -280,7 +280,8 @@ void Optrode::writeRunParams(QString fileName)
         out << "led_rate: " << tasks->getLEDFreq() << "\n";
     }
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
-    out << "stimul_duty: " << tasks->getStimulationDuty() << "\n";
+    out << "stimul_high_time: " << tasks->getStimulationHighTime() << "\n";
+    out << "stimul_low_time: " << tasks->getStimulationLowTime() << "\n";
     out << "stimul_frequency: " << tasks->getStimulationFrequency() << "\n";
     out << "stimul_n_pulses: " << tasks->getStimulationNPulses() << "\n";
     out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";

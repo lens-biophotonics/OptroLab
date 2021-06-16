@@ -142,8 +142,8 @@ void MainWindow::saveSettings() const
 
     g = SETTINGSGROUP_STIMULATION;
     s.setValue(g, SETTING_PHYSCHAN, t->getStimulationCounter());
-    s.setValue(g, SETTING_DUTY, t->getStimulationDuty());
-    s.setValue(g, SETTING_FREQ, t->getStimulationFrequency());
+    s.setValue(g, SETTING_LOW_TIME, t->getStimulationLowTime());
+    s.setValue(g, SETTING_HIGH_TIME, t->getStimulationHighTime());
     s.setValue(g, SETTING_TERM, t->getStimulationTerm());
     s.setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
 
@@ -201,8 +201,8 @@ void MainWindow::loadSettings()
 
     g = SETTINGSGROUP_STIMULATION;
     t->setStimulationCounter(s.value(g, SETTING_PHYSCHAN).toString());
-    t->setStimulationDuty(s.value(g, SETTING_DUTY).toDouble());
-    t->setStimulationFrequency(s.value(g, SETTING_FREQ).toDouble());
+    t->setStimulationHighTime(s.value(g, SETTING_HIGH_TIME).toDouble());
+    t->setStimulationLowTime(s.value(g, SETTING_LOW_TIME).toDouble());
     t->setStimulationTerm(s.value(g, SETTING_TERM).toString());
     t->setStimulationEnabled(s.value(g, SETTING_ENABLED).toBool());
 

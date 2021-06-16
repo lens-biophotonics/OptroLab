@@ -48,14 +48,14 @@ void Tasks::init()
 
     // stimulation
     stimulation->createTask("stimulation");
-    stimulation->createCOPulseChanFreq(
+    stimulation->createCOPulseChanTime(
         stimulationCounter.toLatin1(),
         nullptr,
-        DAQmx_Val_Hz,
+        DAQmx_Val_Seconds,
         NITask::IdleState_Low,
         stimulationDelay,
-        stimulationFrequency,
-        stimulationDuty);
+        stimulationLowTime,
+        stimulationHighTime);
     stimulation->setCOPulseTerm(nullptr, stimulationTerm.toLatin1());
     if (stimulationEnabled) {
         stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
@@ -330,12 +330,12 @@ void Tasks::setFreeRunEnabled(bool value)
 
 void Tasks::setStimulationDuration(double s)
 {
-    setStimulationNPulses(s * stimulationFrequency);
+    setStimulationNPulses(s * getStimulationFrequency());
 }
 
 double Tasks::stimulationDuration()
 {
-    return stimulationNPulses / stimulationFrequency;
+    return stimulationNPulses / getStimulationFrequency();
 }
 
 QString Tasks::getMainTrigPhysChan() const
@@ -378,24 +378,29 @@ void Tasks::setStimulationTerm(const QString &value)
     stimulationTerm = value;
 }
 
-double Tasks::getStimulationFrequency() const
+double Tasks::getStimulationLowTime() const
 {
-    return stimulationFrequency;
+    return stimulationLowTime;
 }
 
-void Tasks::setStimulationFrequency(double value)
+void Tasks::setStimulationLowTime(double value)
 {
-    stimulationFrequency = value;
+    stimulationLowTime = value;
 }
 
-double Tasks::getStimulationDuty() const
+double Tasks::getStimulationHighTime() const
 {
-    return stimulationDuty;
+    return stimulationHighTime;
 }
 
-void Tasks::setStimulationDuty(double value)
+void Tasks::setStimulationHighTime(double value)
 {
-    stimulationDuty = value;
+    stimulationHighTime = value;
+}
+
+double Tasks::getStimulationFrequency()
+{
+    return 1. / (stimulationLowTime + stimulationHighTime);
 }
 
 uInt64 Tasks::getStimulationNPulses() const

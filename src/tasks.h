@@ -32,11 +32,13 @@ public:
     double getStimulationInitialDelay() const;
     void setStimulationInitialDelay(double value);
 
-    double getStimulationFrequency() const;
-    void setStimulationFrequency(double value);
+    double getStimulationLowTime() const;
+    void setStimulationLowTime(double value);
 
-    double getStimulationDuty() const;
-    void setStimulationDuty(double value);
+    double getStimulationHighTime() const;
+    void setStimulationHighTime(double value);
+
+    double getStimulationFrequency();
 
     uInt64 getStimulationNPulses() const;
     void setStimulationNPulses(const uInt64 &value);
@@ -114,8 +116,8 @@ private:
     QString stimulationCounter;
     QString stimulationTerm;
     double stimulationDelay = 10;
-    double stimulationFrequency = 20;
-    double stimulationDuty = 0.5;
+    double stimulationLowTime = 20;
+    double stimulationHighTime = 0.5;
     uInt64 stimulationNPulses = 20;
     bool stimulationEnabled = true;
 

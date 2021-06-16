@@ -28,8 +28,9 @@
 
 #define SETTING_PHYSCHAN "physicalChannel"
 #define SETTING_FREQ "frequency"
+#define SETTING_LOW_TIME "lowTime"
+#define SETTING_HIGH_TIME "highTime"
 #define SETTING_TERM "terminal"
-#define SETTING_DUTY "dutyCycle"
 #define SETTING_STIMDURATION "stimDuration"
 #define SETTING_ENABLED "enabled"
 
