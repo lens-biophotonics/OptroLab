@@ -114,6 +114,7 @@ void Settings::loadSettings()
     SET_VALUE(groupName, SETTING_LOW_TIME, .5);
     SET_VALUE(groupName, SETTING_HIGH_TIME, .5);
     SET_VALUE(groupName, SETTING_ENABLED, true);
+    SET_VALUE(groupName, SETTING_AOD_ENABLED, false);
 
     settings.endGroup();
 

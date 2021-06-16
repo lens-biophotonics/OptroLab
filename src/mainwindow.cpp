@@ -146,6 +146,7 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_HIGH_TIME, t->getStimulationHighTime());
     s.setValue(g, SETTING_TERM, t->getStimulationTerm());
     s.setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
+    s.setValue(g, SETTING_AOD_ENABLED, t->isAODEnabled());
 
     g = SETTINGSGROUP_TIMING;
     s.setValue(g, SETTING_INITIALDELAY, t->getStimulationInitialDelay());
@@ -205,6 +206,7 @@ void MainWindow::loadSettings()
     t->setStimulationLowTime(s.value(g, SETTING_LOW_TIME).toDouble());
     t->setStimulationTerm(s.value(g, SETTING_TERM).toString());
     t->setStimulationEnabled(s.value(g, SETTING_ENABLED).toBool());
+    t->setAODEnabled(s.value(g, SETTING_AOD_ENABLED).toBool());
 
     g = SETTINGSGROUP_TIMING;
     t->setStimulationInitialDelay(s.value(g, SETTING_INITIALDELAY).toDouble());

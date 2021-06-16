@@ -12,6 +12,7 @@
 #include <QProgressBar>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QRadioButton>
 
 #include <qtlab/hw/ni/natinst.h>
 
@@ -145,6 +146,11 @@ void ControlsWidget::setupUi()
     stimulationTermComboBox->setMinimumContentsLength(15);
     stimulationTermComboBox->setCurrentText(t->getStimulationTerm());
 
+    QRadioButton *pulseRadio = new QRadioButton("Pulse");
+    QRadioButton *aodRadio = new QRadioButton("AOD");
+    pulseRadio->setChecked(!t->isAODEnabled());
+    aodRadio->setChecked(t->isAODEnabled());
+
     row = 0;
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Physical channel"), row, 0);
@@ -155,6 +161,8 @@ void ControlsWidget::setupUi()
     grid->addWidget(stimulationHighTimeSpinBox, row++, 1);
     grid->addWidget(new QLabel("Low time"), row, 0);
     grid->addWidget(stimulationLowTimeSpinBox, row++, 1);
+    grid->addWidget(pulseRadio, row, 0);
+    grid->addWidget(aodRadio, row++, 1);
 
     QGroupBox *stimulationGb = new QGroupBox("Stimulation");
     stimulationGb->setLayout(grid);
@@ -412,6 +420,7 @@ void ControlsWidget::setupUi()
         t->setStimulationLowTime(stimulationLowTimeSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
+        t->setAODEnabled(aodRadio->isChecked());
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutTriggerTerm(electrodeTriggerTerm->currentText());

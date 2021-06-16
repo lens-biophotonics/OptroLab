@@ -91,6 +91,10 @@ public:
     bool getElectrodeReadoutEnabled() const;
     void setElectrodeReadoutEnabled(bool value);
 
+
+    void setAODEnabled(bool enable);
+    bool isAODEnabled() const;
+
 signals:
     void started();
     void stopped();
@@ -112,6 +116,7 @@ private:
     double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;
     bool electrodeReadoutEnabled = true;
+    bool aodEnabled = false;
 
     QString stimulationCounter;
     QString stimulationTerm;

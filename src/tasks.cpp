@@ -442,3 +442,13 @@ void Tasks::setElectrodeReadoutRate(double value)
 {
     electrodeReadoutRate = value;
 }
+
+void Tasks::setAODEnabled(bool enable)
+{
+    aodEnabled = enable;
+}
+
+bool Tasks::isAODEnabled() const
+{
+    return aodEnabled;
+}
