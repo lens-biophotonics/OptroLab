@@ -19,6 +19,7 @@
 #include "savestackworker.h"
 #include "elreadoutworker.h"
 #include "behavworker.h"
+#include "dds.h"
 
 
 static Logger *logger = getLogger("Optrode");
@@ -130,6 +131,9 @@ void Optrode::initialize()
     if (!zAxis->isConnected()) {
         logger->critical("Cannot connect PI. (Probably busy in PI MikroMove?)");
     }
+
+    tasks->getDDS()->initTask();
+    tasks->getDDS()->masterReset();
 
     emit initialized();
 }
