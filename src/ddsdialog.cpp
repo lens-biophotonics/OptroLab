@@ -9,6 +9,7 @@
 #include "ddsdialog.h"
 #include "optrode.h"
 #include "dds.h"
+#include "tasks.h"
 
 
 DDSDialog::DDSDialog(QWidget *parent) : QDialog(parent)
@@ -99,7 +100,7 @@ void DDSDialog::setupUi()
         us->assignProperty(w, "enabled", false);
     }
 
-    DDS *dds = optrode().getDDS();
+    DDS *dds = optrode().NITasks()->getDDS();
 
     // frequency
     connect(freqSlider1, &QwtSlider::valueChanged, this, [ = ](double value){
@@ -139,5 +140,6 @@ void DDSDialog::setupUi()
         dds->setOSKI(ampSpinBox1->value(), ampSpinBox2->value());
     });
 
-    connect(masterResetPushButton, &QPushButton::clicked, &optrode(), &Optrode::ddsMasterReset);
+    connect(masterResetPushButton, &QPushButton::clicked,
+            optrode().NITasks(), &Tasks::ddsMasterReset);
 }

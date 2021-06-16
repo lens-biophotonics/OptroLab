@@ -73,11 +73,16 @@ public:
     int getRefClkMultiplier();
 
     enum WRITE_MODE {
-        WRITE_MODE_IMMEDIATE, //!< Write immediately, task is autostarted
-        WRITE_MODE_DELAYED, //!< Write to buffer only. Task needs to be started manually.
+        WRITE_MODE_TO_NI_TASK, //!< Write immediately, task is autostarted
+        WRITE_MODE_TO_BUFFER, //!< Write to buffer only. Task needs to be started manually.
     };
 
     void setWriteMode(const WRITE_MODE &value);
+
+    NITask *getTask() const;
+
+    void nop();
+    QVector<uInt32> getBuffer() const;
 
 signals:
 
@@ -88,7 +93,7 @@ private:
     NITask *task;
     quint8 controlRegister[4];
     double boardClockMHz = 50;
-    WRITE_MODE writeMode = WRITE_MODE_IMMEDIATE;
+    WRITE_MODE writeMode = WRITE_MODE_TO_NI_TASK;
     QVector<uInt32> buffer;
 
     void write8(quint8 addr, quint8 value1, quint8 value2);

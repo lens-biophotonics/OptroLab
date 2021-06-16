@@ -301,6 +301,25 @@ void DDS::setWriteMode(const WRITE_MODE &value)
     writeMode = value;
 }
 
+NITask *DDS::getTask() const
+{
+    return task;
+}
+
+/**
+ * @brief Skip one clock cycle (in WRITE_MODE_IMMEDIATE only)
+ */
+
+void DDS::nop()
+{
+    buffer.append(CONTROL_PORT_NWRITE << 8);
+}
+
+QVector<uInt32> DDS::getBuffer() const
+{
+    return buffer;
+}
+
 void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
 {
     const int sampsPerChan = 3;
@@ -337,12 +356,12 @@ void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
     int oldSize = buffer.size();
 
     switch (writeMode) {
-    case WRITE_MODE_DELAYED:
+    case WRITE_MODE_TO_BUFFER:
         buffer.resize(buffer.size() + nSamples);
         memcpy(buffer.data() + oldSize, samps, nSamples * sizeof(uInt32));
         break;
 
-    case WRITE_MODE_IMMEDIATE:
+    case WRITE_MODE_TO_NI_TASK:
     default:
         task->stopTask();
         task->writeDigitalU32(3, true, 0.5, NITask::DataLayout_GroupByChannel, samps, nullptr);

@@ -15,6 +15,7 @@
 #include "optrode.h"
 #include "settings.h"
 #include "tasks.h"
+#include "dds.h"
 
 #include "version.h"
 #include "chameleoncamera.h"
@@ -64,6 +65,8 @@ void MainWindow::setupUi()
     DDSDialog *ddsDialog = new DDSDialog(this);
 
     connect(DDSDialogAction, &QAction::triggered, [ = ](){
+        optrode().NITasks()->getDDS()->setIOUDCLKInternal(true);
+        optrode().NITasks()->getDDS()->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
         ddsDialog->show();
     });
 

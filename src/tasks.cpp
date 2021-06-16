@@ -1,6 +1,12 @@
 #include <qtlab/core/logmanager.h>
 
 #include "tasks.h"
+#include "optrode.h"
+#include "dds.h"
+
+#define MHZ_PER_PIXEL 0.151
+#define MHZ_CENTRAL 95.0
+#define MAX_POWER 3546
 
 static Logger *logger = logManager().getLogger("Tasks");
 
@@ -12,6 +18,9 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
     LED1 = new NITask(this);
     LED2 = new NITask(this);
     elReadout = new NITask(this);
+    dummyTask = new NITask(this);
+    ddsSampClock = new NITask(this);
+    dds = new DDS(this);
 }
 
 void Tasks::init()
@@ -19,9 +28,9 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << stimulation << LED1 << LED2;
+    triggeredTasks << stimulation << LED1 << LED2 << dummyTask << dds->getTask();
 
-    taskList << triggeredTasks << elReadout << mainTrigger;
+    taskList << triggeredTasks << elReadout << mainTrigger << ddsSampClock;
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -47,6 +56,10 @@ void Tasks::init()
 
 
     // stimulation
+    /* if aod is enabled, the ChangeDetectionEvent of this signal is used as the input UDCLK for
+     * the dds: it controls when the newly written dds configuration becomes effective. See the
+     * dummyTask below.*/
+
     stimulation->createTask("stimulation");
     stimulation->createCOPulseChanTime(
         stimulationCounter.toLatin1(),
@@ -56,7 +69,9 @@ void Tasks::init()
         stimulationDelay,
         stimulationLowTime,
         stimulationHighTime);
-    stimulation->setCOPulseTerm(nullptr, stimulationTerm.toLatin1());
+    if (!aodEnabled) {
+        stimulation->setCOPulseTerm(nullptr, stimulationTerm.toLatin1());
+    }
     if (stimulationEnabled) {
         stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                        stimulationNPulses);
@@ -131,6 +146,57 @@ void Tasks::init()
             NITask::Edge_Rising);
     }
 
+    if (aodEnabled) {
+        dds->initTask();
+        dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
+        dds->setIOUDCLKInternal(false);      // hardware-timed dds output (see stimulation task)
+        // go to XY point
+        dds->setFrequency1(MHZ_CENTRAL + (point.x() - 256) * MHZ_PER_PIXEL,
+                           MHZ_CENTRAL + (point.y() - 256) * MHZ_PER_PIXEL);
+
+        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
+
+        // write all samples to buffer
+        dds->setWriteMode(DDS::WRITE_MODE_TO_BUFFER);
+        dds->getBuffer().clear();
+        dds->setOSKI(0, 0);                 // turn off
+        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
+
+        dds->getTask()->cfgSampClkTiming(nullptr, 5e6, NITask::Edge_Rising,
+                                         NITask::SampMode_ContSamps, dds->getBuffer().size());
+        dds->getTask()->setStartTrigRetriggerable(true);
+
+        // dummyTask is a "dummy task" that is used solely to access the ChangeDetectionEvent line
+        // see https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAn9SAG
+        dummyTask->createTask("DummyAI");
+        dummyTask->createAIVoltageChan("/Dev1/ai11", nullptr, NITask::TermConf_Default,
+                                       -10, 10, DAQmx_Val_Volts, nullptr);
+        dummyTask->cfgChangeDetectionTiming(
+            stimulationCounter.toLatin1(), stimulationCounter.toLatin1(),
+            NITask::SampMode_ContSamps, 10);
+        dummyTask->setReadOverWrite(DAQmx_Val_OverwriteUnreadSamps);
+        dummyTask->exportSignal(NITask::SignalID_ChangeDetectionEvent, stimulationTerm.toLatin1());
+
+        /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
+         * the dds. In a stimulation cycle, it is started twice: the first time it runs (at the
+         * start of the stimulation) it makes dds write the first N / 2 samples, to set the
+         * amplitude to 0 (this will become effective only at the next UDCLK). The second time it
+         * runs (at the end of the stimulation), it makes dds write the remaining N / 2 samples that
+         * set the amplitude to the maximum (again, this will become effective at the nect UDCLK).
+         *
+         * stimulationTerm now has the exported ChangeDetectionEvent signal: it goes high when
+         * stimulationCounter goes from low to high as well as when it goes from high to low.
+         */
+        ddsSampClock->createTask("sampleClock");
+        co = coList.at(0); coList.pop_front();
+        ddsSampClock->createCOPulseChanFreq(co.toLatin1(), nullptr, DAQmx_Val_Hz,
+                                            NITask::IdleState_Low, 0, 5e6, 0.5);
+        ddsSampClock->cfgSampClkTiming(nullptr, 5e6, NITask::Edge_Rising,
+                                       NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
+        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
+        ddsSampClock->setStartTrigRetriggerable(true);
+    }
+
     // configure start triggers
     for (NITask *task : triggeredTasks) {
         task->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
@@ -165,6 +231,10 @@ void Tasks::start()
         elReadout->startTask();
         emit elReadoutStarted();
     }
+    if (aodEnabled) {
+        dummyTask->startTask();
+        ddsSampClock->startTask();
+    }
 
     // last to be started because it will trigger the other tasks
     mainTrigger->startTask();
@@ -177,12 +247,41 @@ void Tasks::stop()
     stimulation->stopTask();
     stopLEDs();
     elReadout->stopTask();
+    if (aodEnabled) {
+        dummyTask->stopTask();
+        ddsSampClock->stopTask();
+    }
 }
 
 void Tasks::stopLEDs()
 {
     LED1->stopTask();
     LED2->stopTask();
+}
+
+QPointF Tasks::getPoint() const
+{
+    return point;
+}
+
+void Tasks::setPoint(const QPointF &value)
+{
+    point = value;
+}
+
+DDS *Tasks::getDDS() const
+{
+    return dds;
+}
+
+void Tasks::ddsMasterReset()
+{
+    dds->masterReset();
+    dds->setPLL(false, false, 6);
+    dds->setOSK(true, false);
+    dds->setUpdateClock(2);
+    dds->setOSKI(0, 0);
+    dds->setFrequency1(MHZ_CENTRAL, MHZ_CENTRAL);
 }
 
 bool Tasks::getElectrodeReadoutEnabled() const

@@ -2,8 +2,11 @@
 #define ELECTRODEREADOUT_H
 
 #include <QObject>
+#include <QPointF>
 
 #include <qtlab/hw/ni/nitask.h>
+
+class DDS;
 
 class Tasks : public QObject
 {
@@ -91,6 +94,12 @@ public:
     bool getElectrodeReadoutEnabled() const;
     void setElectrodeReadoutEnabled(bool value);
 
+    void ddsMasterReset();
+
+    DDS *getDDS() const;
+
+    QPointF getPoint() const;
+    void setPoint(const QPointF &value);
 
     void setAODEnabled(bool enable);
     bool isAODEnabled() const;
@@ -110,6 +119,10 @@ private:
     NITask *stimulation;
     NITask *elReadout;
     NITask *LED1, *LED2;
+    NITask *dummyTask;
+    NITask *ddsSampClock;
+    DDS *dds;
+    QPointF point;
 
     QString mainTrigPhysChan, mainTrigTerm, elReadoutTriggerTerm;
     double LEDFreq;
