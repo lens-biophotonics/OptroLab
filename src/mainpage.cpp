@@ -109,13 +109,12 @@ void MainPage::setupUi()
 
     AspectRatioWidget *arw = new AspectRatioWidget(camDisplay, 1);
 
-    QVBoxLayout *leftVLayout = new QVBoxLayout();
-    QHBoxLayout *hLayout = new QHBoxLayout();
 
     QRadioButton *allRadioButton = new QRadioButton("All");
     QRadioButton *led1RadioButton = new QRadioButton("LED 1");
     QRadioButton *led2RadioButton = new QRadioButton("LED 2");
 
+    QHBoxLayout *hLayout = new QHBoxLayout();
     hLayout->addStretch();
     hLayout->addWidget(allRadioButton);
     hLayout->addWidget(led1RadioButton);
@@ -131,18 +130,23 @@ void MainPage::setupUi()
     posCW->getVelocitySpinBox(0)->setValue(s.value(g, SETTING_VELOCITY).toDouble());
     posCW->getStepSpinBox(0)->setValue(s.value(g, SETTING_STEPSIZE).toDouble());
 
+    QVBoxLayout *leftVLayout = new QVBoxLayout();
     leftVLayout->addWidget(arw);
     leftVLayout->addLayout(hLayout);
     leftVLayout->addWidget(posCW);
 
+    QVBoxLayout *rightVLayout = new QVBoxLayout();
+    rightVLayout->addWidget(new ControlsWidget());
+    rightVLayout->addStretch();
+
     hLayout = new QHBoxLayout();
     hLayout->addLayout(leftVLayout, 3);
     hLayout->addWidget(pmw, 4);
-    hLayout->addWidget(new ControlsWidget());
+    hLayout->addLayout(rightVLayout);
 
     QVBoxLayout *vLayout = new QVBoxLayout();
-    vLayout->addLayout(hLayout, 5);
-    vLayout->addWidget(timePlot, 3);
+    vLayout->addLayout(hLayout, 8);
+    vLayout->addWidget(timePlot, 2);
 
     setLayout(vLayout);
 
