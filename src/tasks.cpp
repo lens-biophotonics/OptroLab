@@ -27,9 +27,16 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << stimulation << LED << dummyTask << dds->getTask() << elReadout;
+    triggeredTasks << stimulation << LED << elReadout;
+    if (aodEnabled) {
+        triggeredTasks << dummyTask << dds->getTask();
+    }
 
-    taskList << triggeredTasks << mainTrigger << ddsSampClock;
+    taskList << triggeredTasks << mainTrigger;
+
+    if (aodEnabled) {
+        taskList << ddsSampClock;
+    }
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
