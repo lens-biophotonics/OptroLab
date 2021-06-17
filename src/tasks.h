@@ -20,9 +20,6 @@ public:
     double getMainTrigFreq() const;
     double getMainTrigNPulses() const;
 
-    QString getElectrodeReadoutTriggerTerm() const;
-    void setElectrodeReadoutTriggerTerm(const QString &value);
-
     QString getStimulationTerm() const;
     void setStimulationTerm(const QString &value);
 
@@ -112,7 +109,7 @@ private:
     DDS *dds;
     QPointF point;
 
-    QString mainTrigTerm, elReadoutTriggerTerm;
+    QString mainTrigTerm;
     double LEDFreq;
     double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;

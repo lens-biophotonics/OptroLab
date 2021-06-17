@@ -137,7 +137,6 @@ void MainWindow::saveSettings() const
     g = SETTINGSGROUP_ELREADOUT;
     s.setValue(g, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
     s.setValue(g, SETTING_FREQ, t->getElectrodeReadoutRate());
-    s.setValue(g, SETTING_TERM, t->getElectrodeReadoutTriggerTerm());
     s.setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
 
     g = SETTINGSGROUP_STIMULATION;
@@ -193,7 +192,6 @@ void MainWindow::loadSettings()
     g = SETTINGSGROUP_ELREADOUT;
     t->setElectrodeReadoutPhysChan(s.value(g, SETTING_PHYSCHAN).toString());
     t->setElectrodeReadoutRate(s.value(g, SETTING_FREQ).toDouble());
-    t->setElectrodeReadoutTriggerTerm(s.value(g, SETTING_TERM).toString());
     t->setElectrodeReadoutEnabled(s.value(g, SETTING_ENABLED).toBool());
 
     g = SETTINGSGROUP_STIMULATION;

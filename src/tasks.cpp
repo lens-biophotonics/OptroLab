@@ -28,9 +28,9 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << stimulation << LED1 << LED2 << dummyTask << dds->getTask();
+    triggeredTasks << stimulation << LED1 << LED2 << dummyTask << dds->getTask() << elReadout;
 
-    taskList << triggeredTasks << elReadout << mainTrigger << ddsSampClock;
+    taskList << triggeredTasks << mainTrigger << ddsSampClock;
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -148,9 +148,6 @@ void Tasks::init()
             sampleMode,
             sBuffer * electrodeReadoutRate);
         elReadout->setReadReadAllAvailSamp(true);
-        elReadout->cfgDigEdgeStartTrig(
-            elReadoutTriggerTerm.toStdString().c_str(),
-            NITask::Edge_Rising);
     }
 
     if (aodEnabled) {
@@ -299,16 +296,6 @@ bool Tasks::getElectrodeReadoutEnabled() const
 void Tasks::setElectrodeReadoutEnabled(bool value)
 {
     electrodeReadoutEnabled = value;
-}
-
-QString Tasks::getElectrodeReadoutTriggerTerm() const
-{
-    return elReadoutTriggerTerm;
-}
-
-void Tasks::setElectrodeReadoutTriggerTerm(const QString &value)
-{
-    elReadoutTriggerTerm = value;
 }
 
 void Tasks::setLEDdelay(double value)
