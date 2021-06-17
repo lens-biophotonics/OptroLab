@@ -350,6 +350,9 @@ void Optrode::onError(const QString &errMsg)
 
 void Optrode::incrementCompleted(bool ok)
 {
+    if (isFreeRunEnabled()) {
+        return;
+    }
     if (ok) {
         ++successJobs;
     }
