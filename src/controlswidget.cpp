@@ -35,9 +35,6 @@ void ControlsWidget::setupUi()
 
     // trigger
 
-    QComboBox *mainTrigPhysChanComboBox = new QComboBox();
-    mainTrigPhysChanComboBox->addItems(NI::getCOPhysicalChans());
-    mainTrigPhysChanComboBox->setCurrentText(t->getMainTrigPhysChan());
     QComboBox *mainTrigTermComboBox = new QComboBox();
     mainTrigTermComboBox->addItems(NI::getTerminals());
     mainTrigTermComboBox->setCurrentText(t->getMainTrigTerm());
@@ -45,8 +42,6 @@ void ControlsWidget::setupUi()
     int row = 0;
 
     QGridLayout *grid = new QGridLayout();
-    grid->addWidget(new QLabel("Physical channel"), row, 0);
-    grid->addWidget(mainTrigPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(mainTrigTermComboBox, row++, 1);
     QGroupBox *trigGb = new QGroupBox("Trigger");
@@ -59,16 +54,10 @@ void ControlsWidget::setupUi()
     LEDFreqSpinBox->setRange(1, 43);
     LEDFreqSpinBox->setValue(t->getLEDFreq());
 
-    QComboBox *LED1PhysChanComboBox = new QComboBox();
-    LED1PhysChanComboBox->addItems(NI::getCOPhysicalChans());
-    LED1PhysChanComboBox->setCurrentText(t->getLED1PhysChan());
     QComboBox *LED1TermComboBox = new QComboBox();
     LED1TermComboBox->addItems(NI::getTerminals());
     LED1TermComboBox->setCurrentText(t->getLED1Term());
 
-    QComboBox *LED2PhysChanComboBox = new QComboBox();
-    LED2PhysChanComboBox->addItems(NI::getCOPhysicalChans());
-    LED2PhysChanComboBox->setCurrentText(t->getLED2PhysChan());
     QComboBox *LED2TermComboBox = new QComboBox();
     LED2TermComboBox->addItems(NI::getTerminals());
     LED2TermComboBox->setCurrentText(t->getLED2Term());
@@ -80,12 +69,8 @@ void ControlsWidget::setupUi()
     LED2CheckBox->setChecked(t->getLED2Enabled());
 
     grid = new QGridLayout();
-    grid->addWidget(new QLabel("LED 1 Phys chan"), row, 0);
-    grid->addWidget(LED1PhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("LED 1 Terminal"), row, 0);
     grid->addWidget(LED1TermComboBox, row++, 1);
-    grid->addWidget(new QLabel("LED 2 Phys chan"), row, 0);
-    grid->addWidget(LED2PhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("LED 2 Terminal"), row, 0);
     grid->addWidget(LED2TermComboBox, row++, 1);
     grid->addWidget(new QLabel("Frequency"), row, 0);
@@ -124,9 +109,6 @@ void ControlsWidget::setupUi()
 
     // stimulation
 
-    QComboBox *stimulationPhysChanComboBox = new QComboBox();
-    stimulationPhysChanComboBox->addItems(NI::getCOPhysicalChans());
-    stimulationPhysChanComboBox->setCurrentText(t->getStimulationCounter());
     QDoubleSpinBox *stimulationHighTimeSpinBox = new QDoubleSpinBox();
     stimulationHighTimeSpinBox->setSuffix("s");
     stimulationHighTimeSpinBox->setRange(0, 100);
@@ -153,8 +135,6 @@ void ControlsWidget::setupUi()
 
     row = 0;
     grid = new QGridLayout();
-    grid->addWidget(new QLabel("Physical channel"), row, 0);
-    grid->addWidget(stimulationPhysChanComboBox, row++, 1);
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(stimulationTermComboBox, row++, 1);
     grid->addWidget(new QLabel("High time"), row, 0);
@@ -402,13 +382,10 @@ void ControlsWidget::setupUi()
 
     std::function<void()> applyValues = [ = ](){
         Tasks *t = optrode().NITasks();
-        t->setMainTrigPhysChan(mainTrigPhysChanComboBox->currentText());
         t->setMainTrigTerm(mainTrigTermComboBox->currentText());
 
         t->setLEDFreq(LEDFreqSpinBox->value());
-        t->setLED1PhysChan(LED1PhysChanComboBox->currentText());
         t->setLED1Term(LED1TermComboBox->currentText());
-        t->setLED2PhysChan(LED2PhysChanComboBox->currentText());
         t->setLED2Term(LED2TermComboBox->currentText());
 
         t->setLED1Enabled(LED1CheckBox->isChecked());
@@ -416,7 +393,6 @@ void ControlsWidget::setupUi()
 
         t->setStimulationHighTime(stimulationHighTimeSpinBox->value());
         t->setStimulationTerm(stimulationTermComboBox->currentText());
-        t->setStimulationCounter(stimulationPhysChanComboBox->currentText());
         t->setStimulationLowTime(stimulationLowTimeSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());

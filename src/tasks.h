@@ -17,17 +17,11 @@ public:
 
     NITask *electrodeReadout();
 
-    QString getMainTrigPhysChan() const;
-    void setMainTrigPhysChan(const QString &value);
-
     double getMainTrigFreq() const;
     double getMainTrigNPulses() const;
 
     QString getElectrodeReadoutTriggerTerm() const;
     void setElectrodeReadoutTriggerTerm(const QString &value);
-
-    QString getStimulationCounter() const;
-    void setStimulationCounter(const QString &value);
 
     QString getStimulationTerm() const;
     void setStimulationTerm(const QString &value);
@@ -67,12 +61,6 @@ public:
 
     double getLEDFreq() const;
     void setLEDFreq(double value);
-
-    QString getLED1PhysChan() const;
-    void setLED1PhysChan(const QString &value);
-
-    QString getLED2PhysChan() const;
-    void setLED2PhysChan(const QString &value);
 
     QString getLED1Term() const;
     void setLED1Term(const QString &value);
@@ -124,14 +112,13 @@ private:
     DDS *dds;
     QPointF point;
 
-    QString mainTrigPhysChan, mainTrigTerm, elReadoutTriggerTerm;
+    QString mainTrigTerm, elReadoutTriggerTerm;
     double LEDFreq;
     double LEDdelay = 0;
     bool LED1Enabled = true, LED2Enabled = true;
     bool electrodeReadoutEnabled = true;
     bool aodEnabled = false;
 
-    QString stimulationCounter;
     QString stimulationTerm;
     double stimulationDelay = 10;
     double stimulationLowTime = 20;
@@ -139,7 +126,6 @@ private:
     uInt64 stimulationNPulses = 20;
     bool stimulationEnabled = true;
 
-    QString LED1PhysChan, LED2PhysChan;
     QString LED1Term, LED2Term;
 
     QString electrodeReadoutPhysChan;

@@ -37,10 +37,14 @@ void Tasks::init()
             t->clearTask();
     }
 
+    QStringList coList = NI::getCOPhysicalChans().filter("/ctr");
+    QString co;
+
 
     // mainTrigger
+    co = coList.at(0); coList.pop_front();
     mainTrigger->createTask("mainTrigger");
-    mainTrigger->createCOPulseChanFreq(mainTrigPhysChan.toLatin1(),
+    mainTrigger->createCOPulseChanFreq(co.toLatin1(),
                                        nullptr,
                                        NITask::FreqUnits_Hz,
                                        NITask::IdleState_Low,
@@ -60,6 +64,7 @@ void Tasks::init()
      * the dds: it controls when the newly written dds configuration becomes effective. See the
      * dummyTask below.*/
 
+    QString stimulationCounter = coList.at(0); coList.pop_front();
     stimulation->createTask("stimulation");
     stimulation->createCOPulseChanTime(
         stimulationCounter.toLatin1(),
@@ -93,8 +98,9 @@ void Tasks::init()
         tempLEDFreq = 1 / totalDuration / 2;  // always on
     }
 
+    co = coList.at(0); coList.pop_front();
     LED1->createTask("LED1");
-    LED1->createCOPulseChanFreq(LED1PhysChan.toLatin1(),
+    LED1->createCOPulseChanFreq(co.toLatin1(),
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
@@ -104,8 +110,9 @@ void Tasks::init()
 
 
     // LED2
+    co = coList.at(0); coList.pop_front();
     LED2->createTask("LED2");
-    LED2->createCOPulseChanFreq(LED2PhysChan.toLatin1(),
+    LED2->createCOPulseChanFreq(co.toLatin1(),
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
@@ -360,26 +367,6 @@ void Tasks::setLED1Term(const QString &value)
     LED1Term = value;
 }
 
-QString Tasks::getLED2PhysChan() const
-{
-    return LED2PhysChan;
-}
-
-void Tasks::setLED2PhysChan(const QString &value)
-{
-    LED2PhysChan = value;
-}
-
-QString Tasks::getLED1PhysChan() const
-{
-    return LED1PhysChan;
-}
-
-void Tasks::setLED1PhysChan(const QString &value)
-{
-    LED1PhysChan = value;
-}
-
 double Tasks::getLEDFreq() const
 {
     return LEDFreq;
@@ -437,16 +424,6 @@ double Tasks::stimulationDuration()
     return stimulationNPulses / getStimulationFrequency();
 }
 
-QString Tasks::getMainTrigPhysChan() const
-{
-    return mainTrigPhysChan;
-}
-
-void Tasks::setMainTrigPhysChan(const QString &value)
-{
-    mainTrigPhysChan = value;
-}
-
 double Tasks::getMainTrigFreq() const
 {
     return 2 * getLEDFreq();
@@ -455,16 +432,6 @@ double Tasks::getMainTrigFreq() const
 double Tasks::getMainTrigNPulses() const
 {
     return totalDuration * getMainTrigFreq();
-}
-
-QString Tasks::getStimulationCounter() const
-{
-    return stimulationCounter;
-}
-
-void Tasks::setStimulationCounter(const QString &value)
-{
-    stimulationCounter = value;
 }
 
 QString Tasks::getStimulationTerm() const

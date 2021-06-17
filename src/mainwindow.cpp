@@ -120,7 +120,6 @@ void MainWindow::saveSettings() const
     Tasks *t = optrode().NITasks();
 
     QString g = SETTINGSGROUP_MAINTRIG;
-    s.setValue(g, SETTING_PHYSCHAN, t->getMainTrigPhysChan());
     s.setValue(g, SETTING_TERM, t->getMainTrigTerm());
 
     g = SETTINGSGROUP_BEHAVCAMROI;
@@ -128,12 +127,10 @@ void MainWindow::saveSettings() const
 
     g = SETTINGSGROUP_LED1;
     s.setValue(g, SETTING_FREQ, t->getLEDFreq());
-    s.setValue(g, SETTING_PHYSCHAN, t->getLED1PhysChan());
     s.setValue(g, SETTING_TERM, t->getLED1Term());
     s.setValue(g, SETTING_ENABLED, t->getLED1Enabled());
 
     g = SETTINGSGROUP_LED2;
-    s.setValue(g, SETTING_PHYSCHAN, t->getLED2PhysChan());
     s.setValue(g, SETTING_TERM, t->getLED2Term());
     s.setValue(g, SETTING_ENABLED, t->getLED2Enabled());
 
@@ -144,7 +141,6 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
 
     g = SETTINGSGROUP_STIMULATION;
-    s.setValue(g, SETTING_PHYSCHAN, t->getStimulationCounter());
     s.setValue(g, SETTING_LOW_TIME, t->getStimulationLowTime());
     s.setValue(g, SETTING_HIGH_TIME, t->getStimulationHighTime());
     s.setValue(g, SETTING_TERM, t->getStimulationTerm());
@@ -183,17 +179,14 @@ void MainWindow::loadSettings()
 
     Tasks *t = optrode().NITasks();
     QString g = SETTINGSGROUP_MAINTRIG;
-    t->setMainTrigPhysChan(s.value(g, SETTING_PHYSCHAN).toString());
     t->setMainTrigTerm(s.value(g, SETTING_TERM).toString());
 
     g = SETTINGSGROUP_LED1;
     t->setLEDFreq(s.value(g, SETTING_FREQ).toDouble());
-    t->setLED1PhysChan(s.value(g, SETTING_PHYSCHAN).toString());
     t->setLED1Term(s.value(g, SETTING_TERM).toString());
     t->setLED1Enabled(s.value(g, SETTING_ENABLED).toBool());
 
     g = SETTINGSGROUP_LED2;
-    t->setLED2PhysChan(s.value(g, SETTING_PHYSCHAN).toString());
     t->setLED2Term(s.value(g, SETTING_TERM).toString());
     t->setLED2Enabled(s.value(g, SETTING_ENABLED).toBool());
 
@@ -204,7 +197,6 @@ void MainWindow::loadSettings()
     t->setElectrodeReadoutEnabled(s.value(g, SETTING_ENABLED).toBool());
 
     g = SETTINGSGROUP_STIMULATION;
-    t->setStimulationCounter(s.value(g, SETTING_PHYSCHAN).toString());
     t->setStimulationHighTime(s.value(g, SETTING_HIGH_TIME).toDouble());
     t->setStimulationLowTime(s.value(g, SETTING_LOW_TIME).toDouble());
     t->setStimulationTerm(s.value(g, SETTING_TERM).toString());

@@ -59,7 +59,6 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_MAINTRIG;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr0");
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI0");
 
     settings.endGroup();
@@ -68,7 +67,6 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_LED1;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr1");
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI1");
     SET_VALUE(groupName, SETTING_FREQ, 45);
     SET_VALUE(groupName, SETTING_ENABLED, true);
@@ -79,7 +77,6 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_LED2;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr2");
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI2");
     SET_VALUE(groupName, SETTING_ENABLED, true);
 
@@ -107,7 +104,6 @@ void Settings::loadSettings()
     groupName = SETTINGSGROUP_STIMULATION;
     settings.beginGroup(groupName);
 
-    SET_VALUE(groupName, SETTING_PHYSCHAN, "Dev1/ctr3");
     SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI3");
     SET_VALUE(groupName, SETTING_FREQ, 50);
     SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
