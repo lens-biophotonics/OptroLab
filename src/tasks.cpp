@@ -15,8 +15,7 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
 {
     mainTrigger = new NITask(this);
     stimulation = new NITask(this);
-    LED1 = new NITask(this);
-    LED2 = new NITask(this);
+    LED = new NITask(this);
     elReadout = new NITask(this);
     dummyTask = new NITask(this);
     ddsSampClock = new NITask(this);
@@ -28,7 +27,7 @@ void Tasks::init()
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
-    triggeredTasks << stimulation << LED1 << LED2 << dummyTask << dds->getTask() << elReadout;
+    triggeredTasks << stimulation << LED << dummyTask << dds->getTask() << elReadout;
 
     taskList << triggeredTasks << mainTrigger << ddsSampClock;
 
@@ -85,41 +84,35 @@ void Tasks::init()
 
     // LED1
     double LEDPeriod = 1 / LEDFreq;
-    double initDelay1, initDelay2, tempLEDFreq;
+    double initDelay, tempLEDFreq;
 
     if (LED1Enabled && LED2Enabled) {
-        initDelay1 = LEDPeriod - LEDdelay;
-        initDelay2 = 0.5 * LEDPeriod - LEDdelay;
+        initDelay = LEDPeriod - LEDdelay;
         tempLEDFreq = LEDFreq;
     }
     else {
-        initDelay1 = 0;
-        initDelay2 = 0;
+        initDelay = 0;
         tempLEDFreq = 1 / totalDuration / 2;  // always on
     }
 
     co = coList.at(0); coList.pop_front();
-    LED1->createTask("LED1");
-    LED1->createCOPulseChanFreq(co,
-                                nullptr,
-                                NITask::FreqUnits_Hz,
-                                NITask::IdleState_Low,
-                                initDelay1, tempLEDFreq, 0.5);
-    LED1->setCOPulseTerm(nullptr, LED1Term);
-    LED1->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
+    LED->createTask("LED");
+    LED->createCOPulseChanFreq(co,
+                               nullptr,
+                               NITask::FreqUnits_Hz,
+                               NITask::IdleState_Low,
+                               initDelay, tempLEDFreq, 0.5);
+    QString ledTerm = LED1Term;
+    if (!freeRunEnabled && LED1Enabled && LED2Enabled) {
+        NI::connectTerms(LED1Term, LED2Term, DAQmx_Val_InvertPolarity);  // LED2
+    } else if (LED2Enabled) {
+        ledTerm = LED2Term;
+    }
 
-
-    // LED2
-    co = coList.at(0); coList.pop_front();
-    LED2->createTask("LED2");
-    LED2->createCOPulseChanFreq(co,
-                                nullptr,
-                                NITask::FreqUnits_Hz,
-                                NITask::IdleState_Low,
-                                initDelay2, tempLEDFreq, 0.5);
-    LED2->setCOPulseTerm(nullptr, LED2Term);
-    LED2->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
-
+    if (!ledTerm.isNull()) {
+        LED->setCOPulseTerm(nullptr, ledTerm);
+        LED->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
+    }
 
     // electrodeReadout
     elReadout->createTask("electrodeReadout");
@@ -224,11 +217,8 @@ void Tasks::start()
         if (stimulationEnabled) {
             stimulation->startTask();
         }
-        if (LED1Enabled) {
-            LED1->startTask();
-        }
-        if (LED2Enabled) {
-            LED2->startTask();
+        if (LED1Enabled || LED2Enabled) {
+            LED->startTask();
         }
     }
     if (electrodeReadoutEnabled) {
@@ -259,8 +249,10 @@ void Tasks::stop()
 
 void Tasks::stopLEDs()
 {
-    LED1->stopTask();
-    LED2->stopTask();
+    LED->stopTask();
+    if (LED1Enabled && LED2Enabled) {
+        NI::disconnectTerms(LED1Term, LED2Term);
+    }
 }
 
 QPointF Tasks::getPoint() const

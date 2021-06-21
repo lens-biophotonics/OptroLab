@@ -103,7 +103,7 @@ private:
     NITask *mainTrigger;
     NITask *stimulation;
     NITask *elReadout;
-    NITask *LED1, *LED2;
+    NITask *LED;
     NITask *dummyTask;
     NITask *ddsSampClock;
     DDS *dds;
