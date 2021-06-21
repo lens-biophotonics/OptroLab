@@ -104,7 +104,6 @@ private:
     NITask *stimulation;
     NITask *elReadout;
     NITask *LED;
-    NITask *dummyTask;
     NITask *ddsSampClock;
     DDS *dds;
     QPointF point;

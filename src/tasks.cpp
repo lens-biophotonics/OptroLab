@@ -17,7 +17,6 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
     stimulation = new NITask(this);
     LED = new NITask(this);
     elReadout = new NITask(this);
-    dummyTask = new NITask(this);
     ddsSampClock = new NITask(this);
     dds = new DDS(this);
 }
@@ -28,15 +27,13 @@ void Tasks::init()
     QList<NITask *> triggeredTasks;
 
     triggeredTasks << stimulation << LED << elReadout;
+
     if (aodEnabled) {
-        triggeredTasks << dummyTask << dds->getTask();
+        triggeredTasks << dds->getTask();
+        taskList << ddsSampClock;
     }
 
     taskList << triggeredTasks << mainTrigger;
-
-    if (aodEnabled) {
-        taskList << ddsSampClock;
-    }
 
     for (NITask *t : taskList) {
         if (t->isInitialized())
@@ -66,9 +63,8 @@ void Tasks::init()
 
 
     // stimulation
-    /* if aod is enabled, the ChangeDetectionEvent of this signal is used as the input UDCLK for
-     * the dds: it controls when the newly written dds configuration becomes effective. See the
-     * dummyTask below.*/
+    /* if aod is enabled, this signal is used as the input UDCLK for the dds: it controls when the
+     * newly written dds configuration becomes effective. */
 
     QString stimulationCounter = coList.at(0); coList.pop_front();
     stimulation->createTask("stimulation");
@@ -78,14 +74,33 @@ void Tasks::init()
         DAQmx_Val_Seconds,
         NITask::IdleState_Low,
         stimulationDelay,
-        stimulationLowTime,
-        stimulationHighTime);
-    if (!aodEnabled) {
-        stimulation->setCOPulseTerm(nullptr, stimulationTerm);
-    }
+        stimulationLowTime,  // ignored in on buffered implicit pulse trains (page 7-31 DAQ X)
+        stimulationHighTime);  // as above
+
+    stimulation->setCOPulseTerm(nullptr, stimulationTerm);
     if (stimulationEnabled) {
         stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                        stimulationNPulses);
+    }
+    if (aodEnabled) {
+        /* for each stimulation cycle, we have to generate two short pulses (i.e. two UDCLK) */
+        const int NSamples = 2 * stimulationNPulses;
+
+        QVector<float64> duty = QVector<float64>(NSamples, 0.1);
+        QVector<float64> freq = QVector<float64>(NSamples);
+        QVector<float64> highTime, lowtime;
+        highTime.reserve(NSamples);
+        lowtime.reserve(NSamples);
+
+        for (int i = 0; i < NSamples / 2; ++i) {
+            highTime << 0.1 * stimulationHighTime;
+            lowtime << 0.9 * stimulationHighTime;
+            highTime << 0.1 * stimulationLowTime;
+            lowtime << 0.9 * stimulationLowTime;
+        }
+
+        stimulation->writeCtrTime(2, false, 1, NITask::DataLayout_GroupByChannel,
+                                  highTime.data(), lowtime.data(), nullptr);
     }
 
 
@@ -170,34 +185,21 @@ void Tasks::init()
                                          NITask::SampMode_ContSamps, dds->getBuffer().size());
         dds->getTask()->setStartTrigRetriggerable(true);
 
-        // dummyTask is a "dummy task" that is used solely to access the ChangeDetectionEvent line
-        // see https://knowledge.ni.com/KnowledgeArticleDetails?id=kA00Z000000PAn9SAG
-        dummyTask->createTask("DummyAI");
-        dummyTask->createAIVoltageChan("/Dev1/ai11", nullptr, NITask::TermConf_Default,
-                                       -10, 10, DAQmx_Val_Volts, nullptr);
-        dummyTask->cfgChangeDetectionTiming(
-            stimulationCounter, stimulationCounter,
-            NITask::SampMode_ContSamps, 10);
-        dummyTask->setReadOverWrite(DAQmx_Val_OverwriteUnreadSamps);
-        dummyTask->exportSignal(DAQmx_Val_ChangeDetectionEvent, stimulationTerm);
-
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
          * the dds. In a stimulation cycle, it is started twice: the first time it runs (at the
          * start of the stimulation) it makes dds write the first N / 2 samples, to set the
          * amplitude to 0 (this will become effective only at the next UDCLK). The second time it
          * runs (at the end of the stimulation), it makes dds write the remaining N / 2 samples that
          * set the amplitude to the maximum (again, this will become effective at the nect UDCLK).
-         *
-         * stimulationTerm now has the exported ChangeDetectionEvent signal: it goes high when
-         * stimulationCounter goes from low to high as well as when it goes from high to low.
+
+         * stimulationTerm is used as UDCLK for the dds as well as start trigger for ddsSampClock.
          */
         ddsSampClock->createTask("sampleClock");
         co = coList.at(0); coList.pop_front();
-        ddsSampClock->createCOPulseChanFreq(co, nullptr, DAQmx_Val_Hz,
+        ddsSampClock->createCOPulseChanFreq(co, nullptr, NITask::FreqUnits_Hz,
                                             NITask::IdleState_Low, 0, 5e6, 0.5);
-        ddsSampClock->cfgSampClkTiming(nullptr, 5e6, NITask::Edge_Rising,
-                                       NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
-        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm, NITask::Edge_Rising);
+        ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
+        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
     }
 
@@ -233,7 +235,6 @@ void Tasks::start()
         emit elReadoutStarted();
     }
     if (aodEnabled) {
-        dummyTask->startTask();
         ddsSampClock->startTask();
     }
 
@@ -249,8 +250,8 @@ void Tasks::stop()
     stopLEDs();
     elReadout->stopTask();
     if (aodEnabled) {
-        dummyTask->stopTask();
         ddsSampClock->stopTask();
+        dds->getTask()->stopTask();
     }
 }
 
