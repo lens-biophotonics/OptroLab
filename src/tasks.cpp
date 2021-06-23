@@ -68,14 +68,25 @@ void Tasks::init()
 
     QString stimulationCounter = coList.at(0); coList.pop_front();
     stimulation->createTask("stimulation");
-    stimulation->createCOPulseChanTime(
-        stimulationCounter,
-        nullptr,
-        DAQmx_Val_Seconds,
-        NITask::IdleState_Low,
-        stimulationDelay,
-        stimulationLowTime,  // ignored in on buffered implicit pulse trains (page 7-31 DAQ X)
-        stimulationHighTime);  // as above
+    if (continuousStimulation) {
+        stimulation->createCOPulseChanFreq(
+            stimulationCounter,
+            nullptr,
+            DAQmx_Val_Hz,
+            NITask::IdleState_Low,
+            stimulationDelay,
+            1 / stimulationDuration() / 2,  // always on
+            0.5);
+    } else {
+        stimulation->createCOPulseChanTime(
+            stimulationCounter,
+            nullptr,
+            DAQmx_Val_Seconds,
+            NITask::IdleState_Low,
+            stimulationDelay,
+            stimulationLowTime,  // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
+            continuousStimulation ? 3e9 : stimulationHighTime);  // as above
+    }
 
     stimulation->setCOPulseTerm(nullptr, stimulationTerm);
     if (stimulationEnabled) {
@@ -234,7 +245,7 @@ void Tasks::start()
         elReadout->startTask();
         emit elReadoutStarted();
     }
-    if (aodEnabled) {
+    if (aodEnabled && !continuousStimulation) {
         ddsSampClock->startTask();
     }
 
@@ -261,6 +272,16 @@ void Tasks::stopLEDs()
     if (LED1Enabled && LED2Enabled) {
         NI::disconnectTerms(LED1Term, LED2Term);
     }
+}
+
+bool Tasks::getContinuousStimulation() const
+{
+    return continuousStimulation;
+}
+
+void Tasks::setContinuousStimulation(bool value)
+{
+    continuousStimulation = value;
 }
 
 QPointF Tasks::getPoint() const

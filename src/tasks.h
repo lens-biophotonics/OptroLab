@@ -89,6 +89,9 @@ public:
     void setAODEnabled(bool enable);
     bool isAODEnabled() const;
 
+    bool getContinuousStimulation() const;
+    void setContinuousStimulation(bool value);
+
 signals:
     void started();
     void stopped();
@@ -121,6 +124,7 @@ private:
     double stimulationHighTime = 0.5;
     uInt64 stimulationNPulses = 20;
     bool stimulationEnabled = true;
+    bool continuousStimulation = false;
 
     QString LED1Term, LED2Term;
 

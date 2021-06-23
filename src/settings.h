@@ -33,6 +33,7 @@
 #define SETTING_TERM "terminal"
 #define SETTING_STIMDURATION "stimDuration"
 #define SETTING_ENABLED "enabled"
+#define SETTING_ALWAYS_ON "alwaysOn"
 #define SETTING_AOD_ENABLED "aodEnabled"
 
 #define SETTING_INITIALDELAY "initialDelay"

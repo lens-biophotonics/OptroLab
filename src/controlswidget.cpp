@@ -123,6 +123,14 @@ void ControlsWidget::setupUi()
     stimulationTermComboBox->setMinimumContentsLength(15);
     stimulationTermComboBox->setCurrentText(t->getStimulationTerm());
 
+    QCheckBox *continuousStimulationCheckBox = new QCheckBox("Always on");
+    connect(continuousStimulationCheckBox, &QCheckBox::toggled, [ = ](bool checked){
+        stimulationHighTimeSpinBox->setEnabled(!checked);
+        stimulationLowTimeSpinBox->setEnabled(!checked);
+    });
+
+    continuousStimulationCheckBox->setChecked(t->getContinuousStimulation());
+
     QRadioButton *pulseRadio = new QRadioButton("Pulse");
     QRadioButton *aodRadio = new QRadioButton("AOD");
     pulseRadio->setChecked(!t->isAODEnabled());
@@ -132,6 +140,7 @@ void ControlsWidget::setupUi()
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(stimulationTermComboBox, row++, 1);
+    grid->addWidget(continuousStimulationCheckBox, row++, 1);
     grid->addWidget(new QLabel("High time"), row, 0);
     grid->addWidget(stimulationHighTimeSpinBox, row++, 1);
     grid->addWidget(new QLabel("Low time"), row, 0);
@@ -390,6 +399,7 @@ void ControlsWidget::setupUi()
         t->setStimulationTerm(stimulationTermComboBox->currentText());
         t->setStimulationLowTime(stimulationLowTimeSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
+        t->setContinuousStimulation(continuousStimulationCheckBox->isChecked());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
         t->setAODEnabled(aodRadio->isChecked());
 
