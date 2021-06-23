@@ -37,14 +37,14 @@ void Tasks::init()
             t->clearTask();
     }
 
-    QStringList coList = NI::getCOPhysicalChans().filter("/ctr");
+    QStringList coList = NI::getDevCOPhysicalChans().filter("/ctr");
     QString co;
 
 
     // mainTrigger
     co = coList.at(0); coList.pop_front();
     mainTrigger->createTask("mainTrigger");
-    mainTrigger->createCOPulseChanFreq(co.toLatin1(),
+    mainTrigger->createCOPulseChanFreq(co,
                                        nullptr,
                                        NITask::FreqUnits_Hz,
                                        NITask::IdleState_Low,
@@ -56,7 +56,7 @@ void Tasks::init()
         mainTrigger->cfgImplicitTiming(NITask::SampMode_FiniteSamps, getMainTrigNPulses());
         logger->info(QString("Total number of trigger pulses: %1").arg(getMainTrigNPulses()));
     }
-    mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm.toLatin1());
+    mainTrigger->setCOPulseTerm(nullptr, mainTrigTerm);
 
 
     // stimulation
@@ -67,7 +67,7 @@ void Tasks::init()
     QString stimulationCounter = coList.at(0); coList.pop_front();
     stimulation->createTask("stimulation");
     stimulation->createCOPulseChanTime(
-        stimulationCounter.toLatin1(),
+        stimulationCounter,
         nullptr,
         DAQmx_Val_Seconds,
         NITask::IdleState_Low,
@@ -75,7 +75,7 @@ void Tasks::init()
         stimulationLowTime,
         stimulationHighTime);
     if (!aodEnabled) {
-        stimulation->setCOPulseTerm(nullptr, stimulationTerm.toLatin1());
+        stimulation->setCOPulseTerm(nullptr, stimulationTerm);
     }
     if (stimulationEnabled) {
         stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
@@ -100,30 +100,30 @@ void Tasks::init()
 
     co = coList.at(0); coList.pop_front();
     LED1->createTask("LED1");
-    LED1->createCOPulseChanFreq(co.toLatin1(),
+    LED1->createCOPulseChanFreq(co,
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
                                 initDelay1, tempLEDFreq, 0.5);
-    LED1->setCOPulseTerm(nullptr, LED1Term.toLatin1());
+    LED1->setCOPulseTerm(nullptr, LED1Term);
     LED1->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
 
 
     // LED2
     co = coList.at(0); coList.pop_front();
     LED2->createTask("LED2");
-    LED2->createCOPulseChanFreq(co.toLatin1(),
+    LED2->createCOPulseChanFreq(co,
                                 nullptr,
                                 NITask::FreqUnits_Hz,
                                 NITask::IdleState_Low,
                                 initDelay2, tempLEDFreq, 0.5);
-    LED2->setCOPulseTerm(nullptr, LED2Term.toLatin1());
+    LED2->setCOPulseTerm(nullptr, LED2Term);
     LED2->cfgImplicitTiming(NITask::SampMode_ContSamps, 1000);
 
 
     // electrodeReadout
     elReadout->createTask("electrodeReadout");
-    elReadout->createAIVoltageChan(electrodeReadoutPhysChan.toLatin1(),
+    elReadout->createAIVoltageChan(electrodeReadoutPhysChan,
                                    nullptr,
                                    NITask::TermConf_Default,
                                    -10., 10.,
@@ -176,10 +176,10 @@ void Tasks::init()
         dummyTask->createAIVoltageChan("/Dev1/ai11", nullptr, NITask::TermConf_Default,
                                        -10, 10, DAQmx_Val_Volts, nullptr);
         dummyTask->cfgChangeDetectionTiming(
-            stimulationCounter.toLatin1(), stimulationCounter.toLatin1(),
+            stimulationCounter, stimulationCounter,
             NITask::SampMode_ContSamps, 10);
         dummyTask->setReadOverWrite(DAQmx_Val_OverwriteUnreadSamps);
-        dummyTask->exportSignal(NITask::SignalID_ChangeDetectionEvent, stimulationTerm.toLatin1());
+        dummyTask->exportSignal(DAQmx_Val_ChangeDetectionEvent, stimulationTerm);
 
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
          * the dds. In a stimulation cycle, it is started twice: the first time it runs (at the
@@ -193,11 +193,11 @@ void Tasks::init()
          */
         ddsSampClock->createTask("sampleClock");
         co = coList.at(0); coList.pop_front();
-        ddsSampClock->createCOPulseChanFreq(co.toLatin1(), nullptr, DAQmx_Val_Hz,
+        ddsSampClock->createCOPulseChanFreq(co, nullptr, DAQmx_Val_Hz,
                                             NITask::IdleState_Low, 0, 5e6, 0.5);
         ddsSampClock->cfgSampClkTiming(nullptr, 5e6, NITask::Edge_Rising,
                                        NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
-        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
+        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm, NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
     }
 

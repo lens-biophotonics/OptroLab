@@ -36,7 +36,7 @@ void ControlsWidget::setupUi()
     // trigger
 
     QComboBox *mainTrigTermComboBox = new QComboBox();
-    mainTrigTermComboBox->addItems(NI::getTerminals());
+    mainTrigTermComboBox->addItems(NI::getDevTerminals());
     mainTrigTermComboBox->setCurrentText(t->getMainTrigTerm());
 
     int row = 0;
@@ -55,11 +55,11 @@ void ControlsWidget::setupUi()
     LEDFreqSpinBox->setValue(t->getLEDFreq());
 
     QComboBox *LED1TermComboBox = new QComboBox();
-    LED1TermComboBox->addItems(NI::getTerminals());
+    LED1TermComboBox->addItems(NI::getDevTerminals());
     LED1TermComboBox->setCurrentText(t->getLED1Term());
 
     QComboBox *LED2TermComboBox = new QComboBox();
-    LED2TermComboBox->addItems(NI::getTerminals());
+    LED2TermComboBox->addItems(NI::getDevTerminals());
     LED2TermComboBox->setCurrentText(t->getLED2Term());
 
     QCheckBox *LED1CheckBox = new QCheckBox("LED 1");
@@ -83,7 +83,7 @@ void ControlsWidget::setupUi()
     // electrode readout
 
     QComboBox *electrodePhysChanComboBox = new QComboBox();
-    electrodePhysChanComboBox->addItems(NI::getAIPhysicalChans());
+    electrodePhysChanComboBox->addItems(NI::getDevAIPhysicalChans());
     electrodePhysChanComboBox->setCurrentText(t->getElectrodeReadoutPhysChan());
     QDoubleSpinBox *electrodeSampRateSpinBox = new QDoubleSpinBox();
     electrodeSampRateSpinBox->setSuffix("Hz");
@@ -119,7 +119,7 @@ void ControlsWidget::setupUi()
     view->setFixedWidth(350);
     stimulationTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
     stimulationTermComboBox->setView(view);
-    stimulationTermComboBox->addItems(NI::getTerminals());
+    stimulationTermComboBox->addItems(NI::getDevTerminals());
     stimulationTermComboBox->setMinimumContentsLength(15);
     stimulationTermComboBox->setCurrentText(t->getStimulationTerm());
 
