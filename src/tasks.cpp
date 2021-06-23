@@ -23,6 +23,8 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
 
 void Tasks::init()
 {
+    NI::resetDevice("Dev1");
+    NI::resetDevice("Dev2");
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
@@ -205,8 +207,8 @@ void Tasks::init()
 
          * stimulationTerm is used as UDCLK for the dds as well as start trigger for ddsSampClock.
          */
-        ddsSampClock->createTask("sampleClock");
-        co = coList.at(0); coList.pop_front();
+        ddsSampClock->createTask("ddsSampClock");
+        co = coList.last(); coList.pop_back();
         ddsSampClock->createCOPulseChanFreq(co, nullptr, NITask::FreqUnits_Hz,
                                             NITask::IdleState_Low, 0, 5e6, 0.5);
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
