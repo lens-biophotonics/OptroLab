@@ -139,9 +139,13 @@ void MainPage::setupUi()
     rightVLayout->addWidget(new ControlsWidget());
     rightVLayout->addStretch();
 
+    QVBoxLayout *tempVLaout = new QVBoxLayout();
+    tempVLaout->addWidget(pmw, 4);
+    tempVLaout->addStretch(1);
+
     hLayout = new QHBoxLayout();
-    hLayout->addLayout(leftVLayout, 3);
-    hLayout->addWidget(pmw, 4);
+    hLayout->addLayout(leftVLayout, 4);
+    hLayout->addLayout(tempVLaout, 3);
     hLayout->addLayout(rightVLayout);
 
     QVBoxLayout *vLayout = new QVBoxLayout();
