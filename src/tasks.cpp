@@ -23,8 +23,6 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
 
 void Tasks::init()
 {
-    NI::resetDevice("Dev1");
-    NI::resetDevice("Dev2");
     QList<NITask *> taskList;
     QList<NITask *> triggeredTasks;
 
@@ -42,7 +40,17 @@ void Tasks::init()
             t->clearTask();
     }
 
-    QStringList coList = NI::getCOPhysicalChans().filter("/ctr");
+    QStringList coList;
+    QStringList devList = NI::getSysDevNames();
+    QStringListIterator devIt(devList);
+    while (devIt.hasNext()) {
+        QString dev = devIt.next();
+        if (NI::getDevProductCategory(dev) == DAQmx_Val_XSeriesDAQ) {
+            NI::resetDevice(dev);
+            coList << NI::getDevCOPhysicalChans(dev).filter("/ctr");
+        }
+    }
+
     QString co;
 
     // mainTrigger
