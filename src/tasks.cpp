@@ -42,9 +42,8 @@ void Tasks::init()
             t->clearTask();
     }
 
-    QStringList coList = NI::getDevCOPhysicalChans().filter("/ctr");
+    QStringList coList = NI::getCOPhysicalChans().filter("/ctr");
     QString co;
-
 
     // mainTrigger
     co = coList.at(0); coList.pop_front();
