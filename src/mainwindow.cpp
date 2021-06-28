@@ -163,6 +163,9 @@ void MainWindow::saveSettings() const
     s.setValue(g, SETTING_BAUD, dev->getBaud());
     s.setValue(g, SETTING_DEVICENUMBER, dev->getDeviceNumber());
 
+    g = SETTINGSGROUP_DDS;
+    s.setValue(g, SETTING_DEVNAME, t->getDDS()->getDevName());
+
     s.saveSettings();
 
     QSettings settings;
@@ -227,6 +230,9 @@ void MainWindow::loadSettings()
             break;
         }
     }
+
+    g = SETTINGSGROUP_DDS;
+    t->getDDS()->setDevName(s.value(g, SETTING_DEVNAME).toString());
 
     QSettings settings;
 

@@ -14,6 +14,7 @@
 #define SETTINGSGROUP_STIMULATION "Stimulation"
 #define SETTINGSGROUP_TIMING "Timing"
 #define SETTINGSGROUP_ZAXIS "zAxis"
+#define SETTINGSGROUP_DDS "DDS"
 
 #define SETTING_POS "pos"
 #define SETTING_VELOCITY "velocity"
@@ -26,6 +27,7 @@
 
 #define SETTING_LUTPATH "LUTPath"
 
+#define SETTING_DEVNAME "devName"
 #define SETTING_PHYSCHAN "physicalChannel"
 #define SETTING_FREQ "frequency"
 #define SETTING_LOW_TIME "lowTime"

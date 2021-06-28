@@ -21,6 +21,7 @@
 #include "controlswidget.h"
 #include "elreadoutworker.h"
 #include "tasks.h"
+#include "dds.h"
 #include "chameleoncamera.h"
 #include "savestackworker.h"
 
@@ -123,6 +124,10 @@ void ControlsWidget::setupUi()
     stimulationTermComboBox->setMinimumContentsLength(15);
     stimulationTermComboBox->setCurrentText(t->getStimulationTerm());
 
+    QComboBox *ddsDevComboBox = new QComboBox();
+    ddsDevComboBox->addItems(NI::getSysDevNames());
+    ddsDevComboBox->setCurrentText(t->getDDS()->getDevName());
+
     QCheckBox *continuousStimulationCheckBox = new QCheckBox("Always on");
     connect(continuousStimulationCheckBox, &QCheckBox::toggled, [ = ](bool checked){
         stimulationHighTimeSpinBox->setEnabled(!checked);
@@ -140,6 +145,8 @@ void ControlsWidget::setupUi()
     grid = new QGridLayout();
     grid->addWidget(new QLabel("Terminal"), row, 0);
     grid->addWidget(stimulationTermComboBox, row++, 1);
+    grid->addWidget(new QLabel("DDS"), row, 0);
+    grid->addWidget(ddsDevComboBox, row++, 1);
     grid->addWidget(continuousStimulationCheckBox, row++, 1);
     grid->addWidget(new QLabel("High time"), row, 0);
     grid->addWidget(stimulationHighTimeSpinBox, row++, 1);
@@ -395,8 +402,9 @@ void ControlsWidget::setupUi()
         t->setLED1Enabled(LED1CheckBox->isChecked());
         t->setLED2Enabled(LED2CheckBox->isChecked());
 
-        t->setStimulationHighTime(stimulationHighTimeSpinBox->value());
         t->setStimulationTerm(stimulationTermComboBox->currentText());
+        t->getDDS()->setDevName(ddsDevComboBox->currentText());
+        t->setStimulationHighTime(stimulationHighTimeSpinBox->value());
         t->setStimulationLowTime(stimulationLowTimeSpinBox->value());
         t->setStimulationDuration(stimulationSpinBox->value());
         t->setContinuousStimulation(continuousStimulationCheckBox->isChecked());

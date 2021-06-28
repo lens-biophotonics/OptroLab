@@ -21,11 +21,6 @@
 
 DDS::DDS(QObject *parent) : QObject(parent)
 {
-    // only port 0 supports hardware-timed bufferd output
-    controlPort = "Dev2/port0/line8:15";
-    dataPort = "Dev2/port0/line16:23";
-    dataPort2 = "Dev2/port0/line24:31";
-
     task = new NITask(this);
 }
 
@@ -318,6 +313,21 @@ void DDS::nop()
 QVector<uInt32> DDS::getBuffer() const
 {
     return buffer;
+}
+
+QString DDS::getDevName() const
+{
+    return devName;
+}
+
+void DDS::setDevName(const QString &value)
+{
+    devName = value;
+
+    // only port 0 supports hardware-timed bufferd output
+    controlPort = devName + "/port0/line8:15";
+    dataPort = devName + "/port0/line16:23";
+    dataPort2 = devName + "/port0/line24:31";
 }
 
 void DDS::write8(quint8 addr, quint8 value1, quint8 value2)

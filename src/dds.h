@@ -84,9 +84,13 @@ public:
     void nop();
     QVector<uInt32> getBuffer() const;
 
+    QString getDevName() const;
+    void setDevName(const QString &value);
+
 signals:
 
 private:
+    QString devName;
     QString controlPort;
     QString dataPort;
     QString dataPort2;

@@ -127,6 +127,13 @@ void Settings::loadSettings()
 
     settings.endGroup();
 
+    groupName = SETTINGSGROUP_DDS;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_DEVNAME, "Dev2");
+
+    settings.endGroup();
+
 
     groupName = SETTINGSGROUP_TIMING;
     settings.beginGroup(groupName);
