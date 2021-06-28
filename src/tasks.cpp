@@ -207,7 +207,7 @@ void Tasks::init()
          * stimulationTerm is used as UDCLK for the dds as well as start trigger for ddsSampClock.
          */
         ddsSampClock->createTask("ddsSampClock");
-        co = coList.last(); coList.pop_back();
+        co = coList.last(); coList.pop_back();  // use counter from another device
         ddsSampClock->createCOPulseChanFreq(co, nullptr, NITask::FreqUnits_Hz,
                                             NITask::IdleState_Low, 0, 5e6, 0.5);
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps, dds->getBuffer().size() / 2);
