@@ -13,6 +13,7 @@
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QRadioButton>
+#include <QMessageBox>
 
 #include <qtlab/hw/ni/natinst.h>
 
@@ -24,6 +25,7 @@
 #include "dds.h"
 #include "chameleoncamera.h"
 #include "savestackworker.h"
+#include "camdisplay.h"
 
 ControlsWidget::ControlsWidget(QWidget *parent) : QWidget(parent)
 {
@@ -410,6 +412,7 @@ void ControlsWidget::setupUi()
         t->setContinuousStimulation(continuousStimulationCheckBox->isChecked());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
         t->setAODEnabled(aodRadio->isChecked());
+        t->setPoint(camDisplay->getPoints().at(0));
 
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
@@ -439,6 +442,11 @@ void ControlsWidget::setupUi()
         optrode().startFreeRun();
     });
     connect(startButton, clicked, &optrode(), [ = ](){
+        if (aodRadio->isChecked() && camDisplay->getPoints().size() == 0) {
+            QMessageBox::critical(nullptr, "Error",
+                                  "No stimulation point selected: use SHIFT+click to select one");
+            return;
+        }
         applyValues();
         optrode().start();
     });
@@ -456,4 +464,9 @@ void ControlsWidget::setupUi()
         QString path = dialog.selectedFiles().at(0);
         outputPathLineEdit->setText(path);
     });
+}
+
+void ControlsWidget::setCamDisplay(CamDisplay *value)
+{
+    camDisplay = value;
 }

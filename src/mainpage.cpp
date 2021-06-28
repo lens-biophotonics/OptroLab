@@ -136,8 +136,11 @@ void MainPage::setupUi()
     leftVLayout->addLayout(hLayout);
     leftVLayout->addWidget(posCW);
 
+    ControlsWidget *cw = new ControlsWidget();
+    cw->setCamDisplay(camDisplay);
+
     QVBoxLayout *rightVLayout = new QVBoxLayout();
-    rightVLayout->addWidget(new ControlsWidget());
+    rightVLayout->addWidget(cw);
     rightVLayout->addStretch();
 
     QVBoxLayout *tempVLaout = new QVBoxLayout();
