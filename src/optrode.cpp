@@ -133,7 +133,7 @@ void Optrode::initialize()
     }
 
     tasks->getDDS()->initTask();
-    tasks->getDDS()->masterReset();
+    tasks->ddsMasterReset();
 
     emit initialized();
 }
