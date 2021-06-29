@@ -82,7 +82,8 @@ public:
     NITask *getTask() const;
 
     void nop();
-    QVector<uInt32> getBuffer() const;
+    int getBufferSize() const;
+    void clearBuffer();
 
     QString getDevName() const;
     void setDevName(const QString &value);

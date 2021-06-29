@@ -310,9 +310,14 @@ void DDS::nop()
     buffer.append(CONTROL_PORT_NWRITE << 8);
 }
 
-QVector<uInt32> DDS::getBuffer() const
+int DDS::getBufferSize() const
 {
-    return buffer;
+    return buffer.size();
+}
+
+void DDS::clearBuffer()
+{
+    buffer.clear();
 }
 
 QString DDS::getDevName() const
