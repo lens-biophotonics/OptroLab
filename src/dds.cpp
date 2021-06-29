@@ -18,6 +18,8 @@
 #define CONTROL_PORT_MASTER_RESET 0x1
 #define CONTROL_PORT_NWRITE 0x2
 
+#define SETBIT(var, bit, enable) enable ? var |= (1 << bit) : b &= ~(1 << bit);
+
 
 DDS::DDS(QObject *parent) : QObject(parent)
 {
@@ -137,8 +139,8 @@ void DDS::setPLL(bool gain, bool bypass, quint8 multiplier)
 
 void DDS::setPLLMultiplier(quint8 multiplier)
 {
-    quint8 b = controlRegister[1];
-    b |= (multiplier << 0);
+    quint8 b = controlRegister[1] & 0b01100000;
+    b |= (multiplier & 0b00011111);
     write8(RADDR_CONTROL_REGISTER + 1, b);
     controlRegister[1] = b;
 }
@@ -146,7 +148,7 @@ void DDS::setPLLMultiplier(quint8 multiplier)
 void DDS::setPLLGainEnabled(bool enabled)
 {
     quint8 b = controlRegister[1];
-    b |= (enabled << 6);
+    SETBIT(b, 6, enabled);
     write8(RADDR_CONTROL_REGISTER + 1, b);
     controlRegister[1] = b;
 }
@@ -154,7 +156,7 @@ void DDS::setPLLGainEnabled(bool enabled)
 void DDS::setPLLBypassEnabled(bool enabled)
 {
     quint8 b = controlRegister[1];
-    b |= (enabled << 5);
+    SETBIT(b, 5, enabled);
     write8(RADDR_CONTROL_REGISTER + 1, b);
     controlRegister[1] = b;
 }
@@ -170,21 +172,21 @@ void DDS::setDDS(bool clearAccum1, bool clearAccum2, bool triangle, bool SRC_QDA
     b |= (mode << 1);
     b |= (internalIO_UDCLK << 0);
     write8(RADDR_CONTROL_REGISTER + 2, b);
-    controlRegister[2] = (b & 0x7f);
+    controlRegister[2] = b;
 }
 
 void DDS::clearAccum1()
 {
     quint8 b = controlRegister[2];
-    b |= (1 << 7);
+    SETBIT(b, 7, true);
     write8(RADDR_CONTROL_REGISTER + 2, b);
-    controlRegister[2] = (b & 0x7f);
+    controlRegister[2] = b;
 }
 
 void DDS::setClearAccum2(bool on)
 {
     quint8 b = controlRegister[2];
-    b |= (on << 6);
+    SETBIT(b, 6, on);
     write8(RADDR_CONTROL_REGISTER + 2, b);
     controlRegister[2] = b;
 }
@@ -192,7 +194,7 @@ void DDS::setClearAccum2(bool on)
 void DDS::setTriangle(bool on)
 {
     quint8 b = controlRegister[2];
-    b |= (on << 5);
+    SETBIT(b, 5, on);
     write8(RADDR_CONTROL_REGISTER + 2, b);
     controlRegister[2] = b;
 }
@@ -200,14 +202,14 @@ void DDS::setTriangle(bool on)
 void DDS::serSourceQDAC(bool on)
 {
     quint8 b = controlRegister[2];
-    b |= (on << 4);
+    SETBIT(b, 4, on);
     write8(RADDR_CONTROL_REGISTER + 2, b);
     controlRegister[2] = b;
 }
 
 void DDS::setOperatingMode(DDS::OPERATING_MODE mode)
 {
-    quint8 b = controlRegister[2];
+    quint8 b = controlRegister[2] & 0b11100001;
     b |= (mode << 1);
     write8(RADDR_CONTROL_REGISTER + 2, b);
     controlRegister[2] = b;
@@ -216,7 +218,7 @@ void DDS::setOperatingMode(DDS::OPERATING_MODE mode)
 void DDS::setIOUDCLKInternal(bool internal)
 {
     quint8 b = controlRegister[2];
-    b |= (internal << 0);
+    SETBIT(b, 0, internal);
     write8(RADDR_CONTROL_REGISTER + 2, b);
     controlRegister[2] = b;
 }
@@ -225,11 +227,11 @@ void DDS::setDDS(
     bool inverseSincBypass, bool OSK, bool OSKInternal, bool serialLSBFirst, bool serialSDO)
 {
     quint8 b = 0;
-    b |= (inverseSincBypass << 6);
-    b |= (OSK << 5);
-    b |= (OSKInternal << 4);
-    b |= (serialLSBFirst << 1);
-    b |= (serialSDO << 0);
+    SETBIT(b, 6, inverseSincBypass);
+    SETBIT(b, 5, OSK);
+    SETBIT(b, 4, OSKInternal);
+    SETBIT(b, 1, serialLSBFirst);
+    SETBIT(b, 0, serialSDO);
     write8(RADDR_CONTROL_REGISTER + 3, b);
     controlRegister[3] = b;
 }
@@ -237,7 +239,7 @@ void DDS::setDDS(
 void DDS::setInverseSincBypass(bool bypass)
 {
     quint8 b = controlRegister[3];
-    b |= (bypass << 6);
+    SETBIT(b, 6, bypass);
     write8(RADDR_CONTROL_REGISTER + 3, b);
     controlRegister[3] = b;
 }
@@ -245,8 +247,8 @@ void DDS::setInverseSincBypass(bool bypass)
 void DDS::setOSK(bool enable, bool internal)
 {
     quint8 b = controlRegister[3];
-    b |= (enable << 5);
-    b |= (internal << 4);
+    SETBIT(b, 5, enable);
+    SETBIT(b, 4, internal);
     write8(RADDR_CONTROL_REGISTER + 3, b);
     controlRegister[3] = b;
 }
@@ -254,8 +256,8 @@ void DDS::setOSK(bool enable, bool internal)
 void DDS::setSerial(bool LSBFirst, bool SDO)
 {
     quint8 b = controlRegister[3];
-    b |= (LSBFirst << 1);
-    b |= (SDO << 0);
+    SETBIT(b, 1, LSBFirst);
+    SETBIT(b, 0, SDO);
     write8(RADDR_CONTROL_REGISTER + 3, b);
     controlRegister[3] = b;
 }
