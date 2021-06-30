@@ -172,11 +172,13 @@ void ControlsWidget::setupUi()
     postStimulationSpinBox->setSuffix("s");
     postStimulationSpinBox->setRange(0, 3600);
     postStimulationSpinBox->setValue(optrode().getPostStimulation());
+    postStimulationSpinBox->setEnabled(false);
 
     QDoubleSpinBox *stimulationSpinBox = new QDoubleSpinBox();
     stimulationSpinBox->setRange(0, 3600);
     stimulationSpinBox->setSuffix("s");
     stimulationSpinBox->setValue(t->stimulationDuration());
+    stimulationSpinBox->setEnabled(false);
 
     QCheckBox *stimulationCheckBox = new QCheckBox("Stimulation");
 
