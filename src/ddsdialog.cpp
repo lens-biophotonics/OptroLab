@@ -106,38 +106,44 @@ void DDSDialog::setupUi()
     connect(freqSlider1, &QwtSlider::valueChanged, this, [ = ](double value){
         freqSpinBox1->setValue(value);
         dds->setFrequency1(value, freqSpinBox2->value());
+        dds->udclkPulse();
     });
 
     connect(freqSlider2, &QwtSlider::valueChanged, this, [ = ](double value){
         freqSpinBox2->setValue(value);
         dds->setFrequency1(freqSpinBox1->value(), value);
+        dds->udclkPulse();
     });
 
     connect(freqSpinBox1, &DoubleSpinBox::returnPressed, this, [ = ](){
-        dds->setFrequency1(freqSpinBox1->value(), freqSpinBox2->value());
+        freqSlider1->setValue(freqSpinBox1->value());
     });
 
     connect(freqSpinBox2, &DoubleSpinBox::returnPressed, this, [ = ](){
-        dds->setFrequency1(freqSpinBox1->value(), freqSpinBox2->value());
+        freqSlider2->setValue(freqSpinBox2->value());
     });
 
     // amplitude
     connect(ampSlider1, &QwtSlider::valueChanged, this, [ = ](double value){
         ampSpinBox1->setValue(value);
         dds->setOSKI(value, ampSpinBox2->value());
+        dds->udclkPulse();
     });
 
     connect(ampSlider2, &QwtSlider::valueChanged, this, [ = ](double value){
         ampSpinBox2->setValue(value);
         dds->setOSKI(ampSpinBox1->value(), value);
+        dds->udclkPulse();
     });
 
     connect(ampSpinBox1, &SpinBox::returnPressed, this, [ = ](){
         dds->setOSKI(ampSpinBox1->value(), ampSpinBox2->value());
+        dds->udclkPulse();
     });
 
     connect(ampSpinBox2, &SpinBox::returnPressed, this, [ = ](){
         dds->setOSKI(ampSpinBox1->value(), ampSpinBox2->value());
+        dds->udclkPulse();
     });
 
     connect(masterResetPushButton, &QPushButton::clicked,

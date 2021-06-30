@@ -88,9 +88,17 @@ public:
     QString getDevName() const;
     void setDevName(const QString &value);
 
+    void writeBuffer();
+
+    void setUdclkTerm(const QString &value);
+    void setUdclkPhysicalChannel(const QString &value);
+
+    void udclkPulse();
+
 signals:
 
 private:
+    QVector<uInt32> buffer;
     QString devName;
     QString controlPort;
     QString dataPort;
@@ -99,7 +107,8 @@ private:
     quint8 controlRegister[4];
     double boardClockMHz = 50;
     WRITE_MODE writeMode = WRITE_MODE_TO_NI_TASK;
-    QVector<uInt32> buffer;
+    QString udclkTerm;
+    QString udclkPhysicalChannel;
 
     void write8(quint8 addr, quint8 value1, quint8 value2);
     void write8(quint8 addr, quint8 value);

@@ -65,8 +65,8 @@ void MainWindow::setupUi()
     DDSDialog *ddsDialog = new DDSDialog(this);
 
     connect(DDSDialogAction, &QAction::triggered, [ = ](){
+        optrode().NITasks()->clearTasks();
         optrode().NITasks()->getDDS()->initTask();
-        optrode().NITasks()->getDDS()->setIOUDCLKInternal(true);
         optrode().NITasks()->getDDS()->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
         ddsDialog->show();
     });

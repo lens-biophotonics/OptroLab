@@ -19,39 +19,7 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
     elReadout = new NITask(this);
     ddsSampClock = new NITask(this);
     dds = new DDS(this);
-}
 
-void Tasks::init()
-{
-    QList<NITask *> taskList;
-
-    taskList << elReadout;
-
-    if (!freeRunEnabled)  {
-        taskList << LED;
-
-        if (stimulationEnabled) {
-            taskList << stimulation;
-
-            if (aodEnabled) {
-                taskList << dds->getTask();
-                taskList << ddsSampClock;
-            }
-        }
-    }
-    taskList << mainTrigger;
-
-    for (NITask *t : taskList) {
-        if (t->isInitialized())
-            t->clearTask();
-    }
-
-    // will cause routed signal to be disconnected
-    // this is needed to reset the connection for LED2 (see below)
-    NI::tristateOutputTerm(LED1Term);
-    NI::tristateOutputTerm(LED2Term);
-
-    QStringList coList;
     QStringList devList = NI::getSysDevNames();
     QStringListIterator devIt(devList);
     while (devIt.hasNext()) {
@@ -60,6 +28,20 @@ void Tasks::init()
             coList << NI::getDevCOPhysicalChans(dev).filter("/ctr");
         }
     }
+
+#ifdef WITH_HARDWARE
+    dds->setUdclkPhysicalChannel(coList.at(2));  // same as stimulation
+#endif
+}
+
+void Tasks::init()
+{
+    clearTasks();
+
+    // will cause routed signal to be disconnected
+    // this is needed to reset the connection for LED2 (see below)
+    NI::tristateOutputTerm(LED1Term);
+    NI::tristateOutputTerm(LED2Term);
 
     QString co;
 
@@ -156,6 +138,17 @@ void Tasks::init()
      * newly written dds configuration becomes effective. */
 
     if (stimulationEnabled) {
+        if (aodEnabled) {
+            dds->initTask();
+            dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
+            // go to XY point
+            dds->setFrequency1(MHZ_CENTRAL - (point.y() - 256) * MHZ_PER_PIXEL,
+                               MHZ_CENTRAL - (point.x() - 256) * MHZ_PER_PIXEL);
+            dds->setOSKI(0, 0); // turn off
+            dds->udclkPulse();
+            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on (at next UDCLK)
+        }
+
         QString stimulationCounter = coList.at(2);
         stimulation->createTask("stimulation");
         if (continuousStimulation) {
@@ -174,18 +167,16 @@ void Tasks::init()
                 DAQmx_Val_Seconds,
                 NITask::IdleState_Low,
                 stimulationDelay, // ignored on buffered implicit pulse trains
-                stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
+                continuousStimulation ? 1e-6 : stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
                 continuousStimulation ? 3e9 : stimulationHighTime); // as above
         }
 
         stimulation->setCOPulseTerm(nullptr, stimulationTerm);
-        stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, stimulationNPulses);
-        stimulation->setCOCtrTimebaseSrc(nullptr, "/Dev1/20MhzTimeBase");
         stimulation->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(), NITask::Edge_Rising);
 
         if (aodEnabled && !continuousStimulation) {
             // for each stimulation cycle, we have to generate two short pulses (i.e. two UDCLK)
-            const int NSamples = 2 * stimulationNPulses;
+            const uInt64 NSamples = 2 * stimulationNPulses;
 
             QVector<float64> duty = QVector<float64>(NSamples, 0.1);
             QVector<float64> freq = QVector<float64>(NSamples);
@@ -193,10 +184,11 @@ void Tasks::init()
             highTime.reserve(NSamples);
             lowTime.reserve(NSamples);
 
-            for (int i = 0; i < NSamples / 2; ++i) {
-                lowTime << 0.9 * stimulationHighTime;
-                highTime << 0.1 * stimulationHighTime;
+            for (uInt64 i = 0; i < stimulationNPulses; ++i) {
+                // sic (low times are output before high times..)
                 lowTime << 0.9 * stimulationLowTime;
+                highTime << 0.1 * stimulationHighTime;
+                lowTime << 0.9 * stimulationHighTime;
                 highTime << 0.1 * stimulationLowTime;
             }
 
@@ -204,30 +196,22 @@ void Tasks::init()
                                            // so this is the way to implement delay with buffered
                                            // implicit pulse trains
 
-            stimulation->writeCtrTime(NSamples, false, 1, NITask::DataLayout_GroupByChannel,
+            stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, NSamples);
+            stimulation->writeCtrTime(NSamples, false, 10, NITask::DataLayout_GroupByChannel,
                                       highTime.data(), lowTime.data(), nullptr);
+        } else {
+            stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, stimulationNPulses);
         }
     }
 
     if (aodEnabled) {
         dds->initTask();
-        dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
-        dds->setIOUDCLKInternal(false); // hardware-timed dds output (see stimulation task)
-        // go to XY point
-        dds->setFrequency1(MHZ_CENTRAL - (point.y() - 256) * MHZ_PER_PIXEL,
-                           MHZ_CENTRAL - (point.x() - 256) * MHZ_PER_PIXEL);
-
-        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
 
         // write all samples to buffer
         dds->clearBuffer();
         dds->setWriteMode(DDS::WRITE_MODE_TO_BUFFER);
         dds->setOSKI(0, 0);                 // turn off
         dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
-
-        dds->getTask()->setStartTrigRetriggerable(true);
-        dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
-                                            NITask::Edge_Rising);
 
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
          * the dds. In a stimulation cycle, it is started twice: the first time it runs (at the
@@ -240,15 +224,23 @@ void Tasks::init()
          */
         ddsSampClock->createTask("ddsSampClock");
         co = coList.last(); // need to use counter from another device
+                            // (otherwise it conflicts with LED counter)
+        const int ddsSampClockRate = 100e3;
         ddsSampClock->createCOPulseChanFreq(
-            co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, 5e6, 0.5);
+            co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
+        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI5");
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                         dds->getBufferSize() / 2);
         ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
-        dds->getTask()->cfgSampClkTiming(ddsSampClock->getCOPulseTerm(nullptr), 5e6,
+        logger->info(ddsSampClock->getCOPulseTerm(nullptr));
+        dds->getTask()->cfgSampClkTiming(ddsSampClock->getCOPulseTerm(nullptr), ddsSampClockRate,
                                          NITask::Edge_Rising, NITask::SampMode_ContSamps,
                                          dds->getBufferSize());
+        dds->writeBuffer();  // must come after sample clk timing configuration
+
+        dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
+                                            NITask::Edge_Rising);
     }
 
     initialized = true;
@@ -276,6 +268,7 @@ void Tasks::start()
             stimulation->startTask();
             if (aodEnabled && !continuousStimulation) {
                 ddsSampClock->startTask();
+                dds->getTask()->startTask();
             }
         }
     }
@@ -304,6 +297,9 @@ void Tasks::stop()
 
 void Tasks::stopLEDs()
 {
+    if (!LED->isInitialized()) {
+        return;
+    }
     LED->stopTask();
     if (LED1Enabled && LED2Enabled) {
         NI::disconnectTerms(LED1Term, LED2Term);
@@ -318,6 +314,24 @@ bool Tasks::getContinuousStimulation() const
 void Tasks::setContinuousStimulation(bool value)
 {
     continuousStimulation = value;
+}
+
+void Tasks::clearTasks()
+{
+    QList<NITask *> taskList;
+
+    taskList << mainTrigger
+             << LED
+             << elReadout
+             << stimulation
+             << dds->getTask()
+             << ddsSampClock;
+
+    for (NITask *t : taskList) {
+        if (t->isInitialized()) {
+            t->clearTask();
+        }
+    }
 }
 
 QPointF Tasks::getPoint() const
@@ -338,11 +352,12 @@ DDS *Tasks::getDDS() const
 void Tasks::ddsMasterReset()
 {
     dds->masterReset();
+    dds->setIOUDCLKInternal(false);
     dds->setPLL(false, false, 6);
     dds->setOSK(true, false);
-    dds->setUpdateClock(2);
     dds->setOSKI(0, 0);
     dds->setFrequency1(MHZ_CENTRAL, MHZ_CENTRAL);
+    dds->udclkPulse();
 }
 
 bool Tasks::getElectrodeReadoutEnabled() const
@@ -486,6 +501,7 @@ QString Tasks::getStimulationTerm() const
 void Tasks::setStimulationTerm(const QString &value)
 {
     stimulationTerm = value;
+    dds->setUdclkTerm(value);
 }
 
 double Tasks::getStimulationLowTime() const

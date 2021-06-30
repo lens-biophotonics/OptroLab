@@ -413,8 +413,9 @@ void ControlsWidget::setupUi()
         t->setContinuousStimulation(continuousStimulationCheckBox->isChecked());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
         t->setAODEnabled(aodRadio->isChecked());
-        t->setPoint(camDisplay->getPoints().at(0));
-
+        if (camDisplay->getPoints().size() > 0) {
+            t->setPoint(camDisplay->getPoints().at(0));
+        }
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
         t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
@@ -442,7 +443,7 @@ void ControlsWidget::setupUi()
         applyValues();
         optrode().startFreeRun();
     });
-    connect(startButton, clicked, &optrode(), [ = ](){
+    connect(startButton, clicked, [ = ](){
         if (aodRadio->isChecked() && camDisplay->getPoints().size() == 0) {
             QMessageBox::critical(nullptr, "Error",
                                   "No stimulation point selected: use SHIFT+click to select one");

@@ -92,6 +92,8 @@ public:
     bool getContinuousStimulation() const;
     void setContinuousStimulation(bool value);
 
+    void clearTasks();
+
 signals:
     void started();
     void stopped();
@@ -110,6 +112,7 @@ private:
     NITask *ddsSampClock;
     DDS *dds;
     QPointF point;
+    QStringList coList;
 
     QString mainTrigTerm;
     double LEDFreq;

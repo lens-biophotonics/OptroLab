@@ -337,6 +337,34 @@ void DDS::setDevName(const QString &value)
     dataPort2 = devName + "/port0/line24:31";
 }
 
+void DDS::writeBuffer()
+{
+    int32 written;
+    task->writeDigitalU32(buffer.size() / 3, false, 5, NITask::DataLayout_GroupByScanNumber,
+                          buffer.data(), &written);
+}
+
+void DDS::setUdclkTerm(const QString &value)
+{
+    udclkTerm = value;
+}
+
+void DDS::setUdclkPhysicalChannel(const QString &value)
+{
+    udclkPhysicalChannel = value;
+}
+
+void DDS::udclkPulse()
+{
+    NITask pulse;
+    pulse.createTask("UDCLK");
+    pulse.createCOPulseChanFreq(udclkPhysicalChannel, QString(), DAQmx_Val_Hz,
+                                NITask::IdleState_Low, 0, 1e6, 0.5);
+    pulse.cfgImplicitTiming(NITask::SampMode_FiniteSamps, 1);
+    pulse.startTask();
+    pulse.waitUntilTaskDone(1);
+}
+
 void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
 {
     const int sampsPerChan = 3;
@@ -375,13 +403,24 @@ void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
     switch (writeMode) {
     case WRITE_MODE_TO_BUFFER:
         buffer.resize(buffer.size() + nSamples);
-        memcpy(buffer.data() + oldSize, samps, nSamples * sizeof(uInt32));
+        {
+            uInt32 *p = buffer.data() + oldSize;
+            // GroupByScanNumber
+            for (int i = 0; i < sampsPerChan; ++i) {
+                *p++ = samps[i + 0];
+                *p++ = samps[i + 3];
+                *p++ = samps[i + 6];
+            }
+        }
         break;
 
     case WRITE_MODE_TO_NI_TASK:
     default:
         task->stopTask();
-        task->writeDigitalU32(3, true, 0.5, NITask::DataLayout_GroupByChannel, samps, nullptr);
+        task->cfgSampClkTiming(nullptr, 100e3, NITask::Edge_Rising,
+                               NITask::SampMode_FiniteSamps, sampsPerChan);
+        task->writeDigitalU32(sampsPerChan, true, 0.5, NITask::DataLayout_GroupByChannel,
+                              samps, nullptr);
         task->waitUntilTaskDone(10);
         break;
     }
