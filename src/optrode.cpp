@@ -279,22 +279,33 @@ void Optrode::writeRunParams(QString fileName)
         out << "led_rate: " << tasks->getLEDFreq() << "\n";
     }
     out << "orca_exposure_time: " << orca->getExposureTime() << "\n";
-    out << "stimul_enabled: " << (tasks->getStimulationEnabled() ? "true" : "false") << "\n";
-    out << "aod_enabled: " << (tasks->isAODEnabled() ? "true" : "false") << "\n";
-    out << "stimulation_always_on" << tasks->getContinuousStimulation() << "\n";
-    if (!tasks->getContinuousStimulation()) {
-        out << "stimul_high_time: " << tasks->getStimulationHighTime() << "\n";
-        out << "stimul_low_time: " << tasks->getStimulationLowTime() << "\n";
-        out << "stimul_frequency: " << tasks->getStimulationFrequency() << "\n";
-        out << "stimul_n_pulses: " << tasks->getStimulationNPulses() << "\n";
+    out << "stimulation:\n";
+    out << "  enabled: " << (tasks->getStimulationEnabled() ? "true" : "false") << "\n";
+    if (tasks->getStimulationEnabled()) {
+        out << "  aod:\n";
+        out << "    enabled: " << (tasks->isAODEnabled() ? "true" : "false") << "\n";
+        if (tasks->isAODEnabled()) {
+            QPointF p = tasks->getPoint();
+            out << "    point: " << QString("[%1, %2]").arg(p.x()).arg(p.y()) << "\n";
+        }
+        out << "  always_on: " << (tasks->getContinuousStimulation() ? "true" : "false") << "\n";
+        if (!tasks->getContinuousStimulation()) {
+            out << "  high_time: " << tasks->getStimulationHighTime() << "\n";
+            out << "  low_time: " << tasks->getStimulationLowTime() << "\n";
+            out << "  frequency: " << tasks->getStimulationFrequency() << "\n";
+            out << "  n_pulses: " << tasks->getStimulationNPulses() << "\n";
+        }
     }
-    out << "electrode_readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
-    out << "electrode_readout_enabled: " << (tasks->getStimulationEnabled() ? "true" : "false") << "\n";
+    out << "electrode:\n";
+    out << "  readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
+    out << "  readout_enabled: " << (tasks->getStimulationEnabled() ? "true" : "false") << "\n";
 
     out << "timing:" << "\n";
     out << "  baseline: " <<  tasks->getStimulationInitialDelay() << "\n";
-    out << "  stimulation: " << tasks->stimulationDuration() << "\n";
-    out << "  post: " << getPostStimulation() << "\n";
+    if (tasks->getStimulationEnabled()) {
+        out << "  stimulation: " << tasks->stimulationDuration() << "\n";
+        out << "  post: " << getPostStimulation() << "\n";
+    }
     out << "  total: " << totalDuration() << "\n";
 
     outFile.close();
