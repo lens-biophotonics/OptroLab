@@ -235,7 +235,6 @@ void ControlsWidget::setupUi()
     });
 
     connect(&optrode(), &Optrode::pleaseWait, this, [ = ](){
-        timer->stop();
         successLabel->setText("PLEASE WAIT");
         successLabel->setStyleSheet("QLabel {color: DarkOrange};");
     });
