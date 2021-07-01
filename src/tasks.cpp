@@ -280,18 +280,14 @@ void Tasks::start()
 void Tasks::stop()
 {
     initialized = false;
-    mainTrigger->stopTask();
-    elReadout->stopTask();
+    stopLEDs();
+    clearTasks();
 
-    if (!freeRunEnabled) {
-        if (stimulationEnabled) {
-            stimulation->stopTask();
-            if (aodEnabled) {
-                ddsSampClock->stopTask();
-                dds->getTask()->stopTask();
-            }
-        }
-        stopLEDs();
+    if (!freeRunEnabled && aodEnabled && stimulationEnabled) {
+        dds->initTask();
+        dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
+        dds->setOSKI(0, 0); // turn off
+        dds->udclkPulse();
     }
 }
 
