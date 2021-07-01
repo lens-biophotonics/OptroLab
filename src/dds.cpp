@@ -29,8 +29,9 @@ DDS::DDS(QObject *parent) : QObject(parent)
 void DDS::masterReset()
 {
     task->stopTask();
-    uInt32 samps[2];
-    memset(samps, 0, 2 * sizeof(uInt32));
+    const int nSamps = 6;  // 2 * 3 channels
+    uInt32 samps[nSamps];
+    memset(samps, 0, nSamps * sizeof(uInt32));
 
     int i = 0;
 
@@ -38,6 +39,7 @@ void DDS::masterReset()
     samps[i++] = (CONTROL_PORT_MASTER_RESET | CONTROL_PORT_NWRITE) << 8;
     samps[i++] = CONTROL_PORT_NWRITE << 8;
 
+    task->cfgSampClkTiming(nullptr, 100e3, NITask::Edge_Rising, NITask::SampMode_FiniteSamps, 2);
     task->writeDigitalU32(2, true, 1, NITask::DataLayout_GroupByChannel, samps, nullptr);
     task->waitUntilTaskDone(10);
 
@@ -367,34 +369,38 @@ void DDS::udclkPulse()
 
 void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
 {
-    const int sampsPerChan = 3;
+    const int sampsPerChan = 4;
     const int nSamples = 3 * sampsPerChan;
     uInt32 samps[nSamples];
     memset(samps, 0, nSamples * sizeof(uInt32));
 
+    int i = 0;
     // control
-    samps[0] = (addr << 2) | CONTROL_PORT_NWRITE;
-    samps[1] = (addr << 2);  // actual write (NWRITE LOW)
-    samps[2] = samps[0];
+    samps[i++] = (addr << 2) | CONTROL_PORT_NWRITE;
+    samps[i++] = (addr << 2);  // actual write (NWRITE LOW)
+    samps[i++] = samps[0];
+    samps[i++] = samps[0];
 
     // data
-    samps[3] = value1;
-    samps[4] = value1;
-    samps[5] = value1;
+    samps[i++] = value1;
+    samps[i++] = value1;
+    samps[i++] = value1;
+    samps[i++] = 0;  // reset lines to zero
 
-    samps[6] = value2;
-    samps[7] = value2;
-    samps[8] = value2;
+    samps[i++] = value2;
+    samps[i++] = value2;
+    samps[i++] = value2;
+    samps[i++] = 0;
 
-    for (int i = 0; i < 3; ++i) {
+    for (int i = 0; i < 4; ++i) {
         samps[i] = samps[i] << 8;
     }
 
-    for (int i = 3; i < 6; ++i) {
+    for (int i = 4; i < 8; ++i) {
         samps[i] = samps[i] << 16;
     }
 
-    for (int i = 6; i < 9; ++i) {
+    for (int i = 8; i < 11; ++i) {
         samps[i] = samps[i] << 24;
     }
 
@@ -408,8 +414,8 @@ void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
             // GroupByScanNumber
             for (int i = 0; i < sampsPerChan; ++i) {
                 *p++ = samps[i + 0];
-                *p++ = samps[i + 3];
-                *p++ = samps[i + 6];
+                *p++ = samps[i + 4];
+                *p++ = samps[i + 8];
             }
         }
         break;
