@@ -46,22 +46,14 @@ void DDSDialog::setupUi()
 
 
     // amplitude
-    QwtSlider *ampSlider1 = new QwtSlider(Qt::Horizontal, this);
-    QwtSlider *ampSlider2 = new QwtSlider(Qt::Horizontal, this);
+    QwtSlider *ampSlider = new QwtSlider(Qt::Horizontal, this);
 
-    ampSlider1->setScalePosition(QwtSlider::NoScale);
-    ampSlider1->setLowerBound(0);
-    ampSlider1->setUpperBound(4095);
+    ampSlider->setScalePosition(QwtSlider::NoScale);
+    ampSlider->setLowerBound(0);
+    ampSlider->setUpperBound(4095);
 
-    ampSlider2->setScalePosition(QwtSlider::NoScale);
-    ampSlider2->setLowerBound(0);
-    ampSlider2->setUpperBound(4095);
-
-    SpinBox *ampSpinBox1 = new SpinBox();
-    ampSpinBox1->setRange(ampSlider1->minimum(), ampSlider1->maximum());
-
-    SpinBox *ampSpinBox2 = new SpinBox();
-    ampSpinBox2->setRange(ampSlider2->minimum(), ampSlider2->maximum());
+    SpinBox *ampSpinBox = new SpinBox();
+    ampSpinBox->setRange(ampSlider->minimum(), ampSlider->maximum());
 
     QPushButton *masterResetPushButton = new QPushButton("Master reset");
     masterResetPushButton->setAutoDefault(false);
@@ -77,11 +69,8 @@ void DDSDialog::setupUi()
     grid->addWidget(freqSpinBox2, row++, col++);
     col = 0;
     grid->addWidget(new QLabel("Amplitude"), row++, col);
-    grid->addWidget(ampSlider1, row, col++);
-    grid->addWidget(ampSpinBox1, row++, col++);
-    col = 0;
-    grid->addWidget(ampSlider2, row, col++);
-    grid->addWidget(ampSpinBox2, row++, col++);
+    grid->addWidget(ampSlider, row, col++);
+    grid->addWidget(ampSpinBox, row++, col++);
     col = 0;
     grid->addWidget(masterResetPushButton, row++, col, 1, 2);
 
@@ -89,6 +78,8 @@ void DDSDialog::setupUi()
 
     QList<QWidget *> wList;
     wList << freqSlider1 << freqSlider2 << freqSpinBox1 << freqSpinBox2;
+    wList << ampSlider << ampSpinBox;
+    wList << masterResetPushButton;
 
     QState *rs = optrode().getState(Optrode::STATE_READY);
     QState *cs = optrode().getState(Optrode::STATE_CAPTURING);
@@ -124,26 +115,14 @@ void DDSDialog::setupUi()
     });
 
     // amplitude
-    connect(ampSlider1, &QwtSlider::valueChanged, this, [ = ](double value){
-        ampSpinBox1->setValue(value);
-        dds->setOSKI(value, ampSpinBox2->value());
+    connect(ampSlider, &QwtSlider::valueChanged, this, [ = ](double value){
+        ampSpinBox->setValue(value);
+        dds->setOSKI(value, value);
         dds->udclkPulse();
     });
 
-    connect(ampSlider2, &QwtSlider::valueChanged, this, [ = ](double value){
-        ampSpinBox2->setValue(value);
-        dds->setOSKI(ampSpinBox1->value(), value);
-        dds->udclkPulse();
-    });
-
-    connect(ampSpinBox1, &SpinBox::returnPressed, this, [ = ](){
-        dds->setOSKI(ampSpinBox1->value(), ampSpinBox2->value());
-        dds->udclkPulse();
-    });
-
-    connect(ampSpinBox2, &SpinBox::returnPressed, this, [ = ](){
-        dds->setOSKI(ampSpinBox1->value(), ampSpinBox2->value());
-        dds->udclkPulse();
+    connect(ampSpinBox, &SpinBox::returnPressed, this, [ = ](){
+        ampSlider->setValue(ampSpinBox->value());
     });
 
     connect(masterResetPushButton, &QPushButton::clicked,
