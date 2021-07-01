@@ -62,6 +62,15 @@ void MainWindow::setupUi()
     setMenuBar(menuBar);
 
     QAction *DDSDialogAction = new QAction("DDS...");
+
+    QState *rs = optrode().getState(Optrode::STATE_READY);
+    QState *cs = optrode().getState(Optrode::STATE_CAPTURING);
+    QState *us = optrode().getState(Optrode::STATE_UNINITIALIZED);
+
+    rs->assignProperty(DDSDialogAction, "enabled", true);
+    cs->assignProperty(DDSDialogAction, "enabled", false);
+    us->assignProperty(DDSDialogAction, "enabled", false);
+
     DDSDialog *ddsDialog = new DDSDialog(this);
 
     connect(DDSDialogAction, &QAction::triggered, [ = ](){
@@ -70,6 +79,9 @@ void MainWindow::setupUi()
         optrode().NITasks()->getDDS()->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
         ddsDialog->show();
     });
+
+    cs->assignProperty(ddsDialog, "visible", false);
+    us->assignProperty(ddsDialog, "visible", false);
 
     QMenu *fileMenu = menuBar->addMenu("&File");
     fileMenu->addAction(saveSettingsAction);
