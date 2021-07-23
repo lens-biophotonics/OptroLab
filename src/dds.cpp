@@ -40,7 +40,7 @@ void DDS::masterReset()
     samps[i++] = CONTROL_PORT_NWRITE << 8;
 
     task->cfgSampClkTiming(nullptr, 100e3, NITask::Edge_Rising, NITask::SampMode_FiniteSamps, 2);
-    task->writeDigitalU32(2, true, 1, NITask::DataLayout_GroupByChannel, samps, nullptr);
+    task->writeDigitalU32(2, true, 1, NITask::DataLayout_GroupByChannel, samps);
     task->waitUntilTaskDone(10);
 
     // datasheet, page 33
@@ -341,9 +341,8 @@ void DDS::setDevName(const QString &value)
 
 void DDS::writeBuffer()
 {
-    int32 written;
     task->writeDigitalU32(buffer.size() / 3, false, 5, NITask::DataLayout_GroupByScanNumber,
-                          buffer.data(), &written);
+                          buffer.data());
 }
 
 void DDS::setUdclkTerm(const QString &value)
@@ -425,8 +424,7 @@ void DDS::write8(quint8 addr, quint8 value1, quint8 value2)
         task->stopTask();
         task->cfgSampClkTiming(nullptr, 100e3, NITask::Edge_Rising,
                                NITask::SampMode_FiniteSamps, sampsPerChan);
-        task->writeDigitalU32(sampsPerChan, true, 0.5, NITask::DataLayout_GroupByChannel,
-                              samps, nullptr);
+        task->writeDigitalU32(sampsPerChan, true, 0.5, NITask::DataLayout_GroupByChannel, samps);
         task->waitUntilTaskDone(10);
         break;
     }
