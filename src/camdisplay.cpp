@@ -1,3 +1,9 @@
+#include <QDialog>
+#include <QGridLayout>
+#include <QLabel>
+#include <QSpinBox>
+#include <QPushButton>
+
 #include <qwt_plot_picker.h>
 #include <qwt_picker_machine.h>
 #include <qwt_symbol.h>
@@ -32,14 +38,42 @@ CamDisplay::CamDisplay(QWidget *parent) : CameraDisplay(parent)
     picker->setStateMachine(new QwtPickerClickPointMachine());
     picker->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton, Qt::ShiftModifier);
 
-    connect(picker, qOverload<const QPointF &>(&MapPicker::selected), this, [ = ](QPointF p) {
-        if (points.size() == 1) {
-            clearMarkers();
-        }
-        addPoint(p);
-    });
+    connect(picker, qOverload<const QPointF &>(&MapPicker::selected), this, &CamDisplay::addPoint);
 
     menu->addSeparator();
+
+    QDialog *dialog = new QDialog(this);
+    dialog->setWindowTitle("Add marker");
+
+    QGridLayout *grid = new QGridLayout();
+    int row = 0;
+    grid->addWidget(new QLabel("X"), row, 0);
+    QSpinBox *xSpinBox = new QSpinBox();
+    grid->addWidget(xSpinBox, row++, 1);
+
+    grid->addWidget(new QLabel("Y"), row, 0);
+    QSpinBox *ySpinBox = new QSpinBox();
+    grid->addWidget(ySpinBox, row++, 1);
+
+    QPushButton *setPushButton = new QPushButton("Set marker");
+    grid->addWidget(setPushButton, row++, 0, 1, 2);
+
+    grid->setColumnStretch(1, 2);
+
+    dialog->setLayout(grid);
+
+    connect(setPushButton, &QPushButton::clicked, [ = ](){
+        addPoint(QPoint(xSpinBox->value(), ySpinBox->value()));
+    });
+
+    QAction *setMarker = new QAction("Set marker...");
+    connect(setMarker, &QAction::triggered, [ = ](){
+        xSpinBox->setRange(0, plot->getPlotSize().width());
+        ySpinBox->setRange(0, plot->getPlotSize().height());
+        dialog->show();
+    });
+
+    menu->addAction(setMarker);
 
     QAction *clearMarkersAction = new QAction("Clear markers");
     connect(clearMarkersAction, &QAction::triggered, this, &CamDisplay::clearMarkers);
@@ -48,6 +82,9 @@ CamDisplay::CamDisplay(QWidget *parent) : CameraDisplay(parent)
 
 void CamDisplay::addPoint(const QPointF &p)
 {
+    if (points.size() == 1) {
+        clearMarkers();
+    }
     QwtPlotMarker *marker = new QwtPlotMarker();
 
     QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Cross);
