@@ -450,6 +450,22 @@ void ControlsWidget::setupUi()
             return;
         }
         applyValues();
+
+        if (QFileInfo(optrode().outputFileFullPath() + ".yaml").exists())
+        {
+            QMessageBox msgBox;
+            QString msg("A measurement with this run name (%1) already exists.");
+            msg = msg.arg(optrode().getRunName());
+            msgBox.setText(msg);
+            msgBox.setInformativeText("Do you want to overwrite existing files?");
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+            int ret = msgBox.exec();
+            if (ret == QMessageBox::No) {
+                return;
+            }
+        }
+
         optrode().start();
     });
     connect(stopButton, clicked, &optrode(), &Optrode::stop);
