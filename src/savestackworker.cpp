@@ -28,24 +28,24 @@ SaveStackWorker::SaveStackWorker(OrcaFlash *orca, QObject *parent)
 void SaveStackWorker::start()
 {
     emit started();
-    readFrames = 0;
     void *buf;
     size_t width = 512;
     size_t height = 512;
+    int n = 2 * width * height;
 
+    readFrames = 0;
     triggerCompleted = false;
+    stopped = false;
 
-    logger->info(QString("Total number of frames: %1").arg(frameCount));
+    logger->info(QString("Total number of frames to acquire: %1").arg(frameCount));
 
 #ifdef WITH_HARDWARE
     const int32_t nFramesInBuffer = orca->nFramesInBuffer();
     QVector<qint64> timeStamps(frameCount, 0);
 #else
-    size_t n = 2 * width * height;
     buf = malloc(n);
 #endif
 
-    stopped = false;
 
     TIFFWriter *writers[2];
 
@@ -73,8 +73,8 @@ void SaveStackWorker::start()
 
         DCAM_TIMESTAMP timeStamp;
 
-        qint32 mask = DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED;
-        qint32 event = DCAMWAIT_CAPEVENT_FRAMEREADY;
+        quint32 mask = DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED;
+        quint32 event = DCAMWAIT_CAPEVENT_FRAMEREADY;
 
         if (!triggerCompleted) {
             try {
@@ -85,24 +85,39 @@ void SaveStackWorker::start()
             }
         }
 
+        if (stopped) {
+            break;
+        }
+
         switch (event) {
         case DCAMWAIT_CAPEVENT_FRAMEREADY:
             try {
                 orca->lockFrame(frame, &buf, &frameStamp, &timeStamp);
-                timeStamps[readFrames] = timeStamp.sec * 1e6 + timeStamp.microsec;
-                if (readFrames != 0) {
-                    double delta = double(timeStamps[readFrames]) - double(timeStamps[readFrames - 1]);
-                    if (abs(delta) > timeout) {
-                        logger->critical(timeoutString(delta, readFrames));
-                    }
-                    else if (abs(delta) > timeout * 0.75 || abs(delta) < timeout * 0.25) {
-                        logger->warning(timeoutString(delta, readFrames));
-                    }
-                }
             }
             catch (std::runtime_error) {
                 continue;
             }
+
+            timeStamps[readFrames] = timeStamp.sec * 1e6 + timeStamp.microsec;
+            if (readFrames != 0) {
+                double delta = double(timeStamps[readFrames]) - double(timeStamps[readFrames - 1]);
+                if (abs(delta) > timeout) {
+                    logger->warning(timeoutString(delta, readFrames));
+                }
+                if (abs(delta) > 10e6) {  // greater than 10 seconds
+                    logger->critical(timeoutString(delta, readFrames));
+                    stop();
+                    break;
+                }
+            }
+            if (frameStamp != readFrames) {
+                QString msg("Camera %1: Lost frame #%2 (current framestamp = %3)");
+                msg = msg.arg(orca->getCameraIndex()).arg(readFrames).arg(frameStamp);
+                logger->critical(msg);
+                stop();
+                break;
+            }
+
 #else
             orca->copyLastFrame(buf, n);
             usleep(20000);
@@ -110,13 +125,13 @@ void SaveStackWorker::start()
 
             writers[readFrames % 2]->write((quint16 *)buf, width, height, 1);
             readFrames++;
+
 #ifdef WITH_HARDWARE
             break;
         case DCAMERR_TIMEOUT:
-            logger->warning(QString("Camera %1 timeout").arg(orca->getCameraIndex()));
-            break;
         default:
-            break;
+            logger->warning(QString("Camera %1 timeout").arg(orca->getCameraIndex()));
+            continue;
         }  // switch
 #endif
     }  // while
@@ -143,6 +158,11 @@ void SaveStackWorker::start()
 void SaveStackWorker::setEnabledWriters(const uint &value)
 {
     enabledWriters = value;
+}
+
+void SaveStackWorker::stop()
+{
+    stopped = true;
 }
 
 size_t SaveStackWorker::getReadFrames() const

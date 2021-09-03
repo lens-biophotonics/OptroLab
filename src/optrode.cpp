@@ -100,6 +100,7 @@ void Optrode::initialize()
         orca->setTriggerPolarity(OrcaFlash::POL_POSITIVE);
         orca->setPropertyValue(DCAM::DCAM_IDPROP_BINNING, DCAM::DCAMPROP_BINNING__4);
         orca->buf_alloc(3000);
+        orca->logInfo();
 
         behaviorCamera->open(0);
         behaviorCamera->logDeviceInfo();

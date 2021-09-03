@@ -25,6 +25,8 @@ public:
 
     void setEnabledWriters(const uint &value);
 
+    void stop();
+
 signals:
     void error(QString msg = "");
     void captureCompleted(bool ok);
