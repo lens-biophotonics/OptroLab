@@ -320,7 +320,6 @@ void Optrode::_startAcquisition()
     try {
         double Vn = 2048;
         double lineInterval = orca->getLineInterval();
-        double mainTrigFreq = tasks->getMainTrigFreq();
 
         // time during which LEDs are switching on/off
         // (camera should not be recording during this time)
@@ -334,8 +333,6 @@ void Optrode::_startAcquisition()
         elReadoutWorker->setTotToBeRead(totalDuration() * tasks->getElectrodeReadoutRate());
         elReadoutWorker->setFreeRun(isFreeRunEnabled());
 
-        double LEDFreq = mainTrigFreq / 2;
-        tasks->setLEDFreq(LEDFreq);
         tasks->setLEDdelay(blankTime / 2);
 
         uint enabledWriters = 0;
