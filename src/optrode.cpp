@@ -323,7 +323,10 @@ void Optrode::_startAcquisition()
 
         // time during which LEDs are switching on/off
         // (camera should not be recording during this time)
-        double blankTime = 0.002;
+        double blankTime = 0;
+        if (tasks->getLED1Enabled() && tasks->getLED2Enabled()) {
+            blankTime = 0.002;
+        }
 
         // inverse formula to obtain exposure time
         double expTime = 1. / tasks->getMainTrigFreq() - (Vn / 2 + 10) * lineInterval;
