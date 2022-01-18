@@ -323,7 +323,7 @@ void Optrode::_startAcquisition()
 
         // time during which LEDs are switching on/off
         // (camera should not be recording during this time)
-        double blankTime = 0;
+        double blankTime = 0.0005;
         if (tasks->getLED1Enabled() && tasks->getLED2Enabled()) {
             blankTime = 0.002;
         }
