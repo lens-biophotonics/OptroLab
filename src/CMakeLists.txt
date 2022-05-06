@@ -24,8 +24,8 @@ if (FORCE_FUSION_STYLE)
     message(AUTHOR_WARNING "Forcing fusion style")
 endif ()
 
-if (NOT DEMO_MODE)
-    add_definitions(-DWITH_HARDWARE)
+if (DEMO_MODE)
+    add_definitions(-DDEMO_MODE)
 endif()
 
 set(SOURCE_FILES

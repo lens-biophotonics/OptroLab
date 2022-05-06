@@ -29,8 +29,8 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
         }
     }
 
-#ifdef WITH_HARDWARE
-    dds->setUdclkPhysicalChannel(coList.at(2));  // same as stimulation
+#ifndef DEMO_MODE
+    dds->setUdclkPhysicalChannel(coList.at(2)); // same as stimulation
 #else
     for (int i = 0; i < 4; ++i) {
         coList << "";

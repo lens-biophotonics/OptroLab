@@ -1,4 +1,4 @@
-#ifndef WITH_HARDWARE
+#ifdef DEMO_MODE
 #include <unistd.h>
 #endif
 
@@ -39,7 +39,7 @@ void SaveStackWorker::start()
 
     logger->info(QString("Total number of frames to acquire: %1").arg(frameCount));
 
-#ifdef WITH_HARDWARE
+#ifndef DEMO_MODE
     const int32_t nFramesInBuffer = orca->nFramesInBuffer();
     QVector<qint64> timeStamps(frameCount, 0);
 #else
@@ -67,7 +67,7 @@ void SaveStackWorker::start()
 
 
     while (!stopped && readFrames < frameCount) {
-#ifdef WITH_HARDWARE
+#ifndef DEMO_MODE
         int32_t frame = readFrames % nFramesInBuffer;
         int32_t frameStamp = -1;
 
@@ -126,7 +126,7 @@ void SaveStackWorker::start()
             writers[readFrames % 2]->write((quint16 *)buf, width, height, 1);
             readFrames++;
 
-#ifdef WITH_HARDWARE
+#ifndef DEMO_MODE
             break;
         case DCAMERR_TIMEOUT:
         default:
@@ -136,8 +136,7 @@ void SaveStackWorker::start()
 #endif
     }  // while
 
-#ifdef WITH_HARDWARE
-#else
+#ifdef DEMO_MODE
     free(buf);
 #endif
 

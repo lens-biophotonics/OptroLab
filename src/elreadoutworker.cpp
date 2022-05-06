@@ -67,7 +67,7 @@ void ElReadoutWorker::readOut()
 {
     int32 sampsPerChanRead;
 
-#ifdef WITH_HARDWARE
+#ifndef DEMO_MODE
     buf.resize(readoutRate * INTERVALMSEC / 1000. * 3);
     try {
         quint32 avail = task->getReadAvailSampPerChan();

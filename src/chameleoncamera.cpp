@@ -97,7 +97,7 @@ void ChameleonCamera::setupAcquisitionMode()
     pCam->PixelFormat.SetValue(PixelFormat_Mono8);
 
     pCam->TriggerMode.SetValue(TriggerMode_Off);
-#ifdef WITH_HARDWARE
+#ifndef DEMO_MODE
     pCam->TriggerSelector.SetValue(TriggerSelector_FrameStart);
     pCam->TriggerSource.SetValue(TriggerSource_Line2);
     pCam->TriggerActivation.SetValue(TriggerActivation_RisingEdge);
