@@ -68,6 +68,9 @@ QSize ChameleonCamera::imageSize()
 
 void ChameleonCamera::startAcquisition()
 {
+    if (!pCam.IsValid()) {
+        return;
+    }
     setupAcquisitionMode();
     pCam->BeginAcquisition();
     capturing = true;
@@ -76,6 +79,9 @@ void ChameleonCamera::startAcquisition()
 
 void ChameleonCamera::stopAcquisition()
 {
+    if (!pCam.IsValid()) {
+        return;
+    }
     pCam->EndAcquisition();
     capturing = false;
     emit acquisitionStopped();
@@ -91,8 +97,16 @@ void ChameleonCamera::setROI(const QRect &value)
     roi = value;
 }
 
+bool ChameleonCamera::isValid()
+{
+    return pCam.IsValid();
+}
+
 void ChameleonCamera::setupAcquisitionMode()
 {
+    if (!pCam.IsValid()) {
+        return;
+    }
     pCam->AcquisitionMode.SetValue(AcquisitionMode_Continuous);
     pCam->PixelFormat.SetValue(PixelFormat_Mono8);
 

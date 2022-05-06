@@ -22,6 +22,8 @@ public:
     QRect getROI() const;
     void setROI(const QRect &value);
 
+    bool isValid();
+
 public slots:
     void startAcquisition();
     void stopAcquisition();

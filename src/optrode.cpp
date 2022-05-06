@@ -107,10 +107,8 @@ void Optrode::initialize()
     } catch (std::runtime_error e) {
         onError(e.what());
         return;
-    }
-    catch (Spinnaker::Exception e) {
-        onError(QString("Cannot open behavior camera.\n\n%1").arg(e.what()));
-        return;
+    } catch (Spinnaker::Exception e) {
+        logger->warning(QString("Cannot open behavior camera.\n\n%1").arg(e.what()));
     }
 
     for (int i = 0; i < 6; i++) {
@@ -205,6 +203,10 @@ void Optrode::start()
         nJobs = 3;
     } else {
         nJobs = 2;
+    }
+
+    if (!behaviorCamera->isValid()) {
+        nJobs--;
     }
 
     logger->info("Start acquisition");

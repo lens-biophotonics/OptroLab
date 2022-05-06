@@ -78,9 +78,11 @@ void DisplayWorker::run()
             msleep(triggerPeriod_ms);
         }
 
+#ifndef DEMO_MODE
         if (frameStamp == -1) {
             continue;
         }
+#endif
 
         for (int i = 0; i < BUFSIZE; ++i) {
             bufd[i] = buf[i];
