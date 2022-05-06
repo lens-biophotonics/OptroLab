@@ -140,9 +140,6 @@ void Optrode::initialize()
 void Optrode::uninitialize()
 {
     stop();
-    if (behaviorCamera)
-        delete behaviorCamera;
-    behaviorCamera = nullptr;
 }
 
 void Optrode::setupStateMachine()
@@ -168,6 +165,18 @@ void Optrode::setupStateMachine()
     initializingState->addTransition(this, &Optrode::error, uninitState);
     readyState->addTransition(this, &Optrode::started, capturingState);
     capturingState->addTransition(this, &Optrode::stopped, readyState);
+
+    connect(readyState, &QState::entered, this, [ = ](){
+        if (!multiRunEnabled) {
+            return;
+        }
+        multiRunCount++;
+        if (!multiRunStopped && (multiRunCount < nRuns)) {
+            _start();
+        } else {
+            multiRunStopped = true;
+        }
+    });
 
     QHistoryState *historyState = new QHistoryState(sm);
 
@@ -198,6 +207,13 @@ void Optrode::startFreeRun()
 
 void Optrode::start()
 {
+    multiRunCount = 0;
+    multiRunStopped = false;
+    _start();
+}
+
+void Optrode::_start()
+{
     completedJobs = successJobs = 0;
     if (tasks->getElectrodeReadoutEnabled()) {
         nJobs = 3;
@@ -209,7 +225,11 @@ void Optrode::start()
         nJobs--;
     }
 
-    logger->info("Start acquisition");
+    if (multiRunEnabled) {
+        logger->info(QString("Start acquisition (run %1/%2)").arg(multiRunCount + 1).arg(nRuns));
+    } else {
+        logger->info("Start acquisition");
+    }
     logger->info(QString("Baseline %1s, stimul %2s (%3 pulses), post %4s")
                  .arg(tasks->getStimulationInitialDelay())
                  .arg(tasks->stimulationDuration())
@@ -263,6 +283,32 @@ void Optrode::stop()
         onError(e.what());
     }
     logger->info("Stopped");
+}
+
+void Optrode::multiRunStop()
+{
+    multiRunStopped = true;
+    stop();
+}
+
+int Optrode::getNRuns() const
+{
+    return nRuns;
+}
+
+void Optrode::setNRuns(int value)
+{
+    nRuns = value;
+}
+
+bool Optrode::isMultiRunEnabled() const
+{
+    return multiRunEnabled;
+}
+
+void Optrode::setMultiRunEnabled(bool value)
+{
+    multiRunEnabled = value;
 }
 
 void Optrode::writeRunParams(QString fileName)
@@ -466,7 +512,11 @@ void Optrode::setOutputDir(const QString &value)
 
 QString Optrode::outputFileFullPath()
 {
-    return QDir(outputPath).filePath(runName);
+    QString s = QDir(outputPath).filePath(runName);
+    if (multiRunEnabled) {
+        s += QString("_%1").arg(multiRunCount, 5, 10, QChar('0'));
+    }
+    return s;
 }
 
 OrcaFlash *Optrode::getOrca() const

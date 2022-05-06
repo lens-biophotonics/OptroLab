@@ -63,6 +63,12 @@ public:
 
     SaveStackWorker *getSSWorker() const;
 
+    bool isMultiRunEnabled() const;
+    void setMultiRunEnabled(bool value);
+
+    int getNRuns() const;
+    void setNRuns(int value);
+
 signals:
     void initializing() const;
     void initialized() const;
@@ -78,6 +84,7 @@ public slots:
     void startFreeRun();
     void start();
     void stop();
+    void multiRunStop();
 
 private:
     ChameleonCamera *behaviorCamera;
@@ -91,6 +98,11 @@ private:
     SaveStackWorker *ssWorker;
 
     bool saveElectrodeEnabled = true, saveBehaviorEnabled = true;
+    bool multiRunEnabled = false;
+    bool multiRunStopped = true;
+    int nRuns = 2;
+    int multiRunCount = 0;
+
 
     QMap<MACHINE_STATE, QState *> stateMap;
     QStateMachine *sm = nullptr;
@@ -103,6 +115,7 @@ private:
     void setupStateMachine();
     void onError(const QString &errMsg);
     void _startAcquisition();
+    void _start();
     void incrementCompleted(bool ok);
 };
 

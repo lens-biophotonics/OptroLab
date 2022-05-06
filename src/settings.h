@@ -45,6 +45,9 @@
 
 #define SETTING_EXPTIME "exposureTime"
 
+#define SETTING_MULTIRUN_ENABLED "multiRunEnabled"
+#define SETTING_NRUNS "nRuns"
+
 #define SETTING_OUTPUTPATH "outputPath"
 #define SETTING_RUNNAME "runName"
 #define SETTING_SAVEELECTRODE "saveElectrode"

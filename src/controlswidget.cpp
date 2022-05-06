@@ -212,6 +212,8 @@ void ControlsWidget::setupUi()
 
     QProgressBar *progressBar = new QProgressBar();
     progressBar->setFormat("%p%");
+    QProgressBar *multiRunProgressBar = new QProgressBar();
+    multiRunProgressBar->setFormat("%v/%m");
 
     QTimer *timer = new QTimer();
     connect(&optrode(), &Optrode::started, this, [ = ](bool freeRun) {
@@ -234,6 +236,9 @@ void ControlsWidget::setupUi()
                 successLabel->setStyleSheet("QLabel {color: red};");
             }
         }
+        if (optrode().isMultiRunEnabled()) {
+            multiRunProgressBar->setValue(multiRunProgressBar->value() + 1);
+        }
     });
 
     connect(&optrode(), &Optrode::pleaseWait, this, [ = ](){
@@ -252,6 +257,7 @@ void ControlsWidget::setupUi()
     vLayout->addStretch();
     vLayout->addWidget(successLabel);
     vLayout->addWidget(progressBar);
+    vLayout->addWidget(multiRunProgressBar);
 
     QGroupBox *controlsGb = new QGroupBox("Controls");
     controlsGb->setLayout(vLayout);
@@ -286,6 +292,18 @@ void ControlsWidget::setupUi()
 
     QGroupBox *ROIGb = new QGroupBox("BehavCam ROI");
     ROIGb->setLayout(grid);
+
+    // multiple runs
+    QSpinBox *nRunsSpinBox = new QSpinBox();
+    nRunsSpinBox->setRange(2, 10000);
+    nRunsSpinBox->setValue(optrode().getNRuns());
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("Number of runs"), 0, 0);
+    grid->addWidget(nRunsSpinBox, 0, 1);
+    QGroupBox *multiRunGb = new QGroupBox("Multiple runs");
+    multiRunGb->setCheckable(true);
+    multiRunGb->setChecked(optrode().isMultiRunEnabled());
+    multiRunGb->setLayout(grid);
 
     // output files
     row = 0;
@@ -335,6 +353,7 @@ void ControlsWidget::setupUi()
 
     QVBoxLayout *myLayout = new QVBoxLayout();
     myLayout->addLayout(hLayout);
+    myLayout->addWidget(multiRunGb);
     myLayout->addWidget(outputGb);
 
     setLayout(myLayout);
@@ -387,6 +406,7 @@ void ControlsWidget::setupUi()
         stimulationGb,
         outputGb,
         timingGb,
+        multiRunGb,
     };
 
     for (QWidget * w : wList) {
@@ -429,6 +449,9 @@ void ControlsWidget::setupUi()
         optrode().setSaveElectrodeEnabled(saveElReadoutCheckBox->isChecked());
         optrode().setSaveBehaviorEnabled(saveBehavCheckBox->isChecked());
 
+        optrode().setMultiRunEnabled(multiRunGb->isChecked());
+        optrode().setNRuns(nRunsSpinBox->value());
+
         QRect roi;
         roi.setX(ROIxSpinBox->value());
         roi.setY(ROIySpinBox->value());
@@ -466,9 +489,14 @@ void ControlsWidget::setupUi()
             }
         }
 
+        multiRunProgressBar->reset();
+        if (multiRunGb->isChecked()) {
+            multiRunProgressBar->setValue(0);
+            multiRunProgressBar->setRange(0, nRunsSpinBox->value());
+        }
         optrode().start();
     });
-    connect(stopButton, clicked, &optrode(), &Optrode::stop);
+    connect(stopButton, clicked, &optrode(), &Optrode::multiRunStop);
 
     connect(outputPathPushButton, &QPushButton::clicked, this, [ = ](){
         QFileDialog dialog;

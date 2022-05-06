@@ -7,13 +7,15 @@
 #include "optrode.h"
 #include "tasks.h"
 
+#include <QThread>
+
 #define BUFSIZE (512 * 512)
 
 using namespace DCAM;
 
 
 DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
-    : QThread(parent)
+    : QObject(parent)
 {
     displayWhat = DISPLAY_ALL;
     qRegisterMetaType<size_t>("size_t");
@@ -24,11 +26,11 @@ DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
     orca = camera;
 
     connect(orca, &OrcaFlash::captureStarted, this, [ = ](){
-        start();
+        run();
     });
     connect(orca, &OrcaFlash::stopped, this, [ = ](){
         running = false;
-    });
+    }, Qt::DirectConnection);
 }
 
 DisplayWorker::~DisplayWorker()
@@ -44,9 +46,9 @@ void DisplayWorker::run()
 
     int skipFrames = qMax(40, triggerPeriod_ms) / triggerPeriod_ms;  // 40ms is 25 fps
     while (true) {
-        msleep(skipFrames * triggerPeriod_ms);
+        QThread::msleep(skipFrames * triggerPeriod_ms);
         if (displayWhat != DISPLAY_ALL) {
-            msleep(triggerPeriod_ms);
+            QThread::sleep(triggerPeriod_ms);
         }
 
         int32_t frameStamp = -1;
@@ -75,7 +77,7 @@ void DisplayWorker::run()
             }
 
             i++;
-            msleep(triggerPeriod_ms);
+            QThread::sleep(triggerPeriod_ms);
         }
 
 #ifndef DEMO_MODE

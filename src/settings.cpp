@@ -22,6 +22,7 @@ Settings::Settings()
 
 Settings::~Settings()
 {
+    saveSettings();
 }
 
 QVariant Settings::value(const QString &group, const QString &key) const
@@ -159,6 +160,9 @@ void Settings::loadSettings()
     SET_VALUE(groupName, SETTING_OUTPUTPATH,
               QDir::toNativeSeparators(QDir::homePath()));
 
+    SET_VALUE(groupName, SETTING_MULTIRUN_ENABLED, false);
+    SET_VALUE(groupName, SETTING_NRUNS, 2);
+
     settings.endGroup();
 
 
@@ -200,6 +204,8 @@ void Settings::loadSettings()
     optrode().setRunName(value(g, SETTING_RUNNAME).toString());
     optrode().setSaveElectrodeEnabled(value(g, SETTING_SAVEELECTRODE).toBool());
     optrode().setSaveBehaviorEnabled(value(g, SETTING_SAVEBEHAVIOR).toBool());
+    optrode().setMultiRunEnabled(value(g, SETTING_MULTIRUN_ENABLED).toBool());
+    optrode().setNRuns(value(g, SETTING_NRUNS).toInt());
 
     g = SETTINGSGROUP_BEHAVCAMROI;
     optrode().getBehaviorCamera()->setROI(value(g, SETTING_ROI).toRect());
@@ -261,6 +267,8 @@ void Settings::saveSettings()
     setValue(g, SETTING_RUNNAME, optrode().getRunName());
     setValue(g, SETTING_SAVEELECTRODE, optrode().isSaveElectrodeEnabled());
     setValue(g, SETTING_SAVEBEHAVIOR, optrode().isSaveBehaviorEnabled());
+    setValue(g, SETTING_MULTIRUN_ENABLED, optrode().isMultiRunEnabled());
+    setValue(g, SETTING_NRUNS, optrode().getNRuns());
 
     g = SETTINGSGROUP_ZAXIS;
     PIDevice *dev = optrode().getZAxis();
