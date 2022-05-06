@@ -11,9 +11,9 @@ if(WIN32)
 endif()
 
 find_package(Qt5 5.8 REQUIRED COMPONENTS
-    Widgets Svg SerialPort
+    Svg SerialPort
 )
-find_package(QtLab REQUIRED Core IO Widgets Hamamatsu NI PI)
+find_package(QtLab REQUIRED Core IO Widgets Hamamatsu NI PI PI-Widgets)
 find_package(Spinnaker REQUIRED)
 
 option(FORCE_FUSION_STYLE "Force fusion style" OFF)
@@ -57,14 +57,13 @@ add_executable(OptroLab ${SOURCE_FILES} ${APP_ICON_RESOURCE_WINDOWS})
 target_include_directories(OptroLab PUBLIC ${Spinnaker_INCLUDE_DIR})
 
 target_link_libraries(OptroLab
-    Qt5::Widgets
     Qt5::Svg
     Qt5::SerialPort
     QtLab::Core
     QtLab::IO
-    QtLab::Widgets
     QtLab::NI
     QtLab::PI
+    QtLab::PI-Widgets
     QtLab::Hamamatsu
     ${Spinnaker_LIBRARY}
     ${SpinVideo_LIBRARY}

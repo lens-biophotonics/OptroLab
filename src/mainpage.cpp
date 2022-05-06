@@ -6,6 +6,7 @@
 
 #include <qwt_plot_marker.h>
 
+#include <qtlab/hw/pi-widgets/pipositioncontrolwidget.h>
 #include <qtlab/widgets/aspectratiowidget.h>
 #include <qtlab/widgets/pixmapwidget.h>
 #include <qtlab/widgets/timeplot.h>

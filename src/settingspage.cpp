@@ -2,7 +2,7 @@
 #include <QPushButton>
 #include <QSpinBox>
 
-#include <qtlab/widgets/picontrollersettingswidget.h>
+#include <qtlab/hw/pi-widgets/picontrollersettingswidget.h>
 
 #include "settingspage.h"
 #include "optrode.h"

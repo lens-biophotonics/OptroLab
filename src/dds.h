@@ -1,8 +1,10 @@
 #ifndef DDS_H
 #define DDS_H
 
-#include <QObject>
 #include <qtlab/hw/ni/nitask.h>
+
+#include <QObject>
+#include <QVector>
 
 /**
  * @brief The DDSBox class implements the black box containing two AD9852 demo boards.

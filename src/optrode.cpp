@@ -9,7 +9,7 @@
 
 #include <qtlab/core/logger.h>
 #include <qtlab/hw/ni/nitask.h>
-#include <qtlab/hw/pi/pidevice.h>
+#include <qtlab/hw/pi-widgets/picontrollersettingswidget.h>
 
 #include <Spinnaker.h>
 

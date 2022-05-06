@@ -1,9 +1,9 @@
 #ifndef MAINPAGE_H
 #define MAINPAGE_H
 
-#include <QWidget>
-#include <qtlab/widgets/pipositioncontrolwidget.h>
+#include <qtlab/hw/pi-widgets/pipositioncontrolwidget.h>
 
+#include <QWidget>
 
 class PixmapWidget;
 
