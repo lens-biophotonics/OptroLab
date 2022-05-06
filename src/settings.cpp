@@ -3,8 +3,12 @@
 #include <QSettings>
 #include <QDir>
 #include <QRect>
+#include <QSerialPortInfo>
 
 #include "optrode.h"
+#include "tasks.h"
+#include "chameleoncamera.h"
+#include "dds.h"
 
 #include "settings.h"
 
@@ -156,10 +160,116 @@ void Settings::loadSettings()
               QDir::toNativeSeparators(QDir::homePath()));
 
     settings.endGroup();
+
+
+    //////////////////////////////////////
+
+    Tasks *t = optrode().NITasks();
+    QString g = SETTINGSGROUP_MAINTRIG;
+    t->setMainTrigTerm(value(g, SETTING_TERM).toString());
+
+    g = SETTINGSGROUP_LED1;
+    t->setLEDFreq(value(g, SETTING_FREQ).toDouble());
+    t->setLED1Term(value(g, SETTING_TERM).toString());
+    t->setLED1Enabled(value(g, SETTING_ENABLED).toBool());
+
+    g = SETTINGSGROUP_LED2;
+    t->setLED2Term(value(g, SETTING_TERM).toString());
+    t->setLED2Enabled(value(g, SETTING_ENABLED).toBool());
+
+    g = SETTINGSGROUP_ELREADOUT;
+    t->setElectrodeReadoutPhysChan(value(g, SETTING_PHYSCHAN).toString());
+    t->setElectrodeReadoutRate(value(g, SETTING_FREQ).toDouble());
+    t->setElectrodeReadoutEnabled(value(g, SETTING_ENABLED).toBool());
+
+    g = SETTINGSGROUP_STIMULATION;
+    t->setStimulationHighTime(value(g, SETTING_HIGH_TIME).toDouble());
+    t->setStimulationLowTime(value(g, SETTING_LOW_TIME).toDouble());
+    t->setStimulationTerm(value(g, SETTING_TERM).toString());
+    t->setStimulationEnabled(value(g, SETTING_ENABLED).toBool());
+    t->setContinuousStimulation(value(g, SETTING_ALWAYS_ON).toBool());
+    t->setAODEnabled(value(g, SETTING_AOD_ENABLED).toBool());
+
+    g = SETTINGSGROUP_TIMING;
+    t->setStimulationInitialDelay(value(g, SETTING_INITIALDELAY).toDouble());
+    t->setStimulationDuration(value(g, SETTING_STIMDURATION).toDouble());
+    optrode().setPostStimulation(value(g, SETTING_POSTSTIMULATION).toDouble());
+
+    g = SETTINGSGROUP_ACQUISITION;
+    optrode().setOutputDir(value(g, SETTING_OUTPUTPATH).toString());
+    optrode().setRunName(value(g, SETTING_RUNNAME).toString());
+    optrode().setSaveElectrodeEnabled(value(g, SETTING_SAVEELECTRODE).toBool());
+    optrode().setSaveBehaviorEnabled(value(g, SETTING_SAVEBEHAVIOR).toBool());
+
+    g = SETTINGSGROUP_BEHAVCAMROI;
+    optrode().getBehaviorCamera()->setROI(value(g, SETTING_ROI).toRect());
+
+    g = SETTINGSGROUP_ZAXIS;
+    PIDevice *dev = optrode().getZAxis();
+    dev->setBaud(value(g, SETTING_BAUD).toUInt());
+    dev->setDeviceNumber(value(g, SETTING_DEVICENUMBER).toUInt());
+    for (const QSerialPortInfo &info : QSerialPortInfo::availablePorts()) {
+        if (info.manufacturer() == "PI" || info.description().startsWith("PI")) {
+            dev->setPortName(info.portName());
+            break;
+        }
+    }
+
+    g = SETTINGSGROUP_DDS;
+    t->getDDS()->setDevName(value(g, SETTING_DEVNAME).toString());
 }
 
-void Settings::saveSettings() const
+void Settings::saveSettings()
 {
+    Tasks *t = optrode().NITasks();
+
+    QString g = SETTINGSGROUP_MAINTRIG;
+    setValue(g, SETTING_TERM, t->getMainTrigTerm());
+
+    g = SETTINGSGROUP_BEHAVCAMROI;
+    setValue(g, SETTING_ROI, optrode().getBehaviorCamera()->getROI());
+
+    g = SETTINGSGROUP_LED1;
+    setValue(g, SETTING_FREQ, t->getLEDFreq());
+    setValue(g, SETTING_TERM, t->getLED1Term());
+    setValue(g, SETTING_ENABLED, t->getLED1Enabled());
+
+    g = SETTINGSGROUP_LED2;
+    setValue(g, SETTING_TERM, t->getLED2Term());
+    setValue(g, SETTING_ENABLED, t->getLED2Enabled());
+
+    g = SETTINGSGROUP_ELREADOUT;
+    setValue(g, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
+    setValue(g, SETTING_FREQ, t->getElectrodeReadoutRate());
+    setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
+
+    g = SETTINGSGROUP_STIMULATION;
+    setValue(g, SETTING_LOW_TIME, t->getStimulationLowTime());
+    setValue(g, SETTING_HIGH_TIME, t->getStimulationHighTime());
+    setValue(g, SETTING_TERM, t->getStimulationTerm());
+    setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
+    setValue(g, SETTING_ALWAYS_ON, t->getContinuousStimulation());
+    setValue(g, SETTING_AOD_ENABLED, t->isAODEnabled());
+
+    g = SETTINGSGROUP_TIMING;
+    setValue(g, SETTING_INITIALDELAY, t->getStimulationInitialDelay());
+    setValue(g, SETTING_STIMDURATION, t->stimulationDuration());
+    setValue(g, SETTING_POSTSTIMULATION, optrode().getPostStimulation());
+
+    g = SETTINGSGROUP_ACQUISITION;
+    setValue(g, SETTING_OUTPUTPATH, optrode().getOutputDir());
+    setValue(g, SETTING_RUNNAME, optrode().getRunName());
+    setValue(g, SETTING_SAVEELECTRODE, optrode().isSaveElectrodeEnabled());
+    setValue(g, SETTING_SAVEBEHAVIOR, optrode().isSaveBehaviorEnabled());
+
+    g = SETTINGSGROUP_ZAXIS;
+    PIDevice *dev = optrode().getZAxis();
+    setValue(g, SETTING_BAUD, dev->getBaud());
+    setValue(g, SETTING_DEVICENUMBER, dev->getDeviceNumber());
+
+    g = SETTINGSGROUP_DDS;
+    setValue(g, SETTING_DEVNAME, t->getDDS()->getDevName());
+
     QSettings settings;
 
     QMapIterator<QString, SettingsMap*> groupIt(map);

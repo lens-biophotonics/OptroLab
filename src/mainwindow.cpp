@@ -13,7 +13,6 @@
 #include "ddsdialog.h"
 
 #include "optrode.h"
-#include "settings.h"
 #include "tasks.h"
 #include "dds.h"
 
@@ -128,59 +127,6 @@ void MainWindow::on_aboutAction_triggered() const
 
 void MainWindow::saveSettings() const
 {
-    Settings s = settings();
-
-    Tasks *t = optrode().NITasks();
-
-    QString g = SETTINGSGROUP_MAINTRIG;
-    s.setValue(g, SETTING_TERM, t->getMainTrigTerm());
-
-    g = SETTINGSGROUP_BEHAVCAMROI;
-    s.setValue(g, SETTING_ROI, optrode().getBehaviorCamera()->getROI());
-
-    g = SETTINGSGROUP_LED1;
-    s.setValue(g, SETTING_FREQ, t->getLEDFreq());
-    s.setValue(g, SETTING_TERM, t->getLED1Term());
-    s.setValue(g, SETTING_ENABLED, t->getLED1Enabled());
-
-    g = SETTINGSGROUP_LED2;
-    s.setValue(g, SETTING_TERM, t->getLED2Term());
-    s.setValue(g, SETTING_ENABLED, t->getLED2Enabled());
-
-    g = SETTINGSGROUP_ELREADOUT;
-    s.setValue(g, SETTING_PHYSCHAN, t->getElectrodeReadoutPhysChan());
-    s.setValue(g, SETTING_FREQ, t->getElectrodeReadoutRate());
-    s.setValue(g, SETTING_ENABLED, t->getElectrodeReadoutEnabled());
-
-    g = SETTINGSGROUP_STIMULATION;
-    s.setValue(g, SETTING_LOW_TIME, t->getStimulationLowTime());
-    s.setValue(g, SETTING_HIGH_TIME, t->getStimulationHighTime());
-    s.setValue(g, SETTING_TERM, t->getStimulationTerm());
-    s.setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
-    s.setValue(g, SETTING_ALWAYS_ON, t->getContinuousStimulation());
-    s.setValue(g, SETTING_AOD_ENABLED, t->isAODEnabled());
-
-    g = SETTINGSGROUP_TIMING;
-    s.setValue(g, SETTING_INITIALDELAY, t->getStimulationInitialDelay());
-    s.setValue(g, SETTING_STIMDURATION, t->stimulationDuration());
-    s.setValue(g, SETTING_POSTSTIMULATION, optrode().getPostStimulation());
-
-    g = SETTINGSGROUP_ACQUISITION;
-    s.setValue(g, SETTING_OUTPUTPATH, optrode().getOutputDir());
-    s.setValue(g, SETTING_RUNNAME, optrode().getRunName());
-    s.setValue(g, SETTING_SAVEELECTRODE, optrode().isSaveElectrodeEnabled());
-    s.setValue(g, SETTING_SAVEBEHAVIOR, optrode().isSaveBehaviorEnabled());
-
-    g = SETTINGSGROUP_ZAXIS;
-    PIDevice *dev = optrode().getZAxis();
-    s.setValue(g, SETTING_BAUD, dev->getBaud());
-    s.setValue(g, SETTING_DEVICENUMBER, dev->getDeviceNumber());
-
-    g = SETTINGSGROUP_DDS;
-    s.setValue(g, SETTING_DEVNAME, t->getDDS()->getDevName());
-
-    s.saveSettings();
-
     QSettings settings;
 
     settings.beginGroup("MainWindow");
@@ -191,62 +137,6 @@ void MainWindow::saveSettings() const
 
 void MainWindow::loadSettings()
 {
-    const Settings s = settings();
-
-    Tasks *t = optrode().NITasks();
-    QString g = SETTINGSGROUP_MAINTRIG;
-    t->setMainTrigTerm(s.value(g, SETTING_TERM).toString());
-
-    g = SETTINGSGROUP_LED1;
-    t->setLEDFreq(s.value(g, SETTING_FREQ).toDouble());
-    t->setLED1Term(s.value(g, SETTING_TERM).toString());
-    t->setLED1Enabled(s.value(g, SETTING_ENABLED).toBool());
-
-    g = SETTINGSGROUP_LED2;
-    t->setLED2Term(s.value(g, SETTING_TERM).toString());
-    t->setLED2Enabled(s.value(g, SETTING_ENABLED).toBool());
-
-    g = SETTINGSGROUP_ELREADOUT;
-    t->setElectrodeReadoutPhysChan(s.value(g, SETTING_PHYSCHAN).toString());
-    t->setElectrodeReadoutRate(s.value(g, SETTING_FREQ).toDouble());
-    t->setElectrodeReadoutEnabled(s.value(g, SETTING_ENABLED).toBool());
-
-    g = SETTINGSGROUP_STIMULATION;
-    t->setStimulationHighTime(s.value(g, SETTING_HIGH_TIME).toDouble());
-    t->setStimulationLowTime(s.value(g, SETTING_LOW_TIME).toDouble());
-    t->setStimulationTerm(s.value(g, SETTING_TERM).toString());
-    t->setStimulationEnabled(s.value(g, SETTING_ENABLED).toBool());
-    t->setContinuousStimulation(s.value(g, SETTING_ALWAYS_ON).toBool());
-    t->setAODEnabled(s.value(g, SETTING_AOD_ENABLED).toBool());
-
-    g = SETTINGSGROUP_TIMING;
-    t->setStimulationInitialDelay(s.value(g, SETTING_INITIALDELAY).toDouble());
-    t->setStimulationDuration(s.value(g, SETTING_STIMDURATION).toDouble());
-    optrode().setPostStimulation(s.value(g, SETTING_POSTSTIMULATION).toDouble());
-
-    g = SETTINGSGROUP_ACQUISITION;
-    optrode().setOutputDir(s.value(g, SETTING_OUTPUTPATH).toString());
-    optrode().setRunName(s.value(g, SETTING_RUNNAME).toString());
-    optrode().setSaveElectrodeEnabled(s.value(g, SETTING_SAVEELECTRODE).toBool());
-    optrode().setSaveBehaviorEnabled(s.value(g, SETTING_SAVEBEHAVIOR).toBool());
-
-    g = SETTINGSGROUP_BEHAVCAMROI;
-    optrode().getBehaviorCamera()->setROI(s.value(g, SETTING_ROI).toRect());
-
-    g = SETTINGSGROUP_ZAXIS;
-    PIDevice *dev = optrode().getZAxis();
-    dev->setBaud(s.value(g, SETTING_BAUD).toUInt());
-    dev->setDeviceNumber(s.value(g, SETTING_DEVICENUMBER).toUInt());
-    for (const QSerialPortInfo &info : QSerialPortInfo::availablePorts()) {
-        if (info.manufacturer() == "PI" || info.description().startsWith("PI")) {
-            dev->setPortName(info.portName());
-            break;
-        }
-    }
-
-    g = SETTINGSGROUP_DDS;
-    t->getDDS()->setDevName(s.value(g, SETTING_DEVNAME).toString());
-
     QSettings settings;
 
     settings.beginGroup("MainWindow");
