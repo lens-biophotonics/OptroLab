@@ -221,7 +221,10 @@ void Optrode::_start()
         nJobs = 2;
     }
 
-    if (!behaviorCamera->isValid()) {
+    if (behaviorCamera->isValid()) {
+        behavWorker->setSaveToFileEnabled(saveBehaviorEnabled);
+        behavWorker->setOutputFile(outputFileFullPath());
+    } else {
         nJobs--;
     }
 
@@ -245,9 +248,6 @@ void Optrode::_start()
     elReadoutWorker->setOutputFile(outputFileFullPath() + ".dat");
     elReadoutWorker->setSaveToFileEnabled(
         saveElectrodeEnabled && tasks->getElectrodeReadoutEnabled());
-
-    behavWorker->setSaveToFileEnabled(saveBehaviorEnabled);
-    behavWorker->setOutputFile(outputFileFullPath());
 
     size_t frameCount = tasks->getMainTrigFreq() * totalDuration();
     ssWorker->setFrameCount(frameCount);
