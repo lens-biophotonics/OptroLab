@@ -235,9 +235,9 @@ void ControlsWidget::setupUi()
                 successLabel->setText("ERRORS");
                 successLabel->setStyleSheet("QLabel {color: red};");
             }
-        }
-        if (optrode().isMultiRunEnabled()) {
-            multiRunProgressBar->setValue(multiRunProgressBar->value() + 1);
+            if (optrode().isMultiRunEnabled()) {
+                multiRunProgressBar->setValue(multiRunProgressBar->value() + 1);
+            }
         }
     });
 
