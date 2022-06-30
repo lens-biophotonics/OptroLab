@@ -2,7 +2,6 @@
 #include <QLabel>
 #include <QSettings>
 #include <QRadioButton>
-#include <QThread>
 #include <QtSvg/QSvgRenderer>
 
 #include <qwt_plot_marker.h>
@@ -101,10 +100,6 @@ void MainPage::setupUi()
     });
 
     DisplayWorker *dispWorker = new DisplayWorker(optrode().getOrca());
-    QThread *thr = new QThread();
-    thr->setObjectName("DisplayWorker_thread");
-    dispWorker->moveToThread(thr);
-    thr->start();
 
     CamDisplay *camDisplay = new CamDisplay(this);
     camDisplay->setPlotSize(QSize(512, 512));

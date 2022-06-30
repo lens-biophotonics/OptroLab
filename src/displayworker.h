@@ -1,11 +1,11 @@
 #ifndef DISPLAYWORKER_H
 #define DISPLAYWORKER_H
 
-#include <QObject>
+#include <QThread>
 
 class OrcaFlash;
 
-class DisplayWorker : public QObject
+class DisplayWorker : public QThread
 {
     Q_OBJECT
 public:
@@ -24,6 +24,8 @@ public:
 signals:
     void newImage(double *data, size_t n);
 
+protected:
+    virtual void run();
 
 private:
     OrcaFlash *orca;
@@ -32,7 +34,6 @@ private:
     bool running;
 
     DISPLAY_WHAT displayWhat;
-    void run();
 };
 
 #endif // DISPLAYWORKER_H

@@ -7,15 +7,13 @@
 #include "optrode.h"
 #include "tasks.h"
 
-#include <QThread>
-
 #define BUFSIZE (512 * 512)
 
 using namespace DCAM;
 
 
 DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
-    : QObject(parent)
+    : QThread(parent)
 {
     displayWhat = DISPLAY_ALL;
     qRegisterMetaType<size_t>("size_t");
@@ -26,7 +24,9 @@ DisplayWorker::DisplayWorker(OrcaFlash *camera, QObject *parent)
     orca = camera;
 
     connect(orca, &OrcaFlash::captureStarted, this, [ = ](){
-        run();
+        // allow thread to finish, otherwise start might have no effect if the thread is still running
+        wait(500000);
+        start();
     });
     connect(orca, &OrcaFlash::stopped, this, [ = ](){
         running = false;
@@ -46,9 +46,9 @@ void DisplayWorker::run()
 
     int skipFrames = qMax(40, triggerPeriod_ms) / triggerPeriod_ms;  // 40ms is 25 fps
     while (true) {
-        QThread::msleep(skipFrames * triggerPeriod_ms);
+        msleep(skipFrames * triggerPeriod_ms);
         if (displayWhat != DISPLAY_ALL) {
-            QThread::sleep(triggerPeriod_ms);
+            msleep(triggerPeriod_ms);
         }
 
         int32_t frameStamp = -1;
@@ -62,6 +62,9 @@ void DisplayWorker::run()
 
             try {
                 orca->copyFrame(buf, BUFSIZE * sizeof(quint16), -1, &frameStamp);
+#ifdef DEMO_MODE
+                frameStamp = i;
+#endif
             }
             catch (std::exception) {
                 exceptionCounter++;
@@ -77,7 +80,7 @@ void DisplayWorker::run()
             }
 
             i++;
-            QThread::sleep(triggerPeriod_ms);
+            msleep(triggerPeriod_ms);
         }
 
 #ifndef DEMO_MODE
