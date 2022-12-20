@@ -334,8 +334,10 @@ void Optrode::writeRunParams(QString fileName)
         out << "  aod:\n";
         out << "    enabled: " << (tasks->isAODEnabled() ? "true" : "false") << "\n";
         if (tasks->isAODEnabled()) {
-            QPointF p = tasks->getPoint();
-            out << "    point: " << QString("[%1, %2]").arg(p.x()).arg(p.y()) << "\n";
+            out << "    points:" << "\n";
+            for (QPointF p : tasks->getPoints()) {
+                out << "      - " << QString("[%1, %2]").arg(p.x()).arg(p.y()) << "\n";
+            }
         }
         out << "  always_on: " << (tasks->getContinuousStimulation() ? "true" : "false") << "\n";
         if (!tasks->getContinuousStimulation()) {

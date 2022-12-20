@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QPointF>
+#include <QVector>
 
 #include <qtlab/hw/ni/nitask.h>
 
@@ -83,8 +84,10 @@ public:
 
     DDS *getDDS() const;
 
-    QPointF getPoint() const;
-    void setPoint(const QPointF &value);
+    const QVector<QPointF> getPoints() const;
+    void setPoints(QVector<QPointF> points);
+    void appendPoint(const QPointF value);
+    void clearPoints();
 
     void setAODEnabled(bool enable);
     bool isAODEnabled() const;
@@ -111,7 +114,7 @@ private:
     NITask *LED;
     NITask *ddsSampClock;
     DDS *dds;
-    QPointF point;
+    QVector<QPointF> points;
     QStringList coList;
 
     QString mainTrigTerm;

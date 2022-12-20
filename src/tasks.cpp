@@ -146,8 +146,8 @@ void Tasks::init()
             dds->initTask();
             dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
             // go to XY point
-            dds->setFrequency1(MHZ_CENTRAL - (point.y() - 256) * MHZ_PER_PIXEL,
-                               MHZ_CENTRAL - (point.x() - 256) * MHZ_PER_PIXEL);
+            dds->setFrequency1(MHZ_CENTRAL - (points.first().y() - 256) * MHZ_PER_PIXEL,
+                               MHZ_CENTRAL - (points.first().x() - 256) * MHZ_PER_PIXEL);
             dds->setOSKI(0, 0); // turn off
             dds->udclkPulse();
             dds->setOSKI(MAX_POWER, MAX_POWER); // turn on (at next UDCLK)
@@ -171,8 +171,8 @@ void Tasks::init()
                 DAQmx_Val_Seconds,
                 NITask::IdleState_Low,
                 stimulationDelay, // ignored on buffered implicit pulse trains
-                continuousStimulation ? 1e-6 : stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
-                continuousStimulation ? 3e9 : stimulationHighTime); // as above
+                stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
+                stimulationHighTime); // as above
         }
 
         stimulation->setCOPulseTerm(nullptr, stimulationTerm);
@@ -180,6 +180,7 @@ void Tasks::init()
 
         if (aodEnabled && !continuousStimulation) {
             // for each stimulation cycle, we have to generate two short pulses (i.e. two UDCLK)
+            // for each stimulation point
             const uInt64 NSamples = 2 * stimulationNPulses;
 
             QVector<float64> duty = QVector<float64>(NSamples, 0.1);
@@ -188,11 +189,16 @@ void Tasks::init()
             highTime.reserve(NSamples);
             lowTime.reserve(NSamples);
 
+            double fraction = 0.5 / points.length();
             for (uInt64 i = 0; i < stimulationNPulses; ++i) {
                 // sic (low times are output before high times..)
                 lowTime << 0.9 * stimulationLowTime;
-                highTime << 0.1 * stimulationHighTime;
-                lowTime << 0.9 * stimulationHighTime;
+
+                for (int i = 0; i < points.length(); i++) {
+                    highTime << fraction * stimulationHighTime;
+                    lowTime << fraction * stimulationHighTime;
+                }
+
                 highTime << 0.1 * stimulationLowTime;
             }
 
@@ -214,12 +220,32 @@ void Tasks::init()
         // write all samples to buffer
         dds->clearBuffer();
         dds->setWriteMode(DDS::WRITE_MODE_TO_BUFFER);
-        dds->setOSKI(0, 0);                 // turn off
-        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
+
+        for (const QPointF &p : points.mid(1)) {
+            // repeat so that there are an equal number of samples and the buffer can be easily
+            // divided by two, see ddsSampClock->cfgImplicitTiming below
+            dds->setOSKI(0, 0); // turn off   write 16
+            dds->setOSKI(0, 0); // turn off   write 16
+            dds->setOSKI(0, 0); // turn off   write 16
+            dds->setOSKI(0, 0); // turn off   write 16
+                                //            total 64
+
+            // go to next XY point
+            dds->setFrequency1(MHZ_CENTRAL - (p.y() - 256) * MHZ_PER_PIXEL,
+                               MHZ_CENTRAL - (p.x() - 256) * MHZ_PER_PIXEL);   // write 48
+            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
+            //                                                                 // total 64
+        }
+
+        dds->setOSKI(0, 0); // turn off   write 16
+        dds->setOSKI(0, 0); // turn off   write 16
+        dds->setOSKI(0, 0); // turn off   write 16
+        dds->setOSKI(0, 0); // turn off   write 16
+                            //            total 64
 
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
-         * the dds. In a stimulation cycle, it is started twice: the first time it runs (at the
-         * start of the stimulation) it makes dds write the first N / 2 samples, to set the
+         * the dds. In a stimulation cycle (1 point), it is started twice: the first time it runs
+         * (at the start of the stimulation) it makes dds write the first N / 2 samples, to set the
          * amplitude to 0 (this will become effective only at the next UDCLK). The second time it
          * runs (at the end of the stimulation), it makes dds write the remaining N / 2 samples that
          * set the amplitude to the maximum (again, this will become effective at the nect UDCLK).
@@ -229,12 +255,12 @@ void Tasks::init()
         ddsSampClock->createTask("ddsSampClock");
         co = coList.last(); // need to use counter from another device
                             // (otherwise it conflicts with LED counter)
-        const int ddsSampClockRate = 100e3;
+        const int ddsSampClockRate = 200e3;
         ddsSampClock->createCOPulseChanFreq(
             co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
         ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI5");
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
-                                        dds->getBufferSize() / 2);
+                                        dds->getBufferSize() / points.length() / 2);
         ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
         logger->info(ddsSampClock->getCOPulseTerm(nullptr));
@@ -334,14 +360,24 @@ void Tasks::clearTasks()
     }
 }
 
-QPointF Tasks::getPoint() const
+const QVector<QPointF> Tasks::getPoints() const
 {
-    return point;
+    return points;
 }
 
-void Tasks::setPoint(const QPointF &value)
+void Tasks::setPoints(QVector<QPointF> points)
 {
-    point = value;
+    this->points = points;
+}
+
+void Tasks::appendPoint(const QPointF value)
+{
+    points.append(value);
+}
+
+void Tasks::clearPoints()
+{
+    points.clear();
 }
 
 DDS *Tasks::getDDS() const

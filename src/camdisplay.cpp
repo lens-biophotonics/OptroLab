@@ -82,9 +82,6 @@ CamDisplay::CamDisplay(QWidget *parent) : CameraDisplay(parent)
 
 void CamDisplay::addPoint(const QPointF &p)
 {
-    if (points.size() == 1) {
-        clearMarkers();
-    }
     QwtPlotMarker *marker = new QwtPlotMarker();
 
     QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Cross);

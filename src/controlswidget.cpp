@@ -433,9 +433,7 @@ void ControlsWidget::setupUi()
         t->setContinuousStimulation(continuousStimulationCheckBox->isChecked());
         t->setStimulationEnabled(stimulationCheckBox->isChecked());
         t->setAODEnabled(aodRadio->isChecked());
-        if (camDisplay->getPoints().size() > 0) {
-            t->setPoint(camDisplay->getPoints().at(0));
-        }
+        t->setPoints(camDisplay->getPoints());
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
         t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
