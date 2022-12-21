@@ -146,8 +146,8 @@ void Tasks::init()
             dds->initTask();
             dds->setWriteMode(DDS::WRITE_MODE_TO_NI_TASK);
             // go to XY point
-            dds->setFrequency1(MHZ_CENTRAL - (points.first().y() - 256) * MHZ_PER_PIXEL,
-                               MHZ_CENTRAL - (points.first().x() - 256) * MHZ_PER_PIXEL);
+            dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
+                               MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);
             dds->setOSKI(0, 0); // turn off
             dds->udclkPulse();
             dds->setOSKI(MAX_POWER, MAX_POWER); // turn on (at next UDCLK)
@@ -181,7 +181,7 @@ void Tasks::init()
         if (aodEnabled && !continuousStimulation) {
             // for each stimulation cycle, we have to generate two short pulses (i.e. two UDCLK)
             // for each stimulation point
-            const uInt64 NSamples = 2 * stimulationNPulses;
+            const uInt64 NSamples = stimulationNPulses * (points.length() + 1);
 
             QVector<float64> duty = QVector<float64>(NSamples, 0.1);
             QVector<float64> freq = QVector<float64>(NSamples);
@@ -189,16 +189,14 @@ void Tasks::init()
             highTime.reserve(NSamples);
             lowTime.reserve(NSamples);
 
-            double fraction = 0.5 / points.length();
+            double fraction = 1. / 2. / points.length();
             for (uInt64 i = 0; i < stimulationNPulses; ++i) {
                 // sic (low times are output before high times..)
                 lowTime << 0.9 * stimulationLowTime;
-
                 for (int i = 0; i < points.length(); i++) {
                     highTime << fraction * stimulationHighTime;
                     lowTime << fraction * stimulationHighTime;
                 }
-
                 highTime << 0.1 * stimulationLowTime;
             }
 
@@ -221,14 +219,21 @@ void Tasks::init()
         dds->clearBuffer();
         dds->setWriteMode(DDS::WRITE_MODE_TO_BUFFER);
 
-        for (const QPointF &p : points.mid(1)) {
+//        dds->setOSKI(0, 0);                 // turn off
+//        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
+
+        for (int i = 1; i < points.length(); ++i) {
+            const QPointF p = points[i];
+//        }
+
+//        for (const QPointF &p : points.mid(1)) {
             // repeat so that there are an equal number of samples and the buffer can be easily
             // divided by two, see ddsSampClock->cfgImplicitTiming below
-            dds->setOSKI(0, 0); // turn off   write 16
-            dds->setOSKI(0, 0); // turn off   write 16
-            dds->setOSKI(0, 0); // turn off   write 16
-            dds->setOSKI(0, 0); // turn off   write 16
-                                //            total 64
+//            dds->setOSKI(0, 0); // turn off   write 16
+//            dds->setOSKI(0, 0); // turn off   write 16
+//            dds->setOSKI(0, 0); // turn off   write 16
+//            dds->setOSKI(0, 0); // turn off   write 16
+//                                //            total 64
 
             // go to next XY point
             dds->setFrequency1(MHZ_CENTRAL - (p.y() - 256) * MHZ_PER_PIXEL,
@@ -237,11 +242,15 @@ void Tasks::init()
             //                                                                 // total 64
         }
 
-        dds->setOSKI(0, 0); // turn off   write 16
-        dds->setOSKI(0, 0); // turn off   write 16
-        dds->setOSKI(0, 0); // turn off   write 16
-        dds->setOSKI(0, 0); // turn off   write 16
-                            //            total 64
+        dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
+                           MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
+        dds->setOSKI(0, 0);                                                 // turn off   write 16
+                                                                            //            total 64
+
+        dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
+                           MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
+        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
+        //            total 64
 
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
          * the dds. In a stimulation cycle (1 point), it is started twice: the first time it runs
@@ -255,22 +264,21 @@ void Tasks::init()
         ddsSampClock->createTask("ddsSampClock");
         co = coList.last(); // need to use counter from another device
                             // (otherwise it conflicts with LED counter)
-        const int ddsSampClockRate = 200e3;
+        const int ddsSampClockRate = 100e3;
         ddsSampClock->createCOPulseChanFreq(
             co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
-        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI5");
+        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI2");
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
-                                        dds->getBufferSize() / points.length() / 2);
-        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
+                                        dds->getBufferSize() / (points.length() + 1));
+        ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm, NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
         logger->info(ddsSampClock->getCOPulseTerm(nullptr));
         dds->getTask()->cfgSampClkTiming(ddsSampClock->getCOPulseTerm(nullptr), ddsSampClockRate,
-                                         NITask::Edge_Rising, NITask::SampMode_ContSamps,
+                                         NITask::Edge_Rising, NITask::SampMode_FiniteSamps,
                                          dds->getBufferSize());
         dds->writeBuffer();  // must come after sample clk timing configuration
 
-        dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(),
-                                            NITask::Edge_Rising);
+        dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm, NITask::Edge_Rising);
     }
 
     initialized = true;
