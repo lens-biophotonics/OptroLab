@@ -316,7 +316,7 @@ void DDS::nop()
 
 int DDS::getBufferSize() const
 {
-    return buffer.size();
+    return buffer.size() / 3;
 }
 
 void DDS::clearBuffer()
@@ -341,7 +341,7 @@ void DDS::setDevName(const QString &value)
 
 void DDS::writeBuffer()
 {
-    task->writeDigitalU32(buffer.size() / 3, false, 5, NITask::DataLayout_GroupByScanNumber,
+    task->writeDigitalU32(getBufferSize(), false, 5, NITask::DataLayout_GroupByScanNumber,
                           buffer.data());
 }
 

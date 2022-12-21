@@ -189,7 +189,7 @@ void Tasks::init()
             highTime.reserve(NSamples);
             lowTime.reserve(NSamples);
 
-            double fraction = 1. / 2. / points.length();
+            double fraction = 1. / (2. * points.length());
             for (uInt64 i = 0; i < stimulationNPulses; ++i) {
                 // sic (low times are output before high times..)
                 lowTime << 0.9 * stimulationLowTime;
@@ -222,7 +222,8 @@ void Tasks::init()
 //        dds->setOSKI(0, 0);                 // turn off
 //        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
 
-        for (int i = 1; i < points.length(); ++i) {
+//        points.swapItemsAt(0, points.length() - 1);
+        for (int i = 1; i < points.length(); i++) {
             const QPointF p = points[i];
 //        }
 
@@ -239,16 +240,25 @@ void Tasks::init()
             dds->setFrequency1(MHZ_CENTRAL - (p.y() - 256) * MHZ_PER_PIXEL,
                                MHZ_CENTRAL - (p.x() - 256) * MHZ_PER_PIXEL);   // write 48
             dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
+            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
+            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
+            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
             //                                                                 // total 64
         }
 
         dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
                            MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
         dds->setOSKI(0, 0);                                                 // turn off   write 16
-                                                                            //            total 64
+        dds->setOSKI(0, 0);                                                 // turn off   write 16
+        dds->setOSKI(0, 0);                                                 // turn off   write 16
+        dds->setOSKI(0, 0);                                                 // turn off   write 16
+//                    total 64
 
         dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
                            MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
+        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
+        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
+        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
         dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
         //            total 64
 
@@ -274,11 +284,11 @@ void Tasks::init()
         ddsSampClock->setStartTrigRetriggerable(true);
         logger->info(ddsSampClock->getCOPulseTerm(nullptr));
         dds->getTask()->cfgSampClkTiming(ddsSampClock->getCOPulseTerm(nullptr), ddsSampClockRate,
-                                         NITask::Edge_Rising, NITask::SampMode_FiniteSamps,
+                                         NITask::Edge_Rising, NITask::SampMode_ContSamps,
                                          dds->getBufferSize());
-        dds->writeBuffer();  // must come after sample clk timing configuration
-
         dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm, NITask::Edge_Rising);
+//        dds->getTask()->setStartTrigRetriggerable(true);
+        dds->writeBuffer();  // must come after sample clk timing configuration
     }
 
     initialized = true;
