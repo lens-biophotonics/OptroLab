@@ -219,55 +219,28 @@ void Tasks::init()
         dds->clearBuffer();
         dds->setWriteMode(DDS::WRITE_MODE_TO_BUFFER);
 
-//        dds->setOSKI(0, 0);                 // turn off
-//        dds->setOSKI(MAX_POWER, MAX_POWER); // turn on
+        // we use the same number of writes so that the buffer can be easily divided by the number
+        // of points (see ddsSampClock->cfgImplicitTiming below) even if some commands are reduntant
 
-//        points.swapItemsAt(0, points.length() - 1);
-        for (int i = 1; i < points.length(); i++) {
-            const QPointF p = points[i];
-//        }
-
-//        for (const QPointF &p : points.mid(1)) {
-            // repeat so that there are an equal number of samples and the buffer can be easily
-            // divided by two, see ddsSampClock->cfgImplicitTiming below
-//            dds->setOSKI(0, 0); // turn off   write 16
-//            dds->setOSKI(0, 0); // turn off   write 16
-//            dds->setOSKI(0, 0); // turn off   write 16
-//            dds->setOSKI(0, 0); // turn off   write 16
-//                                //            total 64
-
-            // go to next XY point
-            dds->setFrequency1(MHZ_CENTRAL - (p.y() - 256) * MHZ_PER_PIXEL,
-                               MHZ_CENTRAL - (p.x() - 256) * MHZ_PER_PIXEL);   // write 48
-            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
-            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
-            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
-            dds->setOSKI(MAX_POWER, MAX_POWER); // turn on                     // write 16
-            //                                                                 // total 64
+        // we start from point 1; point 0 is already written to the dds but not effective yet (it
+        // will become effective at the next UDCLK pulse). So we prepare the dds for the next point.
+        for (const QPointF &p : points.mid(1)) {
+            ddsGoToPoint(p);     // write 48
+            ddsLaserOn();        // write 16
+            //                   // total 64
         }
 
-        dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
-                           MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
-        dds->setOSKI(0, 0);                                                 // turn off   write 16
-        dds->setOSKI(0, 0);                                                 // turn off   write 16
-        dds->setOSKI(0, 0);                                                 // turn off   write 16
-        dds->setOSKI(0, 0);                                                 // turn off   write 16
-//                    total 64
+        ddsGoToPoint(points[0]); // write 48
+        ddsLaserOff();           // write 16
+        //                       // total 64
 
-        dds->setFrequency1(MHZ_CENTRAL - (points[0].y() - 256) * MHZ_PER_PIXEL,
-                           MHZ_CENTRAL - (points[0].x() - 256) * MHZ_PER_PIXEL);//        write 48
-        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
-        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
-        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
-        dds->setOSKI(MAX_POWER, MAX_POWER);                                                 // turn off   write 16
-        //            total 64
+        ddsGoToPoint(points[0]); // write 48
+        ddsLaserOn();            // write 16
+        //                       // total 64
 
         /* ddsSampClock is a CO that is used to provide the sample clock to the task that writes to
-         * the dds. In a stimulation cycle (1 point), it is started twice: the first time it runs
-         * (at the start of the stimulation) it makes dds write the first N / 2 samples, to set the
-         * amplitude to 0 (this will become effective only at the next UDCLK). The second time it
-         * runs (at the end of the stimulation), it makes dds write the remaining N / 2 samples that
-         * set the amplitude to the maximum (again, this will become effective at the nect UDCLK).
+         * the dds. It is started at each stimulation pulse and it generates the exact amount of
+         * samples needed to write that portion of commands to the dds.
 
          * stimulationTerm is used as UDCLK for the dds as well as start trigger for ddsSampClock.
          */
@@ -277,7 +250,7 @@ void Tasks::init()
         const int ddsSampClockRate = 100e3;
         ddsSampClock->createCOPulseChanFreq(
             co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
-        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI2");
+        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI5");
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                         dds->getBufferSize() / (points.length() + 1));
         ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm, NITask::Edge_Rising);
@@ -287,7 +260,6 @@ void Tasks::init()
                                          NITask::Edge_Rising, NITask::SampMode_ContSamps,
                                          dds->getBufferSize());
         dds->getTask()->cfgDigEdgeStartTrig(mainTrigTerm, NITask::Edge_Rising);
-//        dds->getTask()->setStartTrigRetriggerable(true);
         dds->writeBuffer();  // must come after sample clk timing configuration
     }
 
@@ -412,6 +384,22 @@ void Tasks::ddsMasterReset()
     dds->setOSKI(0, 0);
     dds->setFrequency1(MHZ_CENTRAL, MHZ_CENTRAL);
     dds->udclkPulse();
+}
+
+void Tasks::ddsGoToPoint(const QPointF &p)
+{
+    dds->setFrequency1(MHZ_CENTRAL - (p.y() - 256) * MHZ_PER_PIXEL,
+                       MHZ_CENTRAL - (p.x() - 256) * MHZ_PER_PIXEL);   // write 48
+}
+
+void Tasks::ddsLaserOn()
+{
+    dds->setOSKI(MAX_POWER, MAX_POWER);                                // write 16
+}
+
+void Tasks::ddsLaserOff()
+{
+    dds->setOSKI(0, 0);                                                // write 16
 }
 
 bool Tasks::getElectrodeReadoutEnabled() const

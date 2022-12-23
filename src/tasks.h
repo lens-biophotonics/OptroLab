@@ -81,6 +81,9 @@ public:
     void setElectrodeReadoutEnabled(bool value);
 
     void ddsMasterReset();
+    void ddsGoToPoint(const QPointF &p);
+    void ddsLaserOn();
+    void ddsLaserOff();
 
     DDS *getDDS() const;
 
