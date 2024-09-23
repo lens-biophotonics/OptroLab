@@ -71,7 +71,7 @@ void Tasks::init()
     elReadout->createTask("electrodeReadout");
     elReadout->createAIVoltageChan(electrodeReadoutPhysChan,
                                    nullptr,
-                                   NITask::TermConf_Default,
+                                   NITask::TermConf_RSE,
                                    -10., 10.,
                                    NITask::VoltUnits_Volts, nullptr);
     elReadout->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(), NITask::Edge_Rising);
