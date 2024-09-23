@@ -240,6 +240,8 @@ void Optrode::_start()
                  .arg(getPostStimulation()));
     logger->info(QString("Total duration: %1s").arg(totalDuration()));
 
+    QDir().mkpath(getOutputDir());
+
     // setup NI tasks
     tasks->setFreeRunEnabled(false);
     tasks->setTotalDuration(totalDuration());
