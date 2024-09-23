@@ -70,6 +70,8 @@ Optrode::Optrode(QObject *parent) : QObject(parent)
             this, &Optrode::incrementCompleted);
 
     postStimulation = 0;
+    resetMultiRunCount();
+    multiRunStopped = true;
 
     setupStateMachine();
 }
@@ -207,7 +209,7 @@ void Optrode::startFreeRun()
 
 void Optrode::start()
 {
-    multiRunCount = 0;
+    resetMultiRunCount();
     multiRunStopped = false;
     _start();
 }
@@ -311,6 +313,12 @@ bool Optrode::isMultiRunEnabled() const
 void Optrode::setMultiRunEnabled(bool value)
 {
     multiRunEnabled = value;
+    resetMultiRunCount();
+}
+
+void Optrode::resetMultiRunCount()
+{
+    multiRunCount = 0;
 }
 
 void Optrode::writeRunParams(QString fileName)
@@ -433,7 +441,7 @@ void Optrode::incrementCompleted(bool ok)
         logger->info("All jobs completed");
         stop();
     }
-    logger->info(QString("Completed %1 jobs (%2)").arg(completedJobs).arg(ok));
+    logger->info(QString("Completed %1/%2 jobs (ok? %3)").arg(completedJobs).arg(nJobs).arg(ok));
 }
 
 void Optrode::writeRunParams()

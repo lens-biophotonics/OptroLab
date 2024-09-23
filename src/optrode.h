@@ -66,6 +66,8 @@ public:
     bool isMultiRunEnabled() const;
     void setMultiRunEnabled(bool value);
 
+    void resetMultiRunCount();
+
     int getNRuns() const;
     void setNRuns(int value);
 
