@@ -15,6 +15,7 @@ Tasks::Tasks(QObject *parent) : QObject(parent)
 {
     mainTrigger = new NITask(this);
     stimulation = new NITask(this);
+    auxStimulation = new NITask(this);
     LED = new NITask(this);
     elReadout = new NITask(this);
     ddsSampClock = new NITask(this);
@@ -178,6 +179,30 @@ void Tasks::init()
         stimulation->setCOPulseTerm(nullptr, stimulationTerm);
         stimulation->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(), NITask::Edge_Rising);
 
+
+        // auxiliary stimulation
+
+        if (auxStimulationEnabled) {
+            QString auxStimulationCounter = coList.at(3);
+            auxStimulation->createTask("auxStimulation");
+
+            double auxStimulationDuration = stimulationDelay + stimulationDuration() - auxStimulationDelay;
+            double auxStimulationLowTime = auxStimulationDuration / auxStimulationNPulses - auxStimulationHighTime;
+
+            auxStimulation->createCOPulseChanTime(
+                auxStimulationCounter,
+                nullptr,
+                DAQmx_Val_Seconds,
+                NITask::IdleState_Low,
+                auxStimulationDelay,
+                auxStimulationLowTime,
+                auxStimulationHighTime);
+
+            auxStimulation->setCOPulseTerm(nullptr, auxStimulationTerm);
+            auxStimulation->cfgDigEdgeStartTrig(mainTrigTerm.toStdString().c_str(), NITask::Edge_Rising);
+            auxStimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, auxStimulationNPulses);
+        }
+
         if (aodEnabled && !continuousStimulation) {
             // for each stimulation cycle, we have to generate two short pulses (i.e. two UDCLK)
             const uInt64 NSamples = 2 * stimulationNPulses;
@@ -270,6 +295,9 @@ void Tasks::start()
         }
         if (stimulationEnabled) {
             stimulation->startTask();
+            if (auxStimulationEnabled) {
+                auxStimulation->startTask();
+            }
             if (aodEnabled && !continuousStimulation) {
                 ddsSampClock->startTask();
                 dds->getTask()->startTask();
@@ -306,6 +334,46 @@ void Tasks::stopLEDs()
     }
 }
 
+QString Tasks::getAuxStimulationTerm() const
+{
+    return auxStimulationTerm;
+}
+
+void Tasks::setAuxStimulationTerm(const QString &value)
+{
+    auxStimulationTerm = value;
+}
+
+double Tasks::getAuxStimulationHighTime() const
+{
+    return auxStimulationHighTime;
+}
+
+void Tasks::setAuxStimulationHighTime(double value)
+{
+    auxStimulationHighTime = value;
+}
+
+uInt64 Tasks::getAuxStimulationNPulses() const
+{
+    return auxStimulationNPulses;
+}
+
+void Tasks::setAuxStimulationNPulses(const uInt64 &value)
+{
+    auxStimulationNPulses = value;
+}
+
+double Tasks::getAuxStimulationDelay() const
+{
+    return auxStimulationDelay;
+}
+
+void Tasks::setAuxStimulationDelay(double value)
+{
+    auxStimulationDelay = value;
+}
+
 bool Tasks::getContinuousStimulation() const
 {
     return continuousStimulation;
@@ -324,6 +392,7 @@ void Tasks::clearTasks()
              << LED
              << elReadout
              << stimulation
+             << auxStimulation
              << dds->getTask()
              << ddsSampClock;
 
@@ -547,6 +616,16 @@ bool Tasks::getStimulationEnabled() const
 void Tasks::setStimulationEnabled(bool value)
 {
     stimulationEnabled = value;
+}
+
+bool Tasks::getAuxStimulationEnabled() const
+{
+    return auxStimulationEnabled;
+}
+
+void Tasks::setAuxStimulationEnabled(bool value)
+{
+    auxStimulationEnabled = value;
 }
 
 QString Tasks::getElectrodeReadoutPhysChan() const

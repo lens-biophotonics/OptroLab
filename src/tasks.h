@@ -40,6 +40,9 @@ public:
     bool getStimulationEnabled() const;
     void setStimulationEnabled(bool value);
 
+    bool getAuxStimulationEnabled() const;
+    void setAuxStimulationEnabled(bool value);
+
     QString getElectrodeReadoutPhysChan() const;
     void setElectrodeReadoutPhysChan(const QString &value);
 
@@ -94,6 +97,18 @@ public:
 
     void clearTasks();
 
+    double getAuxStimulationDelay() const;
+    void setAuxStimulationDelay(double value);
+
+    uInt64 getAuxStimulationNPulses() const;
+    void setAuxStimulationNPulses(const uInt64 &value);
+
+    double getAuxStimulationHighTime() const;
+    void setAuxStimulationHighTime(double value);
+
+    QString getAuxStimulationTerm() const;
+    void setAuxStimulationTerm(const QString &value);
+
 signals:
     void started();
     void stopped();
@@ -107,6 +122,7 @@ public slots:
 private:
     NITask *mainTrigger;
     NITask *stimulation;
+    NITask *auxStimulation;
     NITask *elReadout;
     NITask *LED;
     NITask *ddsSampClock;
@@ -122,11 +138,16 @@ private:
     bool aodEnabled = false;
 
     QString stimulationTerm;
+    QString auxStimulationTerm;
     double stimulationDelay = 10;
+    double auxStimulationDelay = 10;
     double stimulationLowTime = 20;
     double stimulationHighTime = 0.5;
+    double auxStimulationHighTime = 0.5;
     uInt64 stimulationNPulses = 20;
+    uInt64 auxStimulationNPulses = 1;
     bool stimulationEnabled = true;
+    bool auxStimulationEnabled = false;
     bool continuousStimulation = false;
 
     QString LED1Term, LED2Term;
