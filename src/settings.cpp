@@ -121,6 +121,18 @@ void Settings::loadSettings()
     settings.endGroup();
 
 
+    groupName = SETTINGSGROUP_AUXSTIMULATION;
+    settings.beginGroup(groupName);
+
+    SET_VALUE(groupName, SETTING_ENABLED, false);
+    SET_VALUE(groupName, SETTING_TERM, "/Dev1/PFI4");
+    SET_VALUE(groupName, SETTING_INITIALDELAY, 10);
+    SET_VALUE(groupName, SETTING_HIGH_TIME, .5);
+    SET_VALUE(groupName, SETTING_NPULSES, 1);
+
+    settings.endGroup();
+
+
     groupName = SETTINGSGROUP_ZAXIS;
     settings.beginGroup(groupName);
 
@@ -194,6 +206,13 @@ void Settings::loadSettings()
     t->setContinuousStimulation(value(g, SETTING_ALWAYS_ON).toBool());
     t->setAODEnabled(value(g, SETTING_AOD_ENABLED).toBool());
 
+    g = SETTINGSGROUP_AUXSTIMULATION;
+    t->setAuxStimulationEnabled(value(g, SETTING_ENABLED).toBool());
+    t->setAuxStimulationTerm(value(g, SETTING_TERM).toString());
+    t->setAuxStimulationHighTime(value(g, SETTING_HIGH_TIME).toDouble());
+    t->setAuxStimulationNPulses(value(g, SETTING_NPULSES).toDouble());
+    t->setAuxStimulationDelay(value(g, SETTING_INITIALDELAY).toDouble());
+
     g = SETTINGSGROUP_TIMING;
     t->setStimulationInitialDelay(value(g, SETTING_INITIALDELAY).toDouble());
     t->setStimulationDuration(value(g, SETTING_STIMDURATION).toDouble());
@@ -256,6 +275,13 @@ void Settings::saveSettings()
     setValue(g, SETTING_ENABLED, t->getStimulationEnabled());
     setValue(g, SETTING_ALWAYS_ON, t->getContinuousStimulation());
     setValue(g, SETTING_AOD_ENABLED, t->isAODEnabled());
+
+    g = SETTINGSGROUP_AUXSTIMULATION;
+    setValue(g, SETTING_ENABLED, t->getAuxStimulationEnabled());
+    setValue(g, SETTING_TERM, t->getAuxStimulationTerm());
+    setValue(g, SETTING_HIGH_TIME, t->getAuxStimulationHighTime());
+    setValue(g, SETTING_NPULSES, t->getAuxStimulationNPulses());
+    setValue(g, SETTING_INITIALDELAY, t->getAuxStimulationDelay());
 
     g = SETTINGSGROUP_TIMING;
     setValue(g, SETTING_INITIALDELAY, t->getStimulationInitialDelay());
