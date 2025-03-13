@@ -160,6 +160,48 @@ void ControlsWidget::setupUi()
     QGroupBox *stimulationGb = new QGroupBox("Stimulation");
     stimulationGb->setLayout(grid);
 
+    // aux stimulation
+
+    QComboBox *auxStimulationTermComboBox = new QComboBox();
+    view = new QListView();
+    view->setFixedWidth(350);
+    auxStimulationTermComboBox->setSizeAdjustPolicy(QComboBox::AdjustToContentsOnFirstShow);
+    auxStimulationTermComboBox->setView(view);
+    auxStimulationTermComboBox->addItems(NI::getTerminals());
+    auxStimulationTermComboBox->setMinimumContentsLength(15);
+    auxStimulationTermComboBox->setCurrentText(t->getAuxStimulationTerm());
+
+    QDoubleSpinBox *auxStimulationHighTimeSpinBox = new QDoubleSpinBox();
+    auxStimulationHighTimeSpinBox->setSuffix("s");
+    auxStimulationHighTimeSpinBox->setRange(0, 100);
+    auxStimulationHighTimeSpinBox->setDecimals(3);
+    auxStimulationHighTimeSpinBox->setValue(t->getAuxStimulationHighTime());
+
+    QSpinBox *auxStimulationNPulsesSpinBox = new QSpinBox();
+    auxStimulationNPulsesSpinBox->setRange(1, 10000);
+    auxStimulationNPulsesSpinBox->setValue(t->getAuxStimulationNPulses());
+
+    QDoubleSpinBox *auxStimulationDelaySpinBox = new QDoubleSpinBox();
+    auxStimulationDelaySpinBox->setSuffix("s");
+    auxStimulationDelaySpinBox->setRange(0, 100);
+    auxStimulationDelaySpinBox->setDecimals(3);
+    auxStimulationDelaySpinBox->setValue(t->getAuxStimulationDelay());
+
+    row = 0;
+    grid = new QGridLayout();
+    grid->addWidget(new QLabel("Terminal"), row, 0);
+    grid->addWidget(auxStimulationTermComboBox, row++, 1);
+    grid->addWidget(new QLabel("High time"), row, 0);
+    grid->addWidget(auxStimulationHighTimeSpinBox, row++, 1);
+    grid->addWidget(new QLabel("N Pulses"), row, 0);
+    grid->addWidget(auxStimulationNPulsesSpinBox, row++, 1);
+    grid->addWidget(new QLabel("Delay (from start)"), row, 0);
+    grid->addWidget(auxStimulationDelaySpinBox, row++, 1);
+
+    QGroupBox *auxStimulationGb = new QGroupBox("Aux Stimulation");
+    auxStimulationGb->setCheckable(true);
+    auxStimulationGb->setChecked(t->getAuxStimulationEnabled());
+    auxStimulationGb->setLayout(grid);
 
     // Timing
 
@@ -182,10 +224,15 @@ void ControlsWidget::setupUi()
 
     QCheckBox *stimulationCheckBox = new QCheckBox("Stimulation");
 
-    connect(stimulationCheckBox, &QCheckBox::toggled, stimulationSpinBox, [ = ](bool checked) {
+    auto updateStimulationUi = [ = ](bool checked) {
         stimulationSpinBox->setEnabled(checked);
+        stimulationGb->setEnabled(checked);
+        auxStimulationGb->setEnabled(checked);
         postStimulationSpinBox->setEnabled(checked);
-    });
+    };
+
+    connect(stimulationCheckBox, &QCheckBox::toggled, stimulationSpinBox, updateStimulationUi);
+    updateStimulationUi(t->getStimulationEnabled());
 
     stimulationCheckBox->setChecked(t->getStimulationEnabled());
 
@@ -341,6 +388,7 @@ void ControlsWidget::setupUi()
     vLayout->addWidget(LEDGb);
     vLayout->addWidget(electrodeGb);
     vLayout->addWidget(stimulationGb);
+    vLayout->addWidget(auxStimulationGb);
 
     QVBoxLayout *vLayout2 = new QVBoxLayout();
     vLayout2->addWidget(timingGb);
@@ -436,6 +484,11 @@ void ControlsWidget::setupUi()
         if (camDisplay->getPoints().size() > 0) {
             t->setPoint(camDisplay->getPoints().at(0));
         }
+        t->setAuxStimulationEnabled(auxStimulationGb->isChecked());
+        t->setAuxStimulationTerm(auxStimulationTermComboBox->currentText());
+        t->setAuxStimulationHighTime(auxStimulationHighTimeSpinBox->value());
+        t->setAuxStimulationNPulses(auxStimulationNPulsesSpinBox->value());
+        t->setAuxStimulationDelay(auxStimulationDelaySpinBox->value());
         t->setElectrodeReadoutPhysChan(electrodePhysChanComboBox->currentText());
         t->setElectrodeReadoutRate(electrodeSampRateSpinBox->value());
         t->setElectrodeReadoutEnabled(electrodeGb->isChecked());
