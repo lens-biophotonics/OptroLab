@@ -171,8 +171,8 @@ void Tasks::init()
                 DAQmx_Val_Seconds,
                 NITask::IdleState_Low,
                 stimulationDelay, // ignored on buffered implicit pulse trains
-                continuousStimulation ? 1e-6 : stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
-                continuousStimulation ? 3e9 : stimulationHighTime); // as above
+                stimulationLowTime, // ignored on buffered implicit pulse trains (page 7-31 DAQ X)
+                stimulationHighTime); // as above
         }
 
         stimulation->setCOPulseTerm(nullptr, stimulationTerm);
