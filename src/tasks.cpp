@@ -183,8 +183,8 @@ void Tasks::init()
         // auxiliary stimulation
 
         if (auxStimulationEnabled) {
-            QString auxStimulationCounter = coList.at(coList.size() - 1); // need to use counter from another device
-                                                                          // (otherwise it conflicts with LED counter)
+            QString auxStimulationCounter = coList.at(6); // need to use counter from another device
+                                                          // (otherwise it conflicts with LED counter)
             auxStimulation->createTask("auxStimulation");
 
             double auxStimulationDuration = stimulationDelay + stimulationDuration() - auxStimulationDelay;
@@ -253,8 +253,8 @@ void Tasks::init()
          * stimulationTerm is used as UDCLK for the dds as well as start trigger for ddsSampClock.
          */
         ddsSampClock->createTask("ddsSampClock");
-        co = coList.last(); // need to use counter from another device
-                            // (otherwise it conflicts with LED counter)
+        co = coList.at(7); // need to use counter from another device
+                           // (otherwise it conflicts with LED counter)
         const int ddsSampClockRate = 100e3;
         ddsSampClock->createCOPulseChanFreq(
             co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
