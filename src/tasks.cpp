@@ -163,7 +163,7 @@ void Tasks::init()
                 DAQmx_Val_Hz,
                 NITask::IdleState_Low,
                 stimulationDelay,
-                1 / stimulationDuration() / 2, // always on
+                aodEnabled ? 1 / stimulationDuration() : 1 / stimulationDuration() / 2, // always on
                 0.5);
         } else {
             stimulation->createCOPulseChanTime(
@@ -230,7 +230,7 @@ void Tasks::init()
             stimulation->writeCtrTime(NSamples, false, 10, NITask::DataLayout_GroupByChannel,
                                       highTime.data(), lowTime.data(), nullptr);
         } else {
-            stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, stimulationNPulses);
+            stimulation->cfgImplicitTiming(NITask::SampMode_FiniteSamps, 2);
         }
     }
 
@@ -297,7 +297,7 @@ void Tasks::start()
             if (auxStimulationEnabled) {
                 auxStimulation->startTask();
             }
-            if (aodEnabled && !continuousStimulation) {
+            if (aodEnabled) {
                 ddsSampClock->startTask();
                 dds->getTask()->startTask();
             }
