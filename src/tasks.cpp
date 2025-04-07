@@ -258,12 +258,10 @@ void Tasks::init()
         const int ddsSampClockRate = 100e3;
         ddsSampClock->createCOPulseChanFreq(
             co, nullptr, NITask::FreqUnits_Hz, NITask::IdleState_Low, 0, ddsSampClockRate, 0.5);
-        ddsSampClock->setCOPulseTerm(nullptr, "/Dev1/PFI5");
         ddsSampClock->cfgImplicitTiming(NITask::SampMode_FiniteSamps,
                                         dds->getBufferSize() / 2);
         ddsSampClock->cfgDigEdgeStartTrig(stimulationTerm.toLatin1(), NITask::Edge_Rising);
         ddsSampClock->setStartTrigRetriggerable(true);
-        logger->info(ddsSampClock->getCOPulseTerm(nullptr));
         dds->getTask()->cfgSampClkTiming(ddsSampClock->getCOPulseTerm(nullptr), ddsSampClockRate,
                                          NITask::Edge_Rising, NITask::SampMode_ContSamps,
                                          dds->getBufferSize());
