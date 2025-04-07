@@ -355,6 +355,13 @@ void Optrode::writeRunParams(QString fileName)
             out << "  n_pulses: " << tasks->getStimulationNPulses() << "\n";
         }
     }
+    out << "  aux_stimulation:\n";
+    out << "    enabled: " << (tasks->getAuxStimulationEnabled() ? "true" : "false") << "\n";
+    if (tasks->getAuxStimulationEnabled()) {
+        out << "    high_time: " << tasks->getAuxStimulationHighTime() << "\n";
+        out << "    n_pulses: " << tasks->getAuxStimulationNPulses() << "\n";
+        out << "    delay: " << tasks->getAuxStimulationDelay() << "\n";
+    }
     out << "electrode:\n";
     out << "  readout_rate: " << tasks->getElectrodeReadoutRate() << "\n";
     out << "  readout_enabled: " << (tasks->getStimulationEnabled() ? "true" : "false") << "\n";
