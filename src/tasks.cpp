@@ -183,8 +183,8 @@ void Tasks::init()
         // auxiliary stimulation
 
         if (auxStimulationEnabled) {
-            QString auxStimulationCounter = coList.at(6); // need to use counter from another device
-                                                          // (otherwise it conflicts with LED counter)
+            QString auxStimulationCounter = coList.at(3);
+
             auxStimulation->createTask("auxStimulation");
 
             double auxStimulationDuration = stimulationDelay + stimulationDuration() - auxStimulationDelay;
